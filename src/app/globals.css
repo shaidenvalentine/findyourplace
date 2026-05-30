@@ -1,26 +1,129 @@
 @import "tailwindcss";
 
+/*
+  Find Your Place — design system.
+  Dark, modern, minimal. HSL semantic tokens ONLY (no hardcoded color in components).
+  Token = "H S% L%" channels so Tailwind utilities can do hsl(var(--token) / <alpha>).
+*/
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: 230 25% 5%;
+  --surface: 230 22% 8%;
+  --card: 230 20% 10%;
+  --card-foreground: 220 20% 96%;
+  --foreground: 220 20% 96%;
+  --muted: 230 16% 16%;
+  --muted-foreground: 222 12% 62%;
+  --border: 230 16% 18%;
+  --input: 230 16% 16%;
+  --ring: 14 90% 60%;
+
+  /* Brand: warm sunset coral primary + teal secondary (the "golden hour / new horizon" feel) */
+  --primary: 14 90% 60%;
+  --primary-foreground: 20 30% 8%;
+  --secondary: 174 62% 47%;
+  --secondary-foreground: 190 40% 8%;
+  --accent: 38 95% 60%;
+  --accent-foreground: 30 40% 10%;
+
+  --success: 150 60% 45%;
+  --destructive: 0 72% 56%;
+  --destructive-foreground: 0 0% 98%;
+
+  --radius: 0.9rem;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: hsl(var(--background));
+  --color-surface: hsl(var(--surface));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-foreground: hsl(var(--foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-success: hsl(var(--success));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 0.25rem);
+  --radius-sm: calc(var(--radius) - 0.5rem);
+  --radius-xl: calc(var(--radius) + 0.4rem);
+
+  --font-sans: var(--font-sans);
+
+  --animate-fade-up: fade-up 0.5s ease-out both;
+  --animate-fade-in: fade-in 0.6s ease-out both;
+  --animate-shimmer: shimmer 2.2s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
+
+/* Ambient brand glow used on hero/reveal surfaces */
+.bg-aurora {
+  background-image:
+    radial-gradient(50% 40% at 15% 5%, hsl(var(--primary) / 0.18), transparent 70%),
+    radial-gradient(45% 45% at 90% 10%, hsl(var(--secondary) / 0.16), transparent 70%),
+    radial-gradient(60% 50% at 50% 100%, hsl(var(--accent) / 0.1), transparent 70%);
+}
+
+.text-gradient {
+  background: linear-gradient(100deg, hsl(var(--primary)), hsl(var(--accent)) 55%, hsl(var(--secondary)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.shimmer {
+  background: linear-gradient(
+    100deg,
+    hsl(var(--muted)) 30%,
+    hsl(var(--muted-foreground) / 0.15) 50%,
+    hsl(var(--muted)) 70%
+  );
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: hsl(var(--muted)); border-radius: 999px; }

@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Find Your Place
 
-## Getting Started
+City/place matching for 20–30s. A fast quiz (or your own AI's profile of you) feeds a
+deterministic 10-dimension scoring engine that ranks **250 curated locations**, revealed
+behind a one-time ~$19 unlock.
 
-First, run the development server:
+Fresh Next.js rebuild of the validated prototype. The scoring algorithm and the funnel
+mechanic are ported; the dataset is regenerated and now **owned in-repo** (no dependency
+on the old app's database).
 
+## Stack
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind v4 · Supabase (DB/Auth/Storage)
+· Stripe · Vitest.
+
+## Run locally
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev          # http://localhost:3000
+npm test             # scoring characterization tests (locks behavior)
+npm run build        # production build
 ```
+**It runs fully without any keys** — in-memory run store, heuristic AI-profile parser,
+and a dev unlock so you can click the whole funnel end-to-end.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## What's built
+- **Scoring engine** — `src/lib/scoring.ts` + `circuitGenerator.ts`, ported verbatim and
+  locked by characterization tests (`src/lib/scoring.test.ts`, snapshots).
+- **Dataset** — `src/data/locations.json`, 250 places, validated (all scores 0–100).
+- **Funnel** — landing → `/start` (city + path choice) → Path A `/start/ai` (AI profile)
+  or Path B `/quiz` → `/results/[runId]` (free read + locked #1 + paywall + paid reveal).
+- **Server-enforced gate** — the locked ranking/#1/tax/circuit never reach the client until
+  the server confirms an unlock (`src/lib/server/runStore.ts`, `/api/result/[runId]`).
+- **Payments** — `/api/checkout` (Stripe Checkout) + `/api/stripe/webhook` (server-verified
+  unlock). Dev unlock auto-disables the moment `STRIPE_SECRET_KEY` is set.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Going live — the credentials checklist
+Copy `.env.example` → `.env.local` and fill in, block by block:
+1. **Supabase** — create a project, run `supabase/migrations/0001_init.sql`, then
+   `npx tsx scripts/seed-locations.ts` to seed the 250 locations. Swap the in-memory
+   `runStore.ts` for Supabase reads/writes.
+2. **Stripe** — add the secret + webhook secret; point a webhook at `/api/stripe/webhook`.
+3. **Anthropic** — optional, richer AI-profile parsing (Path A).
+4. **Resend/ESP** — wire `/api/capture-email` to your audience + nurture.
+5. **Meta Pixel + CAPI** — Phase 5 instrumentation before the first ad.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See `BUILD_PLAN.md` for the phased roadmap.

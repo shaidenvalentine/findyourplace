@@ -1,0 +1,137 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Logo } from "@/components/brand/Logo";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { saveDraft, loadDraft } from "@/lib/draft";
+import { ArrowRight, Sparkles, Compass, MapPin } from "lucide-react";
+
+export default function StartPage() {
+  const router = useRouter();
+  const [city, setCity] = useState("");
+  const [step, setStep] = useState<"city" | "path">("city");
+
+  function commitCity() {
+    saveDraft({ currentCity: city.trim() });
+    setStep("path");
+  }
+
+  function choose(path: "ai" | "quiz") {
+    // ensure city persisted even if user edited then jumped
+    if (city.trim()) saveDraft({ currentCity: city.trim() });
+    else if (!loadDraft().currentCity) saveDraft({ currentCity: "" });
+    router.push(path === "ai" ? "/start/ai" : "/quiz");
+  }
+
+  return (
+    <main className="bg-aurora flex min-h-dvh flex-col">
+      <header className="mx-auto flex h-14 w-full max-w-xl items-center justify-between px-4">
+        <Link href="/">
+          <Logo />
+        </Link>
+      </header>
+
+      <div className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center px-4 pb-16">
+        {step === "city" ? (
+          <div className="animate-fade-up">
+            <Badge variant="primary" className="mb-4">
+              <MapPin className="size-3" /> Step 1
+            </Badge>
+            <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
+              Where do you live right now?
+            </h1>
+            <p className="mt-2 text-muted-foreground">
+              We&apos;ll score how well your current city already fits you — your honest baseline.
+            </p>
+            <form
+              className="mt-6 flex flex-col gap-3"
+              onSubmit={(e) => {
+                e.preventDefault();
+                commitCity();
+              }}
+            >
+              <Input
+                autoFocus
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="e.g. Austin, Lisbon, Bali…"
+                aria-label="Current city"
+              />
+              <Button type="submit" size="lg" variant="gradient" disabled={!city.trim()}>
+                Continue <ArrowRight className="size-4" />
+              </Button>
+              <button
+                type="button"
+                onClick={commitCity}
+                className="text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
+              >
+                I&apos;d rather not say
+              </button>
+            </form>
+          </div>
+        ) : (
+          <div className="animate-fade-up">
+            <Badge variant="primary" className="mb-4">
+              <Sparkles className="size-3" /> Step 2 — choose your path
+            </Badge>
+            <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
+              How should we get to know you?
+            </h1>
+            <p className="mt-2 text-muted-foreground">Both lead to the same scored result.</p>
+
+            <div className="mt-6 flex flex-col gap-4">
+              <button
+                onClick={() => choose("ai")}
+                className="group rounded-2xl border border-primary/40 bg-card p-5 text-left transition-all hover:border-primary active:scale-[0.99]"
+              >
+                <div className="mb-3 flex items-center gap-2">
+                  <span className="grid size-9 place-items-center rounded-lg bg-primary/15 text-primary">
+                    <Sparkles className="size-5" />
+                  </span>
+                  <Badge variant="primary">Recommended</Badge>
+                </div>
+                <h2 className="text-lg font-semibold">Let your own AI describe you</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Copy a prompt into your ChatGPT or Claude, paste back what it writes. The most
+                  accurate read — it already knows you.
+                </p>
+                <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                  Use my AI <ArrowRight className="size-4" />
+                </span>
+              </button>
+
+              <button
+                onClick={() => choose("quiz")}
+                className="group rounded-2xl border border-border bg-card p-5 text-left transition-all hover:border-secondary/60 active:scale-[0.99]"
+              >
+                <div className="mb-3 flex items-center gap-2">
+                  <span className="grid size-9 place-items-center rounded-lg bg-secondary/15 text-secondary">
+                    <Compass className="size-5" />
+                  </span>
+                </div>
+                <h2 className="text-lg font-semibold">Take the quick quiz</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Ten fast taps. No app-switching. Great if you&apos;d just rather tap than paste.
+                </p>
+                <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-secondary">
+                  Start quiz <ArrowRight className="size-4" />
+                </span>
+              </button>
+            </div>
+
+            <button
+              onClick={() => setStep("city")}
+              className="mt-6 text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
+            >
+              ← Back
+            </button>
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}

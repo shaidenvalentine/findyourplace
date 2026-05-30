@@ -1,0 +1,282 @@
+                                                                Table "public.locations"
+           Column           |           Type           | Collation | Nullable |      Default      | Storage  | Compression | Stats target | Description 
+----------------------------+--------------------------+-----------+----------+-------------------+----------+-------------+--------------+-------------
+ id                         | uuid                     |           | not null | gen_random_uuid() | plain    |             |              | 
+ name                       | text                     |           | not null |                   | extended |             |              | 
+ region                     | text                     |           |          |                   | extended |             |              | 
+ country                    | text                     |           | not null |                   | extended |             |              | 
+ continent                  | text                     |           | not null |                   | extended |             |              | 
+ latitude                   | numeric(10,6)            |           |          |                   | main     |             |              | 
+ longitude                  | numeric(10,6)            |           |          |                   | main     |             |              | 
+ population                 | integer                  |           |          |                   | plain    |             |              | 
+ image_url                  | text                     |           |          |                   | extended |             |              | 
+ description                | text                     |           |          |                   | extended |             |              | 
+ vibe_summary               | text                     |           |          |                   | extended |             |              | 
+ tags                       | jsonb                    |           |          | '[]'::jsonb       | extended |             |              | 
+ cost_of_living_score       | integer                  |           |          |                   | plain    |             |              | 
+ rent_score                 | integer                  |           |          |                   | plain    |             |              | 
+ safety_score               | integer                  |           |          |                   | plain    |             |              | 
+ healthcare_score           | integer                  |           |          |                   | plain    |             |              | 
+ climate_score              | integer                  |           |          |                   | plain    |             |              | 
+ avg_temp_summer            | integer                  |           |          |                   | plain    |             |              | 
+ avg_temp_winter            | integer                  |           |          |                   | plain    |             |              | 
+ humidity_level             | integer                  |           |          |                   | plain    |             |              | 
+ sunshine_days              | integer                  |           |          |                   | plain    |             |              | 
+ beach_access_score         | integer                  |           |          |                   | plain    |             |              | 
+ mountain_access_score      | integer                  |           |          |                   | plain    |             |              | 
+ outdoor_score              | integer                  |           |          |                   | plain    |             |              | 
+ nightlife_score            | integer                  |           |          |                   | plain    |             |              | 
+ wellness_score             | integer                  |           |          |                   | plain    |             |              | 
+ dating_scene_score         | integer                  |           |          |                   | plain    |             |              | 
+ community_score            | integer                  |           |          |                   | plain    |             |              | 
+ english_friendliness_score | integer                  |           |          |                   | plain    |             |              | 
+ visa_friendliness_score    | integer                  |           |          |                   | plain    |             |              | 
+ tax_friendliness_score     | integer                  |           |          |                   | plain    |             |              | 
+ airport_connectivity_score | integer                  |           |          |                   | plain    |             |              | 
+ internet_quality_score     | integer                  |           |          |                   | plain    |             |              | 
+ walkability_score          | integer                  |           |          |                   | plain    |             |              | 
+ transit_score              | integer                  |           |          |                   | plain    |             |              | 
+ culture_openness_score     | integer                  |           |          |                   | plain    |             |              | 
+ startup_ecosystem_score    | integer                  |           |          |                   | plain    |             |              | 
+ bureaucracy_score          | integer                  |           |          |                   | plain    |             |              | 
+ created_at                 | timestamp with time zone |           |          | now()             | plain    |             |              | 
+ updated_at                 | timestamp with time zone |           |          | now()             | plain    |             |              | 
+ personal_income_tax_rate   | integer                  |           |          |                   | plain    |             |              | 
+ corporate_tax_rate         | integer                  |           |          |                   | plain    |             |              | 
+ capital_gains_tax_rate     | integer                  |           |          |                   | plain    |             |              | 
+ tax_notes                  | text                     |           |          |                   | extended |             |              | 
+ image_source               | text                     |           |          |                   | extended |             |              | 
+ image_source_url           | text                     |           |          |                   | extended |             |              | 
+ image_verified             | boolean                  |           |          | false             | plain    |             |              | 
+ image_updated_at           | timestamp with time zone |           |          |                   | plain    |             |              | 
+Indexes:
+    "locations_pkey" PRIMARY KEY, btree (id)
+    "idx_locations_continent" btree (continent)
+    "idx_locations_country" btree (country)
+Check constraints:
+    "locations_airport_connectivity_score_check" CHECK (airport_connectivity_score >= 0 AND airport_connectivity_score <= 100)
+    "locations_beach_access_score_check" CHECK (beach_access_score >= 0 AND beach_access_score <= 100)
+    "locations_bureaucracy_score_check" CHECK (bureaucracy_score >= 0 AND bureaucracy_score <= 100)
+    "locations_climate_score_check" CHECK (climate_score >= 0 AND climate_score <= 100)
+    "locations_community_score_check" CHECK (community_score >= 0 AND community_score <= 100)
+    "locations_cost_of_living_score_check" CHECK (cost_of_living_score >= 0 AND cost_of_living_score <= 100)
+    "locations_culture_openness_score_check" CHECK (culture_openness_score >= 0 AND culture_openness_score <= 100)
+    "locations_dating_scene_score_check" CHECK (dating_scene_score >= 0 AND dating_scene_score <= 100)
+    "locations_english_friendliness_score_check" CHECK (english_friendliness_score >= 0 AND english_friendliness_score <= 100)
+    "locations_healthcare_score_check" CHECK (healthcare_score >= 0 AND healthcare_score <= 100)
+    "locations_humidity_level_check" CHECK (humidity_level >= 0 AND humidity_level <= 100)
+    "locations_internet_quality_score_check" CHECK (internet_quality_score >= 0 AND internet_quality_score <= 100)
+    "locations_mountain_access_score_check" CHECK (mountain_access_score >= 0 AND mountain_access_score <= 100)
+    "locations_nightlife_score_check" CHECK (nightlife_score >= 0 AND nightlife_score <= 100)
+    "locations_outdoor_score_check" CHECK (outdoor_score >= 0 AND outdoor_score <= 100)
+    "locations_rent_score_check" CHECK (rent_score >= 0 AND rent_score <= 100)
+    "locations_safety_score_check" CHECK (safety_score >= 0 AND safety_score <= 100)
+    "locations_startup_ecosystem_score_check" CHECK (startup_ecosystem_score >= 0 AND startup_ecosystem_score <= 100)
+    "locations_tax_friendliness_score_check" CHECK (tax_friendliness_score >= 0 AND tax_friendliness_score <= 100)
+    "locations_transit_score_check" CHECK (transit_score >= 0 AND transit_score <= 100)
+    "locations_visa_friendliness_score_check" CHECK (visa_friendliness_score >= 0 AND visa_friendliness_score <= 100)
+    "locations_walkability_score_check" CHECK (walkability_score >= 0 AND walkability_score <= 100)
+    "locations_wellness_score_check" CHECK (wellness_score >= 0 AND wellness_score <= 100)
+Referenced by:
+ count 
+-------
+   193
+(1 row)
+
+         name          |      country       |   continent   
+-----------------------+--------------------+---------------
+ Cairo                 | Egypt              | Africa
+ Dahab                 | Egypt              | Africa
+ Addis Ababa           | Ethiopia           | Africa
+ Accra                 | Ghana              | Africa
+ Nairobi               | Kenya              | Africa
+ Mauritius             | Mauritius          | Africa
+ Casablanca            | Morocco            | Africa
+ Chefchaouen           | Morocco            | Africa
+ Essaouira             | Morocco            | Africa
+ Marrakech             | Morocco            | Africa
+ Taghazout             | Morocco            | Africa
+ Tangier               | Morocco            | Africa
+ Lagos                 | Nigeria            | Africa
+ Seychelles            | Seychelles         | Africa
+ Cape Town             | South Africa       | Africa
+ Johannesburg          | South Africa       | Africa
+ Zanzibar              | Tanzania           | Africa
+ Bahrain               | Bahrain            | Asia
+ Phnom Penh            | Cambodia           | Asia
+ Siem Reap             | Cambodia           | Asia
+ Hong Kong             | China              | Asia
+ Tbilisi               | Georgia            | Asia
+ Goa                   | India              | Asia
+ Pondicherry           | India              | Asia
+ Udaipur               | India              | Asia
+ Bali                  | Indonesia          | Asia
+ Canggu                | Indonesia          | Asia
+ Lombok                | Indonesia          | Asia
+ Ubud                  | Indonesia          | Asia
+ Yogyakarta            | Indonesia          | Asia
+ Fukuoka               | Japan              | Asia
+ Kyoto                 | Japan              | Asia
+ Okinawa               | Japan              | Asia
+ Osaka                 | Japan              | Asia
+ Tokyo                 | Japan              | Asia
+ Aqaba                 | Jordan             | Asia
+ Kuala Lumpur          | Malaysia           | Asia
+ Langkawi              | Malaysia           | Asia
+ Penang                | Malaysia           | Asia
+ Muscat                | Oman               | Asia
+ Cebu                  | Philippines        | Asia
+ Dumaguete             | Philippines        | Asia
+ Palawan               | Philippines        | Asia
+ Siargao               | Philippines        | Asia
+ Doha                  | Qatar              | Asia
+ Jeddah                | Saudi Arabia       | Asia
+ Riyadh                | Saudi Arabia       | Asia
+ Singapore             | Singapore          | Asia
+ Seoul                 | South Korea        | Asia
+ Taipei                | Taiwan             | Asia
+ Bangkok               | Thailand           | Asia
+ Chiang Mai            | Thailand           | Asia
+ Koh Phangan           | Thailand           | Asia
+ Koh Samui             | Thailand           | Asia
+ Krabi                 | Thailand           | Asia
+ Pai                   | Thailand           | Asia
+ Phuket                | Thailand           | Asia
+ Da Nang               | Vietnam            | Asia
+ Hanoi                 | Vietnam            | Asia
+ Ho Chi Minh City      | Vietnam            | Asia
+ Hoi An                | Vietnam            | Asia
+ Nha Trang             | Vietnam            | Asia
+ Tirana                | Albania            | Europe
+ Vienna                | Austria            | Europe
+ Brussels              | Belgium            | Europe
+ Dubrovnik             | Croatia            | Europe
+ Split                 | Croatia            | Europe
+ Prague                | Czech Republic     | Europe
+ Copenhagen            | Denmark            | Europe
+ Tallinn               | Estonia            | Europe
+ Helsinki              | Finland            | Europe
+ Bordeaux              | France             | Europe
+ Lyon                  | France             | Europe
+ Marseille             | France             | Europe
+ Nice                  | France             | Europe
+ Paris                 | France             | Europe
+ Berlin                | Germany            | Europe
+ Munich                | Germany            | Europe
+ Athens                | Greece             | Europe
+ Crete                 | Greece             | Europe
+ Greek Islands         | Greece             | Europe
+ Thessaloniki          | Greece             | Europe
+ Budapest              | Hungary            | Europe
+ Reykjavik             | Iceland            | Europe
+ Dublin                | Ireland            | Europe
+ Amalfi Coast          | Italy              | Europe
+ Bologna               | Italy              | Europe
+ Florence              | Italy              | Europe
+ Lake Como             | Italy              | Europe
+ Milan                 | Italy              | Europe
+ Naples                | Italy              | Europe
+ Puglia                | Italy              | Europe
+ Rome                  | Italy              | Europe
+ Riga                  | Latvia             | Europe
+ Vilnius               | Lithuania          | Europe
+ Montenegro Coast      | Montenegro         | Europe
+ Amsterdam             | Netherlands        | Europe
+ Oslo                  | Norway             | Europe
+ Krakow                | Poland             | Europe
+ Warsaw                | Poland             | Europe
+ Algarve               | Portugal           | Europe
+ Ericeira              | Portugal           | Europe
+ Lisbon                | Portugal           | Europe
+ Madeira               | Portugal           | Europe
+ Porto                 | Portugal           | Europe
+ Belgrade              | Serbia             | Europe
+ Lake Bled             | Slovenia           | Europe
+ Ljubljana             | Slovenia           | Europe
+ Barcelona             | Spain              | Europe
+ Canary Islands        | Spain              | Europe
+ Málaga                | Spain              | Europe
+ Seville               | Spain              | Europe
+ Valencia              | Spain              | Europe
+ Stockholm             | Sweden             | Europe
+ Geneva                | Switzerland        | Europe
+ Zurich                | Switzerland        | Europe
+ Edinburgh             | United Kingdom     | Europe
+ London                | United Kingdom     | Europe
+ Jerusalem             | Israel             | Middle East
+ Tel Aviv              | Israel             | Middle East
+ Amman                 | Jordan             | Middle East
+ Abu Dhabi             | UAE                | Middle East
+ Dubai                 | UAE                | Middle East
+ Barbados              | Barbados           | North America
+ Montreal              | Canada             | North America
+ Toronto               | Canada             | North America
+ Vancouver             | Canada             | North America
+ San José              | Costa Rica         | North America
+ Tamarindo             | Costa Rica         | North America
+ Havana                | Cuba               | North America
+ Curaçao               | Curaçao            | North America
+ Punta Cana            | Dominican Republic | North America
+ Santo Domingo         | Dominican Republic | North America
+ Antigua               | Guatemala          | North America
+ Cabo San Lucas        | Mexico             | North America
+ Mérida                | Mexico             | North America
+ Mexico City           | Mexico             | North America
+ Oaxaca                | Mexico             | North America
+ Playa del Carmen      | Mexico             | North America
+ Puerto Vallarta       | Mexico             | North America
+ San Miguel de Allende | Mexico             | North America
+ Tulum                 | Mexico             | North America
+ Panama City           | Panama             | North America
+ San Juan              | Puerto Rico        | North America
+ Austin                | United States      | North America
+ Boston                | United States      | North America
+ Charleston            | United States      | North America
+ Chicago               | United States      | North America
+ Denver                | United States      | North America
+ Honolulu              | United States      | North America
+ Los Angeles           | United States      | North America
+ Miami                 | United States      | North America
+ Nashville             | United States      | North America
+ New Orleans           | United States      | North America
+ New York City         | United States      | North America
+ Phoenix               | United States      | North America
+ Portland              | United States      | North America
+ Salt Lake City        | United States      | North America
+ San Diego             | United States      | North America
+ San Francisco         | United States      | North America
+ Savannah              | United States      | North America
+ Seattle               | United States      | North America
+ Brisbane              | Australia          | Oceania
+ Byron Bay             | Australia          | Oceania
+ Cairns                | Australia          | Oceania
+ Gold Coast            | Australia          | Oceania
+ Melbourne             | Australia          | Oceania
+ Noosa                 | Australia          | Oceania
+ Perth                 | Australia          | Oceania
+ Sydney                | Australia          | Oceania
+ Fiji                  | Fiji               | Oceania
+ Bora Bora             | French Polynesia   | Oceania
+ Tahiti                | French Polynesia   | Oceania
+ Auckland              | New Zealand        | Oceania
+ Christchurch          | New Zealand        | Oceania
+ Queenstown            | New Zealand        | Oceania
+ Wellington            | New Zealand        | Oceania
+ Bariloche             | Argentina          | South America
+ Buenos Aires          | Argentina          | South America
+ Mendoza               | Argentina          | South America
+ Florianópolis         | Brazil             | South America
+ Rio de Janeiro        | Brazil             | South America
+ São Paulo             | Brazil             | South America
+ Santiago              | Chile              | South America
+ Valparaíso            | Chile              | South America
+ Bogotá                | Colombia           | South America
+ Cartagena             | Colombia           | South America
+ Medellín              | Colombia           | South America
+ Santa Marta           | Colombia           | South America
+ Quito                 | Ecuador            | South America
+ Cusco                 | Peru               | South America
+ Lima                  | Peru               | South America
+ Montevideo            | Uruguay            | South America
+(193 rows)
+
