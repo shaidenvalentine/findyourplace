@@ -1,5 +1,6 @@
 import type { MatchResult, CurrentCityScore } from "@/lib/scoring";
 import type { AnnualCircuit } from "@/lib/circuitGenerator";
+import type { LifeChange } from "@/lib/lifeChange";
 import type { OnboardingData } from "@/types/onboarding";
 
 /** A fully scored run. The FREE surface uses everything except the locked fields. */
@@ -13,6 +14,8 @@ export interface ScoredRun {
   currentCityFit: CurrentCityScore;
   /** Category bars for the user's profile (averaged across the top matches). */
   categoryAverages: { label: string; score: number }[];
+  /** Current city vs #1 match — the free "how your life could change" comparison. */
+  lifeChange: LifeChange;
   /** The locked #1 tease — shape of the answer, never the name (free surface). */
   topTease: {
     score: number;

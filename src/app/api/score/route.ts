@@ -3,6 +3,7 @@ import { scoreLocations, scoreCurrentCity } from "@/lib/scoring";
 import { generateAnnualCircuit } from "@/lib/circuitGenerator";
 import { LOCATIONS } from "@/data/locations";
 import { buildPersonalityRead } from "@/lib/personality";
+import { computeLifeChange } from "@/lib/lifeChange";
 import { toRankedPlace, toFreeRun, type ScoredRun } from "@/lib/run";
 import { putRun } from "@/lib/server/runStore";
 import type { OnboardingData } from "@/types/onboarding";
@@ -50,6 +51,7 @@ export async function POST(req: NextRequest) {
     personality: buildPersonalityRead(inputs),
     currentCityFit,
     categoryAverages,
+    lifeChange: computeLifeChange(currentCityFit, top.categoryScores, top.totalScore),
     topTease: { score: top.totalScore, continent: top.location.continent, region: top.location.region },
     ranking: matches.map(toRankedPlace),
     circuit,

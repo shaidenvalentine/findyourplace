@@ -7,6 +7,7 @@ import { ScoreRing } from "./ScoreRing";
 import type { RankedPlace } from "@/lib/run";
 import type { AnnualCircuit } from "@/lib/circuitGenerator";
 import { getMonthAbbrev } from "@/lib/circuitGenerator";
+import { MovePlan } from "./MovePlan";
 import { LOCATIONS } from "@/data/locations";
 import { Check, Trophy, Coins, Plane, Globe2, ChevronDown } from "lucide-react";
 
@@ -15,6 +16,7 @@ export function PaidReveal({ ranking, circuit }: { ranking: RankedPlace[]; circu
   return (
     <div className="flex flex-col gap-5">
       <TopMatchHero place={top} />
+      <MovePlan place={top} />
       <TaxDeepDive place={top} />
       {circuit && circuit.stops.length > 0 && <CircuitSection circuit={circuit} />}
       <FullRanking ranking={ranking} />

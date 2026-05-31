@@ -9,9 +9,11 @@ import type { AnnualCircuit } from "@/lib/circuitGenerator";
 import { PersonalityProfile } from "./PersonalityProfile";
 import { CategoryBars } from "./CategoryBars";
 import { CurrentCityFitCard } from "./CurrentCityFitCard";
+import { LifeChangeCompare } from "./LifeChangeCompare";
 import { LockedTopMatch } from "./LockedTopMatch";
 import { Paywall } from "./Paywall";
 import { PaidReveal } from "./PaidReveal";
+import { ShareToStory } from "./ShareToStory";
 import { Loader2, ArrowLeft } from "lucide-react";
 
 type Locked = { ranking: RankedPlace[]; circuit: AnnualCircuit | null };
@@ -24,6 +26,9 @@ export function ResultsView({ runId }: { runId: string }) {
   const [notFound, setNotFound] = useState(false);
 
   const refresh = useCallback(async () => {
+    // Instant paint from cache, then reconcile with the server (source of truth for the gate).
+    const cached = loadRunLocal(runId);
+    if (cached) setFree(cached);
     try {
       const res = await fetch(`/api/result/${runId}`, { cache: "no-store" });
       if (res.status === 404) {
@@ -46,11 +51,10 @@ export function ResultsView({ runId }: { runId: string }) {
   }, [runId]);
 
   useEffect(() => {
-    // Instant paint from cache, then reconcile with the server (source of truth for the gate).
-    const local = loadRunLocal(runId);
-    if (local) setFree(local);
+    // Fetch-on-mount + revalidate; refresh() owns all state writes.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
-  }, [runId, refresh]);
+  }, [refresh]);
 
   if (loading && !free) {
     return (
@@ -98,9 +102,16 @@ export function ResultsView({ runId }: { runId: string }) {
         <PersonalityProfile read={free.personality} />
         <CategoryBars items={free.categoryAverages} title="Your category fit (top matches)" />
         <CurrentCityFitCard city={free.currentCity} fit={free.currentCityFit} />
+        <LifeChangeCompare city={free.currentCity} lifeChange={free.lifeChange} />
 
         {unlocked && locked ? (
-          <PaidReveal ranking={locked.ranking} circuit={locked.circuit} />
+          <>
+            <PaidReveal ranking={locked.ranking} circuit={locked.circuit} />
+            <div className="rounded-2xl border border-border bg-card p-5 text-center">
+              <p className="mb-3 text-sm font-medium">Show the world where you belong.</p>
+              <ShareToStory runId={runId} variant="reveal" />
+            </div>
+          </>
         ) : (
           <>
             <LockedTopMatch
@@ -108,6 +119,13 @@ export function ResultsView({ runId }: { runId: string }) {
               continent={free.topTease.continent}
               region={free.topTease.region}
             />
+            <div className="rounded-2xl border border-border bg-card p-5 text-center">
+              <p className="mb-1 text-sm font-medium">Pull your friends in 👀</p>
+              <p className="mb-3 text-xs text-muted-foreground">
+                Share your card — your match score and the mystery of where you belong.
+              </p>
+              <ShareToStory runId={runId} variant="teaser" />
+            </div>
             <Paywall runId={runId} onUnlocked={refresh} />
           </>
         )}

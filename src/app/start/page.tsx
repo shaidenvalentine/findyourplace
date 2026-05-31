@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { saveDraft, loadDraft } from "@/lib/draft";
-import { ArrowRight, Sparkles, Compass, MapPin } from "lucide-react";
+import { ArrowRight, Sparkles, Compass, MapPin, Camera } from "lucide-react";
 
 export default function StartPage() {
   const router = useRouter();
@@ -20,11 +20,12 @@ export default function StartPage() {
     setStep("path");
   }
 
-  function choose(path: "ai" | "quiz") {
+  function choose(path: "ai" | "ig" | "quiz") {
     // ensure city persisted even if user edited then jumped
     if (city.trim()) saveDraft({ currentCity: city.trim() });
     else if (!loadDraft().currentCity) saveDraft({ currentCity: "" });
-    router.push(path === "ai" ? "/start/ai" : "/quiz");
+    const route = path === "ai" ? "/start/ai" : path === "ig" ? "/start/instagram" : "/quiz";
+    router.push(route);
   }
 
   return (
@@ -101,6 +102,25 @@ export default function StartPage() {
                 </p>
                 <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary">
                   Use my AI <ArrowRight className="size-4" />
+                </span>
+              </button>
+
+              <button
+                onClick={() => choose("ig")}
+                className="group rounded-2xl border border-border bg-card p-5 text-left transition-all hover:border-accent/60 active:scale-[0.99]"
+              >
+                <div className="mb-3 flex items-center gap-2">
+                  <span className="grid size-9 place-items-center rounded-lg bg-accent/15 text-accent">
+                    <Camera className="size-5" />
+                  </span>
+                </div>
+                <h2 className="text-lg font-semibold">Read my Instagram vibe</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Upload a screenshot of your profile. We read your vibe — never your face — to feel
+                  out what fits you.
+                </p>
+                <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-accent">
+                  Upload screenshot <ArrowRight className="size-4" />
                 </span>
               </button>
 

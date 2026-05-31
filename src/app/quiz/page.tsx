@@ -108,7 +108,7 @@ export default function QuizPage() {
           >
             {submitting ? (
               <>
-                <Loader2 className="size-4 animate-spin" /> Scoring 250 places…
+                <Loader2 className="size-4 animate-spin" /> Scoring the best places on Earth…
               </>
             ) : idx === QUIZ.length - 1 ? (
               <>Reveal my matches <ArrowRight className="size-4" /></>

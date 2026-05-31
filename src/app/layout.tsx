@@ -10,9 +10,9 @@ const sans = Plus_Jakarta_Sans({
 
 const SITE = {
   name: "Find Your Place",
-  tagline: "Find the place on Earth that actually fits you.",
+  tagline: "Find the place that actually fits you.",
   description:
-    "Answer a few questions — or let your own AI describe you — and our engine ranks 250 cities and islands by how well they fit your life. Takes 30 seconds.",
+    "Where you live shapes your income, your relationships, your health — who you become. Most people choose it by accident. We match you against 250 of the best places on Earth and show you the one that fits you best.",
 };
 
 export const metadata: Metadata = {

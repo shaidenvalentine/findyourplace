@@ -7,11 +7,11 @@ import { ANCHOR_LABEL, PRICE_LABEL } from "@/lib/pricing";
 import { Check, Loader2, Lock } from "lucide-react";
 
 const INCLUDES = [
-  "Your #1 match, revealed by name",
+  "The name of your #1 place, revealed",
+  "Your move plan — the steps to actually get there",
   "The full ranking of all 250 places",
-  "Per-place tax deep-dive (income, corporate, capital gains)",
-  "Your personalized annual circuit (if nomadic)",
-  "Shareable result card",
+  "Per-place tax deep-dive + annual circuit",
+  "Your shareable result card",
 ];
 
 export function Paywall({
@@ -106,7 +106,7 @@ export function Paywall({
       </Button>
       {err && <p className="mt-2 text-center text-sm text-destructive">{err}</p>}
       <p className="mt-3 text-center text-xs text-muted-foreground">
-        One-time payment. Instant access. No subscription.
+        Apple Pay &amp; cards · one-time · instant access · no subscription
       </p>
     </div>
   );

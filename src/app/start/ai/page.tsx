@@ -193,7 +193,7 @@ function ConfirmStep({
         <Button size="lg" variant="gradient" disabled={submitting} onClick={onConfirm}>
           {submitting ? (
             <>
-              <Loader2 className="size-4 animate-spin" /> Scoring 250 places…
+              <Loader2 className="size-4 animate-spin" /> Scoring the best places on Earth…
             </>
           ) : (
             <>

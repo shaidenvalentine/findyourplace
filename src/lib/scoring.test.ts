@@ -7,6 +7,7 @@ import {
   type Location,
 } from "./scoring";
 import { generateAnnualCircuit } from "./circuitGenerator";
+import { computeLifeChange } from "./lifeChange";
 import { LOCATIONS } from "@/data/locations";
 import type { OnboardingData } from "@/types/onboarding";
 
@@ -168,6 +169,42 @@ describe("scoreCurrentCity", () => {
     expect(a.score).toBe(b.score);
     expect(a.score).toBeGreaterThanOrEqual(48);
     expect(a.score).toBeLessThanOrEqual(59);
+  });
+});
+
+describe("computeLifeChange", () => {
+  it("returns the 4 current-vs-best buckets with deltas", () => {
+    const fit = scoreCurrentCity("London", LOCATIONS, PROFILES.budgetNomadBeach);
+    const top = scoreLocations(LOCATIONS, PROFILES.budgetNomadBeach)[0];
+    const lc = computeLifeChange(fit, top.categoryScores, top.totalScore);
+    expect(lc.categories.map((c) => c.label).sort()).toEqual([
+      "Career & Opportunity",
+      "Community Fit",
+      "Lifestyle Fit",
+      "Nature & Environment",
+    ]);
+    // sorted by delta descending (biggest gains first)
+    for (let i = 1; i < lc.categories.length; i++) {
+      expect(lc.categories[i - 1].delta).toBeGreaterThanOrEqual(lc.categories[i].delta);
+    }
+    for (const c of lc.categories) {
+      expect(c.best).toBeGreaterThanOrEqual(0);
+      expect(c.best).toBeLessThanOrEqual(100);
+      expect(c.delta).toBe(c.best - c.current);
+      expect(typeof c.note).toBe("string");
+    }
+    // headline overall uses the real fit scores (same scale as the #1 match total)
+    expect(lc.bestScore).toBe(top.totalScore);
+    expect(lc.overallDelta).toBe(lc.bestScore - lc.currentScore);
+    expect(lc.headline.length).toBeGreaterThan(0);
+  });
+
+  it("is deterministic", () => {
+    const fit = scoreCurrentCity("London", LOCATIONS, PROFILES.mountainsCold);
+    const top = scoreLocations(LOCATIONS, PROFILES.mountainsCold)[0];
+    expect(JSON.stringify(computeLifeChange(fit, top.categoryScores, top.totalScore))).toBe(
+      JSON.stringify(computeLifeChange(fit, top.categoryScores, top.totalScore))
+    );
   });
 });
 
