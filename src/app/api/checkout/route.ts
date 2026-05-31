@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getRun } from "@/lib/server/runStore";
+import { getRun, putRun } from "@/lib/server/runStore";
+import { buildScoredRun } from "@/lib/buildRun";
 import { PRICE_CENTS, CURRENCY, isStripeConfigured } from "@/lib/pricing";
+import type { OnboardingData } from "@/types/onboarding";
 
 /**
  * Starts the one-time unlock checkout.
@@ -13,15 +15,20 @@ import { PRICE_CENTS, CURRENCY, isStripeConfigured } from "@/lib/pricing";
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
-  let body: { runId?: string; email?: string };
+  let body: { runId?: string; email?: string; inputs?: OnboardingData };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
   const runId = body.runId ?? "";
+  // Cold-lambda fallback: rebuild the run from client-cached inputs if needed.
   if (!getRun(runId)) {
-    return NextResponse.json({ error: "Run not found" }, { status: 404 });
+    if (body.inputs) {
+      putRun(buildScoredRun({ runId, createdAt: Date.now(), inputs: body.inputs, source: "quiz" }));
+    } else {
+      return NextResponse.json({ error: "Run not found" }, { status: 404 });
+    }
   }
 
   if (!isStripeConfigured()) {

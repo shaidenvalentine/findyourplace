@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getRun, markUnlocked } from "@/lib/server/runStore";
+import { getRun, putRun, markUnlocked } from "@/lib/server/runStore";
+import { buildScoredRun } from "@/lib/buildRun";
 import { isStripeConfigured } from "@/lib/pricing";
+import type { OnboardingData } from "@/types/onboarding";
 
 /**
  * DEV-ONLY unlock. When Stripe is NOT configured (local development), this lets the
@@ -16,15 +18,20 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  let body: { runId?: string };
+  let body: { runId?: string; inputs?: OnboardingData };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
   const runId = body.runId ?? "";
+  // Cold-lambda fallback: rebuild from inputs so we never error on the first try.
   if (!getRun(runId)) {
-    return NextResponse.json({ error: "Run not found" }, { status: 404 });
+    if (body.inputs) {
+      putRun(buildScoredRun({ runId, createdAt: Date.now(), inputs: body.inputs, source: "quiz" }));
+    } else {
+      return NextResponse.json({ error: "Run not found" }, { status: 404 });
+    }
   }
 
   markUnlocked(runId);

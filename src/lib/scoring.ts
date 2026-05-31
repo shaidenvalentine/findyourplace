@@ -188,7 +188,11 @@ function calculateDealBreakerMultiplier(location: Location, preferences: Onboard
   return multiplier;
 }
 
-// Calculate alignment bonus - how well location's strengths match user's priorities
+// Calculate alignment bonus - how well location's strengths match user's priorities.
+// Kept for reference; no longer applied (categoryScores already adjust for preferences
+// via dynamic weighting, and the extra bonus broke math consistency between current-city
+// fit and best-match display).
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function calculateAlignmentBonus(location: Location, preferences: OnboardingData): number {
   let bonus = 0;
 
@@ -644,26 +648,24 @@ export function calculateDisplayScore(categoryScores: CategoryScore[]): number {
 export function scoreLocations(locations: Location[], preferences: OnboardingData): MatchResult[] {
   const results: MatchResult[] = locations.map((location) => {
     const categoryScores = calculateCategoryScores(location, preferences);
-    let totalScore = calculateTotalScore(categoryScores);
 
-    // Apply deal-breaker multiplier
+    // ONE score for everything — same formula as the current-city fit, so the ranking,
+    // the displayed number, and the bucket breakdown all tell the same story. Includes
+    // the deal-breaker multiplier (a place that fails a hard requirement deserves a
+    // penalty), but NOT the redundant alignment bonus (category scores already adjust
+    // for user preferences via dynamic weighting — adding another bonus on top inflates
+    // rankings and breaks the math vs the current-city display).
     const dealBreakerMultiplier = calculateDealBreakerMultiplier(location, preferences);
-    totalScore *= dealBreakerMultiplier;
-
-    // Apply alignment bonus
-    const alignmentBonus = calculateAlignmentBonus(location, preferences);
-    totalScore += alignmentBonus;
-
-    // Apply score spreading to get more variation
-    totalScore = spreadScore(totalScore);
+    const rawScore = calculateTotalScore(categoryScores) * dealBreakerMultiplier;
+    const score = spreadScore(rawScore);
 
     const reasons = generateReasons(location, categoryScores);
     const tradeoffs = generateTradeoffs(location, categoryScores);
 
     return {
       location,
-      totalScore,
-      displayScore: calculateDisplayScore(categoryScores),
+      totalScore: score,
+      displayScore: score,
       categoryScores,
       reasons,
       tradeoffs,
@@ -671,7 +673,7 @@ export function scoreLocations(locations: Location[], preferences: OnboardingDat
     };
   });
 
-  // Sort by total score descending
+  // Sort by the unified score (now consistent with what users see)
   results.sort((a, b) => b.totalScore - a.totalScore);
 
   // Assign ranks
@@ -721,11 +723,10 @@ export function scoreCurrentCity(
 
   if (matchedCity && hasScores) {
     const categoryScores = calculateCategoryScores(matchedCity, preferences);
-    let totalScore = calculateTotalScore(categoryScores);
-
-    // Don't apply deal-breaker to current city - user already lives there and is happy
-    // Just spread the score normally
-    totalScore = spreadScore(totalScore);
+    // Apply the SAME deal-breaker as scoreLocations so both sides are on the same scale.
+    // (Previously skipped to be "kind" but it made ranking inconsistent with display.)
+    const dealBreakerMultiplier = calculateDealBreakerMultiplier(matchedCity, preferences);
+    const totalScore = spreadScore(calculateTotalScore(categoryScores) * dealBreakerMultiplier);
 
     // Simplify to 6 main categories for the UI — covers the dimensions that actually
     // drive most matches (cost and safety are missing from a 4-bucket view and that hides

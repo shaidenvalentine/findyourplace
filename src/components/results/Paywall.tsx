@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ANCHOR_LABEL, PRICE_LABEL } from "@/lib/pricing";
+import { loadRunLocal } from "@/lib/run";
 import { Check, Loader2, Lock } from "lucide-react";
 
 const INCLUDES = [
@@ -38,10 +39,12 @@ export function Paywall({
         }).catch(() => {});
       }
 
+      // Include cached inputs as cold-lambda fallback so checkout never 404s.
+      const cached = loadRunLocal(runId);
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ runId, email: email.trim() }),
+        body: JSON.stringify({ runId, email: email.trim(), inputs: cached?.inputs ?? null }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Checkout failed");
@@ -55,7 +58,7 @@ export function Paywall({
       const unlock = await fetch("/api/unlock", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ runId }),
+        body: JSON.stringify({ runId, inputs: cached?.inputs ?? null }),
       });
       if (!unlock.ok) throw new Error("Unlock failed");
       onUnlocked();

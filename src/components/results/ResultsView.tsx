@@ -33,7 +33,14 @@ export function ResultsView({ runId }: { runId: string }) {
     const cached = loadRunLocal(runId);
     if (cached) setFree(cached);
     try {
-      const res = await fetch(`/api/result/${runId}`, { cache: "no-store" });
+      // POST with the client's cached inputs as a cold-lambda fallback so any server
+      // instance can rebuild the run deterministically. No more 404s on first try.
+      const res = await fetch(`/api/result/${runId}`, {
+        method: "POST",
+        cache: "no-store",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inputs: cached?.inputs ?? null }),
+      });
       if (res.status === 404) {
         // Fall back to the locally cached free surface (e.g. server restarted in dev).
         const localRun = loadRunLocal(runId);

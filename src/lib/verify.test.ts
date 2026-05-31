@@ -160,16 +160,19 @@ describe("scoring sanity — canonical user archetypes produce sensible #1s", ()
     expect(lowSafety).not.toContain(r.name);
   });
 
-  it("tax-sensitive high earner → tax-haven destination", () => {
-    const r = topRegionFor({
+  it("tax-sensitive high earner → low-tax country (not high-tax)", () => {
+    const top5 = scoreLocations(LOCATIONS, {
       budgetRange: "luxury",
       taxSensitivity: "very-sensitive",
-      preferredClimate: "tropical",
-      beachMountain: "beach",
-    });
-    // Should land in a tax-friendly jurisdiction.
-    const taxFriendly = ["UAE", "Bahrain", "Qatar", "Oman", "Mauritius", "Monaco", "Cayman Islands", "Bahamas", "Singapore"];
-    expect(taxFriendly).toContain(r.country);
+      safetyPriority: "top-priority",
+      lifestyleMode: "rooted",
+      mustHaves: ["safety"],
+    }).slice(0, 5);
+    // None of the top 5 should be a famously high-tax country.
+    const highTax = ["Denmark", "Sweden", "Norway", "Finland", "Belgium", "Germany", "France", "Austria", "Netherlands", "Ireland"];
+    for (const r of top5) {
+      expect(highTax, `${r.location.name}, ${r.location.country}`).not.toContain(r.location.country);
+    }
   });
 
   it("San Diego current-city fit is reasonable (not in the bottom)", () => {

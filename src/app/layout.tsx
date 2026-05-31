@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
-const sans = Plus_Jakarta_Sans({
+// Space Grotesk — clean, futuristic, geometric. The display face for the whole app.
+const sans = Space_Grotesk({
   variable: "--font-sans",
   subsets: ["latin"],
   display: "swap",
