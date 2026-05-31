@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { OptionButton } from "@/components/entry/OptionButton";
 import { INCOME_BANDS, COUNTRY_OPTIONS, formatMoney } from "@/lib/tax";
+import { topTaxPartner } from "@/lib/affiliates";
+import { AffiliateCard } from "@/components/affiliates/AffiliateCard";
 import { saveRunLocal, type FreeRun } from "@/lib/run";
 import { Coins, Loader2, ArrowRight, Pencil, TriangleAlert } from "lucide-react";
 
@@ -159,6 +161,17 @@ export function TaxProfile({ free, onRefined }: { free: FreeRun; onRefined: (u: 
             <p className="text-[11px] text-muted-foreground">
               Directional estimate using representative national rates — not tax advice.
             </p>
+
+            {/* Highest-intent affiliate placement: they just saw a number — give them the expert. */}
+            {(() => {
+              const partner = topTaxPartner(free);
+              return partner ? (
+                <div className="mt-1">
+                  <p className="mb-2 text-xs font-semibold text-muted-foreground">Want it done right?</p>
+                  <AffiliateCard partner={partner} runId={free.runId} placement="tax-card" />
+                </div>
+              ) : null;
+            })()}
           </div>
         )}
       </CardContent>

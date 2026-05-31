@@ -16,6 +16,7 @@ import { DeepenMatch } from "./DeepenMatch";
 import { Paywall } from "./Paywall";
 import { PaidReveal } from "./PaidReveal";
 import { ShareToStory } from "./ShareToStory";
+import { RelocationToolkit } from "@/components/affiliates/RelocationToolkit";
 import { Loader2, ArrowLeft } from "lucide-react";
 
 type Locked = { ranking: RankedPlace[]; circuit: AnnualCircuit | null };
@@ -110,6 +111,7 @@ export function ResultsView({ runId }: { runId: string }) {
         {unlocked && locked ? (
           <>
             <PaidReveal ranking={locked.ranking} circuit={locked.circuit} />
+            <RelocationToolkit run={free} />
             <div className="rounded-2xl border border-border bg-card p-5 text-center">
               <p className="mb-3 text-sm font-medium">Show the world where you belong.</p>
               <ShareToStory runId={runId} variant="reveal" />

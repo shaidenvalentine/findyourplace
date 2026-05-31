@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PlacePhoto } from "@/components/places/PlacePhoto";
 import { PlaceProfile } from "@/components/places/PlaceProfile";
+import { AffiliateCard } from "@/components/affiliates/AffiliateCard";
+import { getPartner } from "@/lib/affiliates";
 import { ArrowRight, Coins } from "lucide-react";
 
 export function generateStaticParams() {
@@ -117,6 +119,20 @@ export default async function PlacePage({ params }: { params: Promise<{ id: stri
         {loc.tax_notes && <p className="mt-3 text-sm text-muted-foreground">{loc.tax_notes}</p>}
         <p className="mt-2 text-[11px] text-muted-foreground">Estimate — not tax advice.</p>
       </div>
+
+      {/* Make the move — contextual affiliate CTAs */}
+      <h2 className="mt-8 text-lg font-bold tracking-tight">Make the move to {loc.name}</h2>
+      <div className="mt-3 flex flex-col gap-2">
+        {["booking", "skyscanner", "safetywing", "airalo"].map((pid) => {
+          const partner = getPartner(pid);
+          return partner ? (
+            <AffiliateCard key={pid} partner={partner} runId="" placement={`place:${loc.id}`} />
+          ) : null;
+        })}
+      </div>
+      <p className="mt-2 text-[11px] text-muted-foreground">
+        Some links are partner links — we may earn a commission at no cost to you.
+      </p>
 
       {/* CTA */}
       <div className="bg-aurora mt-8 rounded-2xl border border-primary/30 p-6 text-center">
