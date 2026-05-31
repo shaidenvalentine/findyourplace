@@ -8,7 +8,10 @@ import type { RankedPlace } from "@/lib/run";
 import type { AnnualCircuit } from "@/lib/circuitGenerator";
 import { getMonthAbbrev } from "@/lib/circuitGenerator";
 import { MovePlan } from "./MovePlan";
+import { PlacePhoto } from "@/components/places/PlacePhoto";
+import { PlaceProfile } from "@/components/places/PlaceProfile";
 import { LOCATIONS } from "@/data/locations";
+import Link from "next/link";
 import { Check, Trophy, Coins, Plane, Globe2, ChevronDown } from "lucide-react";
 
 export function PaidReveal({ ranking, circuit }: { ranking: RankedPlace[]; circuit: AnnualCircuit | null }) {
@@ -25,34 +28,59 @@ export function PaidReveal({ ranking, circuit }: { ranking: RankedPlace[]; circu
 }
 
 function TopMatchHero({ place }: { place: RankedPlace }) {
+  const loc = LOCATIONS.find((l) => l.id === place.id);
   return (
-    <div className="bg-aurora animate-fade-up rounded-2xl border border-primary/30 p-6 text-center">
-      <Badge variant="primary" className="mx-auto mb-3 w-fit">
-        <Trophy className="size-3" /> Your #1 match
-      </Badge>
-      <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{place.name}</h2>
-      <p className="text-muted-foreground">
-        {place.region ? `${place.region} · ` : ""}
-        {place.country}
-      </p>
-      <div className="my-4 grid place-items-center">
-        <ScoreRing score={place.totalScore} size={150} label="match" />
+    <div className="animate-fade-up overflow-hidden rounded-2xl border border-primary/30">
+      {/* Photo hero */}
+      <div className="relative">
+        <PlacePhoto location={loc} rounded="rounded-none" className="h-56 w-full" sizes="600px" priority scrim />
+        <div className="absolute inset-x-0 bottom-0 p-5">
+          <Badge variant="primary" className="mb-2 w-fit">
+            <Trophy className="size-3" /> Your #1 match
+          </Badge>
+          <h2 className="text-3xl font-extrabold leading-tight tracking-tight text-white drop-shadow sm:text-4xl">
+            {place.name}
+          </h2>
+          <p className="text-sm text-white/80">
+            {place.region ? `${place.region} · ` : ""}
+            {place.country}
+          </p>
+        </div>
+        <div className="absolute right-4 top-4 rounded-full bg-background/70 p-1 backdrop-blur">
+          <ScoreRing score={place.totalScore} size={84} label="match" />
+        </div>
       </div>
-      {place.reasons.length > 0 && (
-        <ul className="mx-auto flex max-w-md flex-col gap-2 text-left">
-          {place.reasons.map((r) => (
-            <li key={r} className="flex items-start gap-2 text-sm">
-              <Check className="mt-0.5 size-4 shrink-0 text-success" />
-              <span>{r}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-      {place.tradeoffs.length > 0 && (
-        <p className="mx-auto mt-4 max-w-md text-left text-xs text-muted-foreground">
-          <span className="font-semibold">Worth knowing:</span> {place.tradeoffs.join(" · ")}
-        </p>
-      )}
+
+      <div className="bg-card p-5">
+        {place.reasons.length > 0 && (
+          <ul className="flex flex-col gap-2">
+            {place.reasons.map((r) => (
+              <li key={r} className="flex items-start gap-2 text-sm">
+                <Check className="mt-0.5 size-4 shrink-0 text-success" />
+                <span>{r}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {place.tradeoffs.length > 0 && (
+          <p className="mt-4 text-xs text-muted-foreground">
+            <span className="font-semibold">Worth knowing:</span> {place.tradeoffs.join(" · ")}
+          </p>
+        )}
+        {loc && (
+          <div className="mt-5 border-t border-border pt-5">
+            <PlaceProfile location={loc} />
+          </div>
+        )}
+        {loc && (
+          <Link
+            href={`/places/${loc.id}`}
+            className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary underline-offset-4 hover:underline"
+          >
+            Full {place.name} guide →
+          </Link>
+        )}
+      </div>
     </div>
   );
 }
@@ -132,18 +160,26 @@ function FullRanking({ ranking }: { ranking: RankedPlace[] }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-1.5">
-        {shown.map((p) => (
-          <div key={p.id} className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-muted/40">
-            <span className="w-7 shrink-0 text-right text-sm font-semibold tabular-nums text-muted-foreground">
-              {p.rank}
-            </span>
-            <span className="min-w-0 flex-1 truncate">
-              <span className="font-medium">{p.name}</span>
-              <span className="ml-2 text-xs text-muted-foreground">{p.country}</span>
-            </span>
-            <span className="shrink-0 text-sm font-bold tabular-nums">{p.totalScore}</span>
-          </div>
-        ))}
+        {shown.map((p) => {
+          const loc = LOCATIONS.find((l) => l.id === p.id);
+          return (
+            <Link
+              key={p.id}
+              href={`/places/${p.id}`}
+              className="flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/40"
+            >
+              <span className="w-6 shrink-0 text-right text-sm font-semibold tabular-nums text-muted-foreground">
+                {p.rank}
+              </span>
+              <PlacePhoto location={loc} className="size-9 shrink-0" rounded="rounded-md" sizes="36px" />
+              <span className="min-w-0 flex-1 truncate">
+                <span className="font-medium">{p.name}</span>
+                <span className="ml-2 text-xs text-muted-foreground">{p.country}</span>
+              </span>
+              <span className="shrink-0 text-sm font-bold tabular-nums">{p.totalScore}</span>
+            </Link>
+          );
+        })}
         {limit < ranking.length && (
           <button
             onClick={() => setLimit((l) => l + 50)}

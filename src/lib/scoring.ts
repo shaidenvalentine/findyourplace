@@ -44,6 +44,17 @@ export interface Location {
   corporate_tax_rate: number | null;
   capital_gains_tax_rate: number | null;
   tax_notes: string | null;
+  // Image (sourced) + attribution
+  image_source?: string | null;
+  image_credit?: string | null;
+  // Depth content (the "this app really knows this place" layer)
+  lowdown?: string | null;
+  scene?: string | null;
+  best_for?: string[];
+  not_for?: string[];
+  monthly_budget_usd?: number | null;
+  rent_1br_usd?: number | null;
+  neighborhoods?: string[];
 }
 
 export interface CategoryScore {
