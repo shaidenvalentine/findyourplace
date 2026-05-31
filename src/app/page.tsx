@@ -13,6 +13,10 @@ import {
   Camera,
   Home,
   Route,
+  Landmark,
+  Plane,
+  Percent,
+  Globe2,
 } from "lucide-react";
 
 export default function LandingPage() {
@@ -91,6 +95,25 @@ export default function LandingPage() {
           If some part of you suspects you&apos;re in the wrong place but you don&apos;t know
           where the <em>right</em> one is — that&apos;s exactly what this finds.
         </p>
+      </section>
+
+      {/* Real stats band — the money/tax case */}
+      <section className="border-y border-border bg-surface/40">
+        <div className="mx-auto w-full max-w-5xl px-4 py-10">
+          <p className="text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Where you live decides what you keep
+          </p>
+          <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <StatTile icon={<Landmark className="size-5" />} value="15+" label="countries charge 0% personal income tax" />
+            <StatTile icon={<Percent className="size-5" />} value="0–55%+" label="income-tax range worldwide — same salary, very different take-home" />
+            <StatTile icon={<Plane className="size-5" />} value="50+" label="countries now offer digital-nomad visas" />
+            <StatTile icon={<Globe2 className="size-5" />} value="250" label="of the best places on Earth, scored on 10 life dimensions" />
+          </div>
+          <p className="mt-5 text-center text-[11px] text-muted-foreground">
+            Move from a 45% tax country to a 0% one and a $120k income keeps ~$54k more a year.
+            We&apos;ll show you your real numbers.
+          </p>
+        </div>
       </section>
 
       {/* How it works */}
@@ -215,6 +238,16 @@ function StakeCard({ icon, title, body }: { icon: React.ReactNode; title: string
       <div className="mb-4 grid size-10 place-items-center rounded-lg bg-primary/15 text-primary">{icon}</div>
       <h3 className="text-lg font-semibold">{title}</h3>
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{body}</p>
+    </div>
+  );
+}
+
+function StatTile({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
+  return (
+    <div className="flex flex-col items-center text-center">
+      <div className="mb-2 grid size-10 place-items-center rounded-lg bg-primary/15 text-primary">{icon}</div>
+      <div className="text-2xl font-extrabold tracking-tight sm:text-3xl">{value}</div>
+      <p className="mt-1 text-xs leading-snug text-muted-foreground">{label}</p>
     </div>
   );
 }
