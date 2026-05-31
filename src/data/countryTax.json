@@ -1186,5 +1186,29 @@
     "specialRegime": "",
     "notes": "Residents are taxed on worldwide income with steep progressive rates reaching 35%, while securities transfers are taxed at 0.1% of sale proceeds.",
     "source": "https://taxsummaries.pwc.com/vietnam/individual/taxes-on-personal-income"
+  },
+  "Monaco": {
+    "income": 0,
+    "topMarginal": 0,
+    "capitalGains": 0,
+    "corporate": 28,
+    "vat": 20,
+    "territorial": false,
+    "residencyDays": 183,
+    "specialRegime": "0% personal income tax for Monaco residents (except French nationals)",
+    "notes": "No personal income tax for residents — a major draw for high earners, but residency requires real proof of life in Monaco.",
+    "source": "https://taxsummaries.pwc.com/monaco/individual/taxes-on-personal-income"
+  },
+  "Hong Kong": {
+    "income": 15,
+    "topMarginal": 17,
+    "capitalGains": 0,
+    "corporate": 16,
+    "vat": 0,
+    "territorial": true,
+    "residencyDays": 183,
+    "specialRegime": "Standard rate cap of 15% (progressive 2-17% or 15% standard, whichever is lower)",
+    "notes": "Territorial system — only Hong Kong-sourced income is taxed. No capital gains tax, no VAT, no estate tax.",
+    "source": "https://taxsummaries.pwc.com/hong-kong/individual/taxes-on-personal-income"
   }
 }

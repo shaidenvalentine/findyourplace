@@ -12,20 +12,21 @@ import { Share2, Check, Loader2, Download } from "lucide-react";
  */
 export function ShareSlides({ free, variant }: { free: FreeRun; variant: "teaser" | "reveal" }) {
   const runId = free.runId;
+  // Decks designed for what people ACTUALLY share.
+  // Pre-unlock: identity card (the universal share) + a curiosity locked-place tease.
+  // Post-unlock: identity card + the place reveal with photo + a soft CTA.
+  // Tax + gap math slides removed — nobody posts their income or a comparison chart.
   const slides = useMemo(() => {
-    const ids = ["identity", "gap"];
-    if (free.taxComparison && free.taxComparison.annualSavings > 0) ids.push("tax");
-    ids.push("place", "cta");
-    return ids;
-  }, [free.taxComparison]);
+    return variant === "reveal" ? ["identity", "place", "cta"] : ["identity", "place"];
+  }, [variant]);
 
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
 
   const text =
     variant === "reveal"
-      ? "I found the place on Earth that actually fits me"
-      : "I found out where I should actually be living";
+      ? `I'm ${free.personality.archetype}. I just found the place that fits me.`
+      : `I'm ${free.personality.archetype} 👀`;
   const resultUrl = typeof window !== "undefined" ? `${window.location.origin}/results/${runId}` : "";
 
   async function fetchFiles(): Promise<File[]> {
