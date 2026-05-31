@@ -35,6 +35,21 @@ export interface CreatorStore {
 
   // Stats helper (composes the above)
   getStats(creatorId: string): Promise<CreatorStats>;
+
+  // ── ADMIN-ONLY queries (cross-creator views) ────────────────────────────────
+  listAllConversions(limit?: number): Promise<CreatorConversion[]>;
+  listPendingByCreator(): Promise<{ creator: Creator; pendingCents: number; pendingCount: number }[]>;
+  getGlobalStats(): Promise<{
+    totalRevenueCents: number;
+    totalCreatorCutCents: number;
+    last30RevenueCents: number;
+    last30Conversions: number;
+    creatorCount: number;
+    activeCreatorCount: number;
+    pendingPayoutCents: number;
+  }>;
+  markConversionsPaid(creatorId: string, conversionIds: string[], payoutId: string): Promise<number>;
+  createPayout(payout: Omit<CreatorPayout, "id" | "createdAt">): Promise<CreatorPayout>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -190,6 +205,77 @@ class InMemoryCreatorStore implements CreatorStore {
       },
       recentConversions: recent,
     };
+  }
+
+  // ── Admin queries ──────────────────────────────────────────────────────────
+  async listAllConversions(limit = 200): Promise<CreatorConversion[]> {
+    return [...this.conversions].sort((a, b) => b.createdAt - a.createdAt).slice(0, limit);
+  }
+
+  async listPendingByCreator() {
+    const map = new Map<string, { pendingCents: number; pendingCount: number }>();
+    for (const c of this.conversions) {
+      if (c.status !== "pending") continue;
+      const cur = map.get(c.creatorId) ?? { pendingCents: 0, pendingCount: 0 };
+      cur.pendingCents += c.creatorCutCents;
+      cur.pendingCount += 1;
+      map.set(c.creatorId, cur);
+    }
+    const out: { creator: Creator; pendingCents: number; pendingCount: number }[] = [];
+    for (const [creatorId, v] of map) {
+      const creator = this.creators.get(creatorId);
+      if (!creator) continue;
+      out.push({ creator, ...v });
+    }
+    return out.sort((a, b) => b.pendingCents - a.pendingCents);
+  }
+
+  async getGlobalStats() {
+    const since30 = Date.now() - 30 * 86_400_000;
+    let totalRevenue = 0;
+    let totalCut = 0;
+    let last30Rev = 0;
+    let last30Count = 0;
+    let pendingCut = 0;
+    for (const c of this.conversions) {
+      if (c.status === "refunded") continue;
+      totalRevenue += c.amountCents;
+      totalCut += c.creatorCutCents;
+      if (c.status === "pending") pendingCut += c.creatorCutCents;
+      if (c.createdAt >= since30) {
+        last30Rev += c.amountCents;
+        last30Count += 1;
+      }
+    }
+    const creators = Array.from(this.creators.values());
+    return {
+      totalRevenueCents: totalRevenue,
+      totalCreatorCutCents: totalCut,
+      last30RevenueCents: last30Rev,
+      last30Conversions: last30Count,
+      creatorCount: creators.length,
+      activeCreatorCount: creators.filter((c) => c.status === "active").length,
+      pendingPayoutCents: pendingCut,
+    };
+  }
+
+  async markConversionsPaid(creatorId: string, conversionIds: string[], payoutId: string): Promise<number> {
+    let n = 0;
+    for (const c of this.conversions) {
+      if (c.creatorId !== creatorId) continue;
+      if (!conversionIds.includes(c.id)) continue;
+      if (c.status !== "pending") continue;
+      c.status = "paid";
+      c.paidInPayoutId = payoutId;
+      n += 1;
+    }
+    return n;
+  }
+
+  async createPayout(payout: Omit<CreatorPayout, "id" | "createdAt">): Promise<CreatorPayout> {
+    const created: CreatorPayout = { ...payout, id: crypto.randomUUID(), createdAt: Date.now() };
+    this.payouts.push(created);
+    return created;
   }
 }
 
