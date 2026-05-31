@@ -51,6 +51,12 @@ export interface OnboardingData {
   taxConsideration?: string;
   housingPreference?: string;
 
+  // Tax & income (for the tax-savings comparison)
+  taxResidenceCountry?: string; // where they currently pay tax (may differ from currentCity)
+  annualIncomeBand?: string; // "<50k" | "50-100k" | "100-200k" | "200-500k" | "500k+"
+  isUsCitizen?: boolean; // US citizens are taxed on worldwide income — flagged in the result
+  hasInvestmentIncome?: boolean; // founder/investor: factor capital-gains too
+
   // Travel & Mobility
   airportConnectivity?: string;
   weekendTrips?: string;

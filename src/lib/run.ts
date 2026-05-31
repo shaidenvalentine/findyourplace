@@ -1,6 +1,7 @@
 import type { MatchResult, CurrentCityScore } from "@/lib/scoring";
 import type { AnnualCircuit } from "@/lib/circuitGenerator";
 import type { LifeChange } from "@/lib/lifeChange";
+import type { TaxComparison } from "@/lib/tax";
 import type { OnboardingData } from "@/types/onboarding";
 
 /** A fully scored run. The FREE surface uses everything except the locked fields. */
@@ -18,6 +19,8 @@ export interface ScoredRun {
   lifeChange: LifeChange;
   /** 0–100 match confidence; climbs as the user answers the deeper quiz. */
   confidence: number;
+  /** Tax-savings estimate vs the #1 match (rates + savings only — no place name). */
+  taxComparison: TaxComparison | null;
   /** The locked #1 tease — shape of the answer, never the name (free surface). */
   topTease: {
     score: number;

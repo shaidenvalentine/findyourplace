@@ -4,6 +4,7 @@ import { LOCATIONS } from "@/data/locations";
 import { buildPersonalityRead } from "@/lib/personality";
 import { computeLifeChange } from "@/lib/lifeChange";
 import { computeConfidence } from "@/lib/confidence";
+import { computeTaxComparison } from "@/lib/tax";
 import { toRankedPlace, type ScoredRun } from "@/lib/run";
 import type { OnboardingData } from "@/types/onboarding";
 
@@ -43,6 +44,7 @@ export function buildScoredRun(opts: {
     categoryAverages,
     lifeChange: computeLifeChange(currentCityFit, top.categoryScores, top.totalScore),
     confidence: computeConfidence(inputs, matches),
+    taxComparison: computeTaxComparison(inputs, top.location),
     topTease: { score: top.totalScore, continent: top.location.continent, region: top.location.region },
     ranking: matches.map(toRankedPlace),
     circuit,

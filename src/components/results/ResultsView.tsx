@@ -10,6 +10,7 @@ import { PersonalityProfile } from "./PersonalityProfile";
 import { CategoryBars } from "./CategoryBars";
 import { CurrentCityFitCard } from "./CurrentCityFitCard";
 import { LifeChangeCompare } from "./LifeChangeCompare";
+import { TaxProfile } from "./TaxProfile";
 import { LockedTopMatch } from "./LockedTopMatch";
 import { DeepenMatch } from "./DeepenMatch";
 import { Paywall } from "./Paywall";
@@ -104,6 +105,7 @@ export function ResultsView({ runId }: { runId: string }) {
         <CategoryBars items={free.categoryAverages} title="Your category fit (top matches)" />
         <CurrentCityFitCard city={free.currentCity} fit={free.currentCityFit} />
         <LifeChangeCompare city={free.currentCity} lifeChange={free.lifeChange} />
+        <TaxProfile free={free} onRefined={setFree} />
 
         {unlocked && locked ? (
           <>
