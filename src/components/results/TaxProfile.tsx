@@ -9,7 +9,7 @@ import { INCOME_BANDS, COUNTRY_OPTIONS, formatMoney } from "@/lib/tax";
 import { topTaxPartner } from "@/lib/affiliates";
 import { AffiliateCard } from "@/components/affiliates/AffiliateCard";
 import { saveRunLocal, type FreeRun } from "@/lib/run";
-import { Coins, Loader2, ArrowRight, Pencil, TriangleAlert } from "lucide-react";
+import { Coins, Loader2, ArrowRight, Pencil, TriangleAlert, Sparkles } from "lucide-react";
 
 /**
  * The tax-savings hook. Collects income band + current tax residence (+ US-citizen and
@@ -138,6 +138,25 @@ export function TaxProfile({ free, onRefined }: { free: FreeRun; onRefined: (u: 
                 Capital gains there: <span className="font-semibold text-foreground">{tc.destCapitalGainsRate}%</span>. Worth
                 modeling if a big chunk of your income is investments.
               </p>
+            )}
+
+            {(tc.destSpecialRegime || tc.destTerritorial) && (
+              <div className="flex items-start gap-2 rounded-lg border border-secondary/30 bg-secondary/10 p-3 text-xs">
+                <Sparkles className="mt-0.5 size-4 shrink-0 text-secondary" />
+                <span className="text-muted-foreground">
+                  {tc.destTerritorial && (
+                    <>
+                      Your #1 match runs a <strong className="text-foreground">territorial</strong> tax system — foreign income
+                      is often untaxed for residents.{" "}
+                    </>
+                  )}
+                  {tc.destSpecialRegime && (
+                    <>
+                      There&apos;s a special regime worth knowing: <strong className="text-foreground">{tc.destSpecialRegime}</strong>.
+                    </>
+                  )}
+                </span>
+              </div>
             )}
 
             {/* US citizen flag */}

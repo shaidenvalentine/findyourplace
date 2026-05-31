@@ -1,6 +1,28 @@
 import type { Location } from "@/lib/scoring";
 import { LOCATIONS } from "@/data/locations";
+import countryTaxData from "@/data/countryTax.json";
 import type { OnboardingData } from "@/types/onboarding";
+
+export interface CountryTax {
+  income: number;
+  topMarginal: number;
+  capitalGains: number;
+  corporate: number;
+  vat: number;
+  territorial: boolean;
+  residencyDays: number;
+  specialRegime: string;
+  notes: string;
+  source: string;
+}
+
+const COUNTRY_TAX = countryTaxData as Record<string, CountryTax>;
+
+/** Full researched tax record for a country (PwC/KPMG/OECD-sourced), or null. */
+export function getCountryTaxRecord(country: string): CountryTax | null {
+  if (!country) return null;
+  return COUNTRY_TAX[country.trim()] ?? null;
+}
 
 /**
  * Tax-savings comparison: current tax residence vs the user's #1 match.
@@ -17,6 +39,10 @@ export interface TaxComparison {
   currentKnown: boolean;
   destRate: number; // #1 match income-tax % (place name stays locked)
   destCapitalGainsRate: number;
+  destCorporateRate: number;
+  destTerritorial: boolean;
+  destSpecialRegime: string; // e.g. "Act 60", "IFICI 20% flat" — the wizard touch
+  currentSpecialRegime: string;
   incomeBand: string;
   incomeMidpoint: number;
   /** Naive annual income-tax savings at the midpoint (can be negative = costs more). */
@@ -37,35 +63,8 @@ export function incomeMidpoint(band?: string): number | null {
   return INCOME_BANDS.find((b) => b.value === band)?.midpoint ?? null;
 }
 
-// Representative income-tax rates for common tax-residence countries (effective-ish for
-// a well-paid professional, not top marginal). Overrides the dataset for credibility on
-// the countries most users actually live in. Everything else falls back to dataset data.
-const COUNTRY_TAX_OVERRIDE: Record<string, { income: number; capitalGains: number }> = {
-  "United States": { income: 32, capitalGains: 20 },
-  "United Kingdom": { income: 38, capitalGains: 20 },
-  Canada: { income: 38, capitalGains: 25 },
-  Australia: { income: 37, capitalGains: 23 },
-  Germany: { income: 42, capitalGains: 26 },
-  France: { income: 41, capitalGains: 30 },
-  Netherlands: { income: 40, capitalGains: 31 },
-  Ireland: { income: 40, capitalGains: 33 },
-  Sweden: { income: 45, capitalGains: 30 },
-  Norway: { income: 42, capitalGains: 37 },
-  Denmark: { income: 45, capitalGains: 42 },
-  Spain: { income: 37, capitalGains: 26 },
-  Italy: { income: 38, capitalGains: 26 },
-  Switzerland: { income: 25, capitalGains: 0 },
-  Singapore: { income: 18, capitalGains: 0 },
-  "Hong Kong": { income: 15, capitalGains: 0 },
-  UAE: { income: 0, capitalGains: 0 },
-  Qatar: { income: 0, capitalGains: 0 },
-  Monaco: { income: 0, capitalGains: 0 },
-  "New Zealand": { income: 33, capitalGains: 0 },
-  Japan: { income: 33, capitalGains: 20 },
-  Portugal: { income: 35, capitalGains: 28 },
-};
-
-// Dataset-derived country averages (covers every destination + most home countries).
+// Dataset-derived country averages — last-resort fallback for any country not in the
+// researched table (should be rare; the table covers all destination countries).
 let datasetByCountry: Map<string, { income: number; capitalGains: number }> | null = null;
 function datasetCountryTax(country: string): { income: number; capitalGains: number } | null {
   if (!datasetByCountry) {
@@ -87,8 +86,9 @@ function datasetCountryTax(country: string): { income: number; capitalGains: num
 
 export function getCountryTax(country: string): { income: number; capitalGains: number } | null {
   if (!country) return null;
-  const key = country.trim();
-  return COUNTRY_TAX_OVERRIDE[key] ?? datasetCountryTax(key);
+  const rec = getCountryTaxRecord(country);
+  if (rec) return { income: rec.income, capitalGains: rec.capitalGains };
+  return datasetCountryTax(country.trim());
 }
 
 export function computeTaxComparison(inputs: OnboardingData, dest: Location): TaxComparison | null {
@@ -97,8 +97,12 @@ export function computeTaxComparison(inputs: OnboardingData, dest: Location): Ta
   if (!country || mid === null) return null; // need both to compare
 
   const current = getCountryTax(country);
-  const destRate = dest.personal_income_tax_rate ?? 0;
-  const destCg = dest.capital_gains_tax_rate ?? 0;
+  const currentRec = getCountryTaxRecord(country);
+  // Prefer accurate researched country data for the destination; fall back to the
+  // location's own field only if the country isn't in the table.
+  const destRec = getCountryTaxRecord(dest.country);
+  const destRate = destRec?.income ?? dest.personal_income_tax_rate ?? 0;
+  const destCg = destRec?.capitalGains ?? dest.capital_gains_tax_rate ?? 0;
   const currentRate = current?.income ?? null;
   const annualSavings = currentRate === null ? 0 : Math.round((mid * (currentRate - destRate)) / 100);
 
@@ -108,6 +112,10 @@ export function computeTaxComparison(inputs: OnboardingData, dest: Location): Ta
     currentKnown: current !== null,
     destRate,
     destCapitalGainsRate: destCg,
+    destCorporateRate: destRec?.corporate ?? dest.corporate_tax_rate ?? 0,
+    destTerritorial: destRec?.territorial ?? false,
+    destSpecialRegime: destRec?.specialRegime ?? "",
+    currentSpecialRegime: currentRec?.specialRegime ?? "",
     incomeBand: inputs.annualIncomeBand ?? "",
     incomeMidpoint: mid,
     annualSavings,
@@ -118,7 +126,7 @@ export function computeTaxComparison(inputs: OnboardingData, dest: Location): Ta
 
 /** Country names for the tax-residence picker (dataset countries + common home countries). */
 export const COUNTRY_OPTIONS: string[] = Array.from(
-  new Set([...LOCATIONS.map((l) => l.country), ...Object.keys(COUNTRY_TAX_OVERRIDE)])
+  new Set([...LOCATIONS.map((l) => l.country), ...Object.keys(COUNTRY_TAX)])
 ).sort((a, b) => a.localeCompare(b));
 
 export function formatMoney(n: number): string {

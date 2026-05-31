@@ -10,7 +10,8 @@ import { PlacePhoto } from "@/components/places/PlacePhoto";
 import { PlaceProfile } from "@/components/places/PlaceProfile";
 import { AffiliateCard } from "@/components/affiliates/AffiliateCard";
 import { getPartner } from "@/lib/affiliates";
-import { ArrowRight, Coins } from "lucide-react";
+import { getCountryTaxRecord } from "@/lib/tax";
+import { ArrowRight, Coins, Globe2 } from "lucide-react";
 
 export function generateStaticParams() {
   return LOCATIONS.map((l) => ({ id: l.id }));
@@ -106,19 +107,54 @@ export default async function PlacePage({ params }: { params: Promise<{ id: stri
         })}
       </div>
 
-      {/* Tax snapshot */}
-      <div className="mt-6 rounded-xl border border-border bg-card p-5">
-        <h3 className="flex items-center gap-2 text-base font-semibold">
-          <Coins className="size-4 text-accent" /> Tax snapshot
-        </h3>
-        <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-          <TaxStat label="Income" v={loc.personal_income_tax_rate} />
-          <TaxStat label="Corporate" v={loc.corporate_tax_rate} />
-          <TaxStat label="Capital gains" v={loc.capital_gains_tax_rate} />
-        </div>
-        {loc.tax_notes && <p className="mt-3 text-sm text-muted-foreground">{loc.tax_notes}</p>}
-        <p className="mt-2 text-[11px] text-muted-foreground">Estimate — not tax advice.</p>
-      </div>
+      {/* Tax snapshot — accurate country data (PwC/KPMG-sourced) */}
+      {(() => {
+        const ct = getCountryTaxRecord(loc.country);
+        const incomeV = ct?.income ?? loc.personal_income_tax_rate;
+        const corpV = ct?.corporate ?? loc.corporate_tax_rate;
+        const cgV = ct?.capitalGains ?? loc.capital_gains_tax_rate;
+        return (
+          <div className="mt-6 rounded-xl border border-border bg-card p-5">
+            <h3 className="flex items-center gap-2 text-base font-semibold">
+              <Coins className="size-4 text-accent" /> Tax in {loc.country}
+            </h3>
+            <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+              <TaxStat label="Income (typical)" v={incomeV} />
+              <TaxStat label="Capital gains" v={cgV} />
+              <TaxStat label="Corporate" v={corpV} />
+            </div>
+            {ct && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {ct.territorial && (
+                  <Badge variant="secondary">
+                    <Globe2 className="size-3" /> Territorial — foreign income often untaxed
+                  </Badge>
+                )}
+                {ct.vat ? <Badge variant="outline">VAT {ct.vat}%</Badge> : null}
+                {ct.residencyDays ? <Badge variant="outline">{ct.residencyDays}-day residency rule</Badge> : null}
+              </div>
+            )}
+            {ct?.specialRegime && (
+              <p className="mt-3 text-sm">
+                <span className="font-semibold text-secondary">Special regime:</span>{" "}
+                <span className="text-muted-foreground">{ct.specialRegime}</span>
+              </p>
+            )}
+            {ct?.notes && <p className="mt-2 text-sm text-muted-foreground">{ct.notes}</p>}
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              Representative estimate — not tax advice.
+              {ct?.source ? (
+                <>
+                  {" · "}
+                  <a href={ct.source} target="_blank" rel="noopener noreferrer" className="underline">
+                    source
+                  </a>
+                </>
+              ) : null}
+            </p>
+          </div>
+        );
+      })()}
 
       {/* Make the move — contextual affiliate CTAs */}
       <h2 className="mt-8 text-lg font-bold tracking-tight">Make the move to {loc.name}</h2>
