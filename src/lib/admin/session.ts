@@ -60,8 +60,10 @@ export async function isAdmin(): Promise<boolean> {
 }
 
 export function checkAdminPassword(input: string): boolean {
-  const expected = process.env.ADMIN_PASSWORD;
-  if (!expected) return false; // Refuse to authenticate if no password is configured.
+  // TEMPORARY: defaults to "password" so /admin works on prod without dashboard setup.
+  // ⚠️ Set a real ADMIN_PASSWORD (and SESSION_SECRET) in Vercel before there's real
+  // money/data — the repo is public, so the default secret is not safe long-term.
+  const expected = process.env.ADMIN_PASSWORD || "password";
   // Constant-time-ish comparison
   if (input.length !== expected.length) return false;
   let diff = 0;
