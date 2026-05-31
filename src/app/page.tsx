@@ -11,6 +11,8 @@ import {
   Activity,
   Compass,
   Camera,
+  Home,
+  Route,
 } from "lucide-react";
 
 export default function LandingPage() {
@@ -31,7 +33,7 @@ export default function LandingPage() {
         <div className="mx-auto w-full max-w-5xl px-4 pb-16 pt-14 sm:pt-20">
           <div className="mx-auto flex max-w-2xl flex-col items-center text-center">
             <Badge variant="primary" className="mb-5 animate-fade-in">
-              <Sparkles className="size-3" /> Where you live changes everything
+              <Sparkles className="size-3" /> Your ideal place in under a minute
             </Badge>
             <h1 className="animate-fade-up text-balance text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
               The biggest decision
@@ -39,10 +41,12 @@ export default function LandingPage() {
               you&apos;re <span className="text-gradient">not really making.</span>
             </h1>
             <p className="animate-fade-up mt-5 max-w-xl text-pretty text-base text-muted-foreground sm:text-lg">
-              The place you live shapes your income, your relationships, your health — who you
-              become. Yet most people end up somewhere by accident. We match you against{" "}
+              Where you live shapes your income, your relationships, your health — who you become.
+              Yet most people end up somewhere by accident. In{" "}
+              <span className="font-semibold text-foreground">under a minute</span>, we match you
+              against{" "}
               <span className="font-semibold text-foreground">250 of the best places on Earth</span>{" "}
-              and show you the one that actually fits you.
+              and show you the one that fits you best — then go as deep as you want.
             </p>
 
             <div className="animate-fade-up mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
@@ -54,7 +58,7 @@ export default function LandingPage() {
             </div>
 
             <p className="mt-4 text-xs text-muted-foreground">
-              Takes 30 seconds · free to start · <LiveCounter /> people matched
+              Under 60 seconds · free to start · <LiveCounter /> people matched
             </p>
           </div>
         </div>
@@ -91,22 +95,27 @@ export default function LandingPage() {
 
       {/* How it works */}
       <section className="mx-auto w-full max-w-5xl px-4 py-8">
-        <h2 className="text-center text-2xl font-bold tracking-tight sm:text-3xl">How it works</h2>
+        <h2 className="text-center text-2xl font-bold tracking-tight sm:text-3xl">
+          Fast first. Deep when you want.
+        </h2>
+        <p className="mx-auto mt-2 max-w-md text-center text-sm text-muted-foreground">
+          A great match in under a minute — then a deeper dive for a read that really nails you.
+        </p>
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           <StepCard
             n={1}
-            title="Show us who you are"
-            body="Let your own AI describe you, upload an Instagram screenshot for the vibe, or take a 60-second quiz — then tell us where you live now."
+            title="Start fast — under a minute"
+            body="Let your AI describe you, drop an Instagram screenshot, or tap a few quick questions. Tell us where you live now."
           />
           <StepCard
             n={2}
-            title="See your real fit"
-            body="Get an honest score on the city you're in today — and exactly how your life could change somewhere that fits you better."
+            title="See your ideal place, instantly"
+            body="Your top match, your current-city fit, and how your life could change — free, in seconds."
           />
           <StepCard
             n={3}
-            title="Meet your place"
-            body="Unlock the #1 place on Earth that fits you, your full ranking of all 250, and the steps to actually get there."
+            title="Go deeper for the bullseye"
+            body="The deeper-dive quiz reads who you are in detail — then unlock your #1 by name, the full 250 ranking, and your move plan."
           />
         </div>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-2 text-xs text-muted-foreground">
@@ -136,6 +145,38 @@ export default function LandingPage() {
             The <span className="font-semibold text-foreground">name</span> of your place is the
             reveal.
           </p>
+        </div>
+      </section>
+
+      {/* Rooted or nomadic — the circuit */}
+      <section className="mx-auto w-full max-w-5xl px-4 py-8">
+        <h2 className="mx-auto max-w-xl text-balance text-center text-2xl font-bold tracking-tight sm:text-3xl">
+          One home, or the whole world?
+        </h2>
+        <p className="mx-auto mt-2 max-w-md text-center text-sm text-muted-foreground">
+          Tell us how you want to live — we match the plan to you.
+        </p>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          <div className="rounded-xl border border-border bg-card p-6">
+            <div className="mb-4 grid size-10 place-items-center rounded-lg bg-secondary/15 text-secondary">
+              <Home className="size-5" />
+            </div>
+            <h3 className="text-lg font-semibold">Rooted</h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              Want a home base? We pinpoint the single best place on Earth for you to put down roots —
+              and show you how it beats where you live now.
+            </p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-6">
+            <div className="mb-4 grid size-10 place-items-center rounded-lg bg-primary/15 text-primary">
+              <Route className="size-5" />
+            </div>
+            <h3 className="text-lg font-semibold">Nomadic</h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              Built to roam? We design a year-round circuit across multiple places that follows your
+              ideal weather — where to be each month, and why.
+            </p>
+          </div>
         </div>
       </section>
 

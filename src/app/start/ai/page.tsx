@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { AI_PROFILE_PROMPT } from "@/lib/aiPrompt";
+import { copyText } from "@/lib/utils";
 import { loadDraft } from "@/lib/draft";
 import { useScoreSubmit } from "@/lib/useScoreSubmit";
 import type { OnboardingData } from "@/types/onboarding";
@@ -24,15 +25,16 @@ export default function AiProfilePage() {
   const [readback, setReadback] = useState<Readback[]>([]);
   const [usedModel, setUsedModel] = useState(false);
   const { submit, submitting, error } = useScoreSubmit();
+  const promptRef = useRef<HTMLTextAreaElement>(null);
 
   async function copyPrompt() {
-    try {
-      await navigator.clipboard.writeText(AI_PROFILE_PROMPT);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      /* clipboard blocked */
-    }
+    // Select the on-screen text first: makes the execCommand fallback reliable and
+    // leaves the prompt highlighted so the user can copy manually if the API is blocked.
+    promptRef.current?.focus();
+    promptRef.current?.select();
+    const ok = await copyText(AI_PROFILE_PROMPT);
+    setCopied(ok);
+    if (ok) setTimeout(() => setCopied(false), 2200);
   }
 
   async function normalize() {
@@ -81,9 +83,15 @@ export default function AiProfilePage() {
             </p>
 
             <div className="relative mt-4 rounded-xl border border-border bg-card p-4">
-              <pre className="max-h-56 overflow-auto whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
-                {AI_PROFILE_PROMPT}
-              </pre>
+              <textarea
+                ref={promptRef}
+                readOnly
+                value={AI_PROFILE_PROMPT}
+                onFocus={(e) => e.currentTarget.select()}
+                rows={9}
+                aria-label="Prompt to copy"
+                className="max-h-56 w-full resize-none overflow-auto rounded-md bg-transparent pr-20 font-mono text-xs leading-relaxed text-muted-foreground focus:outline-none"
+              />
               <Button
                 size="sm"
                 variant={copied ? "secondary" : "muted"}
@@ -94,6 +102,18 @@ export default function AiProfilePage() {
                 {copied ? "Copied" : "Copy"}
               </Button>
             </div>
+
+            <Button variant="gradient" className="mt-3 w-full" size="lg" onClick={copyPrompt}>
+              {copied ? (
+                <>
+                  <Check className="size-4" /> Copied — now paste it into ChatGPT or Claude
+                </>
+              ) : (
+                <>
+                  <Copy className="size-4" /> Copy the prompt
+                </>
+              )}
+            </Button>
 
             <h2 className="mt-8 text-lg font-semibold">Step 2 — paste what it wrote</h2>
             <Textarea
