@@ -177,7 +177,7 @@ describe("computeLifeChange", () => {
   it("returns 6 current-vs-best buckets (incl. Cost and Safety) with deltas", () => {
     const fit = scoreCurrentCity("London", LOCATIONS, PROFILES.budgetNomadBeach);
     const top = scoreLocations(LOCATIONS, PROFILES.budgetNomadBeach)[0];
-    const lc = computeLifeChange(fit, top.categoryScores, top.totalScore);
+    const lc = computeLifeChange(fit, top.categoryScores, top.displayScore);
     expect(lc.categories.map((c) => c.label).sort()).toEqual([
       "Career & Opportunity",
       "Community Fit",
@@ -196,8 +196,8 @@ describe("computeLifeChange", () => {
       expect(c.delta).toBe(c.best - c.current);
       expect(typeof c.note).toBe("string");
     }
-    // headline overall uses the real fit scores (same scale as the #1 match total)
-    expect(lc.bestScore).toBe(top.totalScore);
+    // headline overall uses the HONEST display score (same formula both sides)
+    expect(lc.bestScore).toBe(top.displayScore);
     expect(lc.overallDelta).toBe(lc.bestScore - lc.currentScore);
     expect(lc.headline.length).toBeGreaterThan(0);
   });
@@ -205,8 +205,8 @@ describe("computeLifeChange", () => {
   it("is deterministic", () => {
     const fit = scoreCurrentCity("London", LOCATIONS, PROFILES.mountainsCold);
     const top = scoreLocations(LOCATIONS, PROFILES.mountainsCold)[0];
-    expect(JSON.stringify(computeLifeChange(fit, top.categoryScores, top.totalScore))).toBe(
-      JSON.stringify(computeLifeChange(fit, top.categoryScores, top.totalScore))
+    expect(JSON.stringify(computeLifeChange(fit, top.categoryScores, top.displayScore))).toBe(
+      JSON.stringify(computeLifeChange(fit, top.categoryScores, top.displayScore))
     );
   });
 });

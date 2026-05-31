@@ -42,10 +42,13 @@ export function buildScoredRun(opts: {
     personality: buildPersonalityRead(inputs),
     currentCityFit,
     categoryAverages,
-    lifeChange: computeLifeChange(currentCityFit, top.categoryScores, top.totalScore),
+    // Comparison + tease use the HONEST displayScore (same formula as currentCityFit),
+    // so the headline number is consistent with the bucket breakdown the user sees.
+    // The internal ranking (top.totalScore) still uses the alignment bonus to pick #1.
+    lifeChange: computeLifeChange(currentCityFit, top.categoryScores, top.displayScore),
     confidence: computeConfidence(inputs, matches),
     taxComparison: computeTaxComparison(inputs, top.location),
-    topTease: { score: top.totalScore, continent: top.location.continent, region: top.location.region },
+    topTease: { score: top.displayScore, continent: top.location.continent, region: top.location.region },
     ranking: matches.map(toRankedPlace),
     circuit,
     topCount: matches.length,

@@ -74,7 +74,10 @@ export function toRankedPlace(r: MatchResult): RankedPlace {
     country: r.location.country,
     continent: r.location.continent,
     region: r.location.region,
-    totalScore: r.totalScore,
+    // The DISPLAYED score uses the same honest formula as the current-city fit, so the
+    // bucket breakdown and the headline number tell the same story. Rank order is still
+    // based on the alignment-bonused score internally.
+    totalScore: r.displayScore,
     reasons: r.reasons,
     tradeoffs: r.tradeoffs,
     categoryScores: r.categoryScores.map((c) => ({ category: c.category, label: c.label, score: Math.round(c.score) })),

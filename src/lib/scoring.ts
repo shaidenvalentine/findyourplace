@@ -66,7 +66,10 @@ export interface CategoryScore {
 
 export interface MatchResult {
   location: Location;
+  /** Ranking-only score (includes alignment bonus + deal-breaker). NOT shown to users. */
   totalScore: number;
+  /** Honest score for display + comparison — same formula used for current-city fit. */
+  displayScore: number;
   categoryScores: CategoryScore[];
   reasons: string[];
   tradeoffs: string[];
@@ -628,6 +631,16 @@ export function calculateTotalScore(categoryScores: CategoryScore[]): number {
   return Math.round((weightedSum / totalWeight) * 100) / 100;
 }
 
+/**
+ * The HONEST display score — same formula used for both the current city and the best
+ * match. No alignment bonus, no deal-breaker penalty (those are for internal RANKING).
+ * This is what users see anywhere we compare two places, so the math is consistent: if
+ * the buckets favor side A, the overall score will too.
+ */
+export function calculateDisplayScore(categoryScores: CategoryScore[]): number {
+  return spreadScore(calculateTotalScore(categoryScores));
+}
+
 export function scoreLocations(locations: Location[], preferences: OnboardingData): MatchResult[] {
   const results: MatchResult[] = locations.map((location) => {
     const categoryScores = calculateCategoryScores(location, preferences);
@@ -650,6 +663,7 @@ export function scoreLocations(locations: Location[], preferences: OnboardingDat
     return {
       location,
       totalScore,
+      displayScore: calculateDisplayScore(categoryScores),
       categoryScores,
       reasons,
       tradeoffs,
