@@ -15,7 +15,10 @@ const SITE = {
     "Where you live shapes your income, your relationships, your health — who you become. Most people choose it by accident. We match you against 250 of the best places on Earth and show you the one that fits you best.",
 };
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://findyourplace.app";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: { default: `${SITE.name} — ${SITE.tagline}`, template: `%s · ${SITE.name}` },
   description: SITE.description,
   applicationName: SITE.name,
@@ -23,6 +26,8 @@ export const metadata: Metadata = {
     title: `${SITE.name} — ${SITE.tagline}`,
     description: SITE.description,
     type: "website",
+    url: SITE_URL,
+    siteName: SITE.name,
   },
   twitter: { card: "summary_large_image", title: SITE.name, description: SITE.description },
 };
