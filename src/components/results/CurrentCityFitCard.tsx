@@ -1,9 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScoreRing } from "./ScoreRing";
 import type { CurrentCityScore } from "@/lib/scoring";
+import { titleCase } from "@/lib/utils";
 import { MapPin } from "lucide-react";
 
 export function CurrentCityFitCard({ city, fit }: { city: string; fit: CurrentCityScore }) {
+  const displayCity = city?.trim() ? titleCase(city.trim()) : "where you live now";
   const verdict =
     fit.score >= 80 ? "You're already living a great fit." : fit.score >= 60 ? "A decent fit — but not your best." : "There's a better fit out there for you.";
 
@@ -12,7 +14,7 @@ export function CurrentCityFitCard({ city, fit }: { city: string; fit: CurrentCi
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <MapPin className="size-4 text-primary" />
-          How {city?.trim() ? city : "where you live now"} fits you
+          How {displayCity} fits you
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">

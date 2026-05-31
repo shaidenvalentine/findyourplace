@@ -29,6 +29,11 @@ export interface LifeChange {
 
 const BUCKETS: { label: string; parts: { category: string; weight: number }[]; note: (d: number) => string }[] = [
   {
+    label: "Cost & Value",
+    parts: [{ category: "cost", weight: 1.0 }],
+    note: (d) => (d > 0 ? "your money goes a lot further" : "you'd pay a bit more for what you get"),
+  },
+  {
     label: "Lifestyle Fit",
     parts: [
       { category: "lifestyle", weight: 0.5 },
@@ -51,6 +56,11 @@ const BUCKETS: { label: string; parts: { category: string; weight: number }[]; n
       { category: "climate", weight: 0.4 },
     ],
     note: (d) => (d > 0 ? "the outdoors at your door" : "a small trade for everything else"),
+  },
+  {
+    label: "Safety & Stability",
+    parts: [{ category: "safety", weight: 1.0 }],
+    note: (d) => (d > 0 ? "more peace of mind, day to day" : "a small dip in how secure things feel"),
   },
   {
     label: "Career & Opportunity",

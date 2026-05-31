@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { getRun, isUnlocked } from "@/lib/server/runStore";
 import { LOCATIONS } from "@/data/locations";
 import { formatMoney } from "@/lib/tax";
+import { titleCase } from "@/lib/utils";
 
 /**
  * Dynamic share images — a "Wrapped"-style swipeable set, each 1080×1920 for stories.
@@ -81,7 +82,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ runId: s
   const tc = run.taxComparison;
   const top = run.ranking[0];
   const loc = LOCATIONS.find((l) => l.id === top?.id);
-  const here = run.currentCity?.trim() || "where I live now";
+  const here = run.currentCity?.trim() ? titleCase(run.currentCity.trim()) : "where I live now";
 
   // ── OG link-unfurl (compact 1200×630): the gap ──────────────────────────────
   if (isOg) {

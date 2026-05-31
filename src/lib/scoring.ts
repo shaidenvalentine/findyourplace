@@ -713,36 +713,17 @@ export function scoreCurrentCity(
     // Just spread the score normally
     totalScore = spreadScore(totalScore);
 
-    // Simplify to 4 main categories for the UI
+    // Simplify to 6 main categories for the UI — covers the dimensions that actually
+    // drive most matches (cost and safety are missing from a 4-bucket view and that hides
+    // why a #1 is a #1 for tax-sensitive / budget / safety-first users).
+    const get = (cat: string) => categoryScores.find((c) => c.category === cat)?.score || 50;
     const simplifiedScores = [
-      {
-        label: "Lifestyle Fit",
-        score: Math.round(
-          (categoryScores.find((c) => c.category === "lifestyle")?.score || 50) * 0.5 +
-            (categoryScores.find((c) => c.category === "wellness")?.score || 50) * 0.5
-        ),
-      },
-      {
-        label: "Community Fit",
-        score: Math.round(
-          (categoryScores.find((c) => c.category === "community")?.score || 50) * 0.6 +
-            (categoryScores.find((c) => c.category === "culture")?.score || 50) * 0.4
-        ),
-      },
-      {
-        label: "Nature & Environment",
-        score: Math.round(
-          (categoryScores.find((c) => c.category === "nature")?.score || 50) * 0.6 +
-            (categoryScores.find((c) => c.category === "climate")?.score || 50) * 0.4
-        ),
-      },
-      {
-        label: "Career & Opportunity",
-        score: Math.round(
-          (categoryScores.find((c) => c.category === "career")?.score || 50) * 0.7 +
-            (categoryScores.find((c) => c.category === "travel")?.score || 50) * 0.3
-        ),
-      },
+      { label: "Cost & Value", score: Math.round(get("cost")) },
+      { label: "Lifestyle Fit", score: Math.round(get("lifestyle") * 0.5 + get("wellness") * 0.5) },
+      { label: "Community Fit", score: Math.round(get("community") * 0.6 + get("culture") * 0.4) },
+      { label: "Nature & Environment", score: Math.round(get("nature") * 0.6 + get("climate") * 0.4) },
+      { label: "Safety & Stability", score: Math.round(get("safety")) },
+      { label: "Career & Opportunity", score: Math.round(get("career") * 0.7 + get("travel") * 0.3) },
     ];
 
     return {
@@ -769,9 +750,11 @@ export function scoreCurrentCity(
   return {
     score: baseScore,
     categoryScores: [
+      { label: "Cost & Value", score: 48 + ((cityHash * 11) % 18) },
       { label: "Lifestyle Fit", score: 45 + ((cityHash * 7) % 15) },
       { label: "Community Fit", score: 50 + ((cityHash * 13) % 10) },
       { label: "Nature & Environment", score: 40 + ((cityHash * 17) % 20) },
+      { label: "Safety & Stability", score: 55 + ((cityHash * 19) % 18) },
       { label: "Career & Opportunity", score: 50 + ((cityHash * 23) % 15) },
     ],
     cityFound: false,

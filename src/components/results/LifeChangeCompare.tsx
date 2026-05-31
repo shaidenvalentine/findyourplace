@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { LifeChange } from "@/lib/lifeChange";
+import { titleCase } from "@/lib/utils";
 import { TrendingUp, ArrowRight } from "lucide-react";
 
 /**
@@ -8,7 +9,7 @@ import { TrendingUp, ArrowRight } from "lucide-react";
  * city and their (still-unnamed) #1 match — overall and by category.
  */
 export function LifeChangeCompare({ city, lifeChange }: { city: string; lifeChange: LifeChange }) {
-  const here = city?.trim() || "where you live now";
+  const here = city?.trim() ? titleCase(city.trim()) : "where you live now";
   return (
     <Card className="overflow-hidden">
       <CardHeader>

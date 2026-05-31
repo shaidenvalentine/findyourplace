@@ -155,7 +155,7 @@ describe("scoreCurrentCity", () => {
     const b = scoreCurrentCity("bali", LOCATIONS, PROFILES.budgetNomadBeach);
     expect(a.cityFound).toBe(true);
     expect(a.score).toBe(b.score);
-    expect(a.categoryScores.length).toBe(4);
+    expect(a.categoryScores.length).toBe(6);
   });
 
   it("maps Bali neighborhoods to Bali", () => {
@@ -174,15 +174,17 @@ describe("scoreCurrentCity", () => {
 });
 
 describe("computeLifeChange", () => {
-  it("returns the 4 current-vs-best buckets with deltas", () => {
+  it("returns 6 current-vs-best buckets (incl. Cost and Safety) with deltas", () => {
     const fit = scoreCurrentCity("London", LOCATIONS, PROFILES.budgetNomadBeach);
     const top = scoreLocations(LOCATIONS, PROFILES.budgetNomadBeach)[0];
     const lc = computeLifeChange(fit, top.categoryScores, top.totalScore);
     expect(lc.categories.map((c) => c.label).sort()).toEqual([
       "Career & Opportunity",
       "Community Fit",
+      "Cost & Value",
       "Lifestyle Fit",
       "Nature & Environment",
+      "Safety & Stability",
     ]);
     // sorted by delta descending (biggest gains first)
     for (let i = 1; i < lc.categories.length; i++) {

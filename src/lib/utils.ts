@@ -19,6 +19,14 @@ export function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
+/** Title-case a place name the user typed (e.g. "san diego" → "San Diego"). */
+export function titleCase(value: string): string {
+  if (!value) return value;
+  return value
+    .toLowerCase()
+    .replace(/(^|[\s\-'/])(\p{L})/gu, (_, sep, ch) => sep + ch.toUpperCase());
+}
+
 /**
  * Copy text to the clipboard with a resilient fallback. The async Clipboard API is
  * blocked in non-secure contexts and some embedded/iframe views, so we fall back to a
