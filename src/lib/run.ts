@@ -11,6 +11,8 @@ export interface ScoredRun {
   currentCity: string;
   inputs: OnboardingData;
   source: "quiz" | "ai-profile";
+  /** Creator who referred this run (attribution cookie). Set when run is created. */
+  creatorId?: string | null;
   personality: PersonalityRead;
   currentCityFit: CurrentCityScore;
   /** Category bars for the user's profile (averaged across the top matches). */

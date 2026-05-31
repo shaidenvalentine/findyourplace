@@ -3,6 +3,8 @@ import { LOCATIONS } from "@/data/locations";
 import { buildScoredRun } from "@/lib/buildRun";
 import { toFreeRun } from "@/lib/run";
 import { putRun } from "@/lib/server/runStore";
+import { getAttributedCreator } from "@/lib/creators/attribution";
+import { getCreatorStore } from "@/lib/creators/store";
 import type { OnboardingData } from "@/types/onboarding";
 
 /**
@@ -29,6 +31,14 @@ export async function POST(req: NextRequest) {
     inputs: body.inputs ?? {},
     source: body.source === "ai-profile" ? "ai-profile" : "quiz",
   });
+
+  // Tag the run with the referring creator (if attribution cookie is set), and log the
+  // click as a "link" source so we can see real conversion funnels per creator.
+  const creator = await getAttributedCreator();
+  if (creator) {
+    run.creatorId = creator.id;
+    await getCreatorStore().recordClick({ creatorId: creator.id, source: "link", referrer: null });
+  }
 
   putRun(run);
   return NextResponse.json({ runId: run.runId, free: toFreeRun(run) });

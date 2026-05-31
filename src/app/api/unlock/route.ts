@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRun, putRun, markUnlocked } from "@/lib/server/runStore";
 import { buildScoredRun } from "@/lib/buildRun";
-import { isStripeConfigured } from "@/lib/pricing";
+import { isStripeConfigured, PRICE_CENTS } from "@/lib/pricing";
+import { getCreatorStore } from "@/lib/creators/store";
 import type { OnboardingData } from "@/types/onboarding";
 
 /**
@@ -35,5 +36,24 @@ export async function POST(req: NextRequest) {
   }
 
   markUnlocked(runId);
+
+  // Record the creator conversion (dev mode — simulated unlock). In production this
+  // happens in the Stripe webhook instead so it's tied to verified payment.
+  const run = getRun(runId);
+  if (run?.creatorId) {
+    const creator = await getCreatorStore().getCreatorById(run.creatorId);
+    if (creator) {
+      await getCreatorStore().recordConversion({
+        creatorId: creator.id,
+        runId,
+        stripeSessionId: null,
+        email: null,
+        amountCents: PRICE_CENTS,
+        creatorCutCents: Math.round((PRICE_CENTS * creator.revSharePct) / 100),
+        status: "pending",
+      });
+    }
+  }
+
   return NextResponse.json({ unlocked: true, dev: true });
 }

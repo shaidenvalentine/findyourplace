@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { markUnlocked } from "@/lib/server/runStore";
+import { getRun, markUnlocked } from "@/lib/server/runStore";
+import { getCreatorStore } from "@/lib/creators/store";
 
 /**
- * Stripe webhook — the SERVER-VERIFIED source of truth for unlocks. On a verified
- * `checkout.session.completed`, we unlock the run named in the session metadata.
- * Never trust a client flag; this is the only unlock path in production.
+ * Stripe webhook — the SERVER-VERIFIED source of truth for unlocks.
+ *
+ * On a verified `checkout.session.completed`:
+ *   1. Mark the run unlocked
+ *   2. If the run was attributed to a creator, record the conversion (50% cut by default)
+ *      — using the Stripe session ID as the idempotency key so webhook retries don't
+ *      double-credit.
  *
  * Set STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET, and point a Stripe webhook at
  * /api/stripe/webhook.
@@ -36,8 +41,26 @@ export async function POST(req: NextRequest) {
     const session = event.data.object as import("stripe").Stripe.Checkout.Session;
     const runId = session.metadata?.runId;
     if (runId && session.payment_status === "paid") {
-      // TODO(Phase 4): also upsert `unlocked_results` row in Supabase here.
       markUnlocked(runId);
+
+      // Record the creator conversion (50% cut by default).
+      const run = getRun(runId);
+      if (run?.creatorId) {
+        const store = getCreatorStore();
+        const creator = await store.getCreatorById(run.creatorId);
+        if (creator && session.id) {
+          const amountCents = session.amount_total ?? 1900;
+          await store.recordConversion({
+            creatorId: creator.id,
+            runId,
+            stripeSessionId: session.id, // idempotency key — webhook retries are safe
+            email: session.customer_details?.email ?? null,
+            amountCents,
+            creatorCutCents: Math.round((amountCents * creator.revSharePct) / 100),
+            status: "pending",
+          });
+        }
+      }
     }
   }
 
