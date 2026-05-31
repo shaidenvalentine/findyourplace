@@ -16,6 +16,8 @@ export interface ScoredRun {
   categoryAverages: { label: string; score: number }[];
   /** Current city vs #1 match — the free "how your life could change" comparison. */
   lifeChange: LifeChange;
+  /** 0–100 match confidence; climbs as the user answers the deeper quiz. */
+  confidence: number;
   /** The locked #1 tease — shape of the answer, never the name (free surface). */
   topTease: {
     score: number;

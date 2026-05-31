@@ -11,16 +11,25 @@ export function LockedTopMatch({
   score,
   continent,
   region,
+  confidence,
 }: {
   score: number;
   continent: string;
   region: string | null;
+  confidence?: number;
 }) {
   return (
     <div className="bg-aurora relative overflow-hidden rounded-2xl border border-primary/30 p-6 text-center">
-      <Badge variant="primary" className="mx-auto mb-4 w-fit">
-        Your #1 match
-      </Badge>
+      <div className="mb-4 flex items-center justify-center gap-2">
+        <Badge variant="primary" className="w-fit">
+          Your #1 match
+        </Badge>
+        {typeof confidence === "number" && (
+          <Badge variant="outline" className="w-fit">
+            {confidence}% confidence
+          </Badge>
+        )}
+      </div>
 
       <div className="relative mx-auto w-fit">
         <ScoreRing score={score} size={150} label="match" />

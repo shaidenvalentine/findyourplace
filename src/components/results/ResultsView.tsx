@@ -11,6 +11,7 @@ import { CategoryBars } from "./CategoryBars";
 import { CurrentCityFitCard } from "./CurrentCityFitCard";
 import { LifeChangeCompare } from "./LifeChangeCompare";
 import { LockedTopMatch } from "./LockedTopMatch";
+import { DeepenMatch } from "./DeepenMatch";
 import { Paywall } from "./Paywall";
 import { PaidReveal } from "./PaidReveal";
 import { ShareToStory } from "./ShareToStory";
@@ -118,7 +119,9 @@ export function ResultsView({ runId }: { runId: string }) {
               score={free.topTease.score}
               continent={free.topTease.continent}
               region={free.topTease.region}
+              confidence={free.confidence}
             />
+            <DeepenMatch free={free} onRefined={setFree} />
             <div className="rounded-2xl border border-border bg-card p-5 text-center">
               <p className="mb-1 text-sm font-medium">Pull your friends in 👀</p>
               <p className="mb-3 text-xs text-muted-foreground">

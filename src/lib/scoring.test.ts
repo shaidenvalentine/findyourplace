@@ -8,6 +8,7 @@ import {
 } from "./scoring";
 import { generateAnnualCircuit } from "./circuitGenerator";
 import { computeLifeChange } from "./lifeChange";
+import { computeConfidence } from "./confidence";
 import { LOCATIONS } from "@/data/locations";
 import type { OnboardingData } from "@/types/onboarding";
 
@@ -205,6 +206,39 @@ describe("computeLifeChange", () => {
     expect(JSON.stringify(computeLifeChange(fit, top.categoryScores, top.totalScore))).toBe(
       JSON.stringify(computeLifeChange(fit, top.categoryScores, top.totalScore))
     );
+  });
+});
+
+describe("computeConfidence", () => {
+  it("climbs as more dimensions are answered, within [40,98]", () => {
+    const few: OnboardingData = { currentCity: "London", beachMountain: "beach" };
+    const many: OnboardingData = {
+      ...few,
+      preferredClimate: "tropical",
+      budgetRange: "budget",
+      workStyle: "remote",
+      wellnessImportance: "high",
+      dailyRoutine: "night-owl",
+      airportImportance: "essential",
+      riskTolerance: "high",
+      industries: ["tech"],
+      healthcarePriority: "essential",
+      cultureTolerance: "important",
+      outdoorUrban: "urban",
+      peopleDensity: "dense",
+      familyProximity: "close",
+      safetyPriority: "top-priority",
+      taxSensitivity: "very-sensitive",
+      communityVibes: ["digital-nomad"],
+      noiseTolerance: "high",
+      lifestyleMode: "nomadic",
+      mustHaves: ["beach"],
+    };
+    const cFew = computeConfidence(few, scoreLocations(LOCATIONS, few));
+    const cMany = computeConfidence(many, scoreLocations(LOCATIONS, many));
+    expect(cFew).toBeGreaterThanOrEqual(40);
+    expect(cMany).toBeLessThanOrEqual(98);
+    expect(cMany).toBeGreaterThan(cFew + 10);
   });
 });
 

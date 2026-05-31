@@ -134,3 +134,124 @@ export const QUIZ: QuizQuestion[] = [
     ],
   },
 ];
+
+/**
+ * The DEEP dive — the high-impact dimensions the quick path doesn't capture. Surfaced
+ * AFTER the first result as the "sharpen your match" lever. The client only asks the
+ * questions we don't already know the answer to (from the AI/IG/quick-quiz inputs), so
+ * it never feels redundant. Every answer re-scores the run and climbs match confidence.
+ */
+export const DEEP_QUIZ: QuizQuestion[] = [
+  {
+    key: "dailyRoutine",
+    title: "When do you come alive?",
+    type: "single",
+    options: [
+      { value: "early-bird", label: "Early mornings", emoji: "🌅" },
+      { value: "balanced", label: "Middle of the day", emoji: "🌤️" },
+      { value: "night-owl", label: "Late nights", emoji: "🌙" },
+    ],
+  },
+  {
+    key: "outdoorUrban",
+    title: "City energy or open space?",
+    type: "single",
+    options: [
+      { value: "urban", label: "In the middle of it", emoji: "🏙️" },
+      { value: "balanced", label: "A bit of both", emoji: "🌳" },
+      { value: "outdoor", label: "Out in nature", emoji: "⛰️" },
+    ],
+  },
+  {
+    key: "peopleDensity",
+    title: "Your ideal density?",
+    type: "single",
+    options: [
+      { value: "dense", label: "Dense & buzzing", emoji: "🚇" },
+      { value: "mid", label: "Mid-size", emoji: "🏘️" },
+      { value: "spacious", label: "Room to breathe", emoji: "🌾" },
+    ],
+  },
+  {
+    key: "wellnessImportance",
+    title: "How central is fitness & wellness?",
+    type: "single",
+    options: [
+      { value: "high", label: "It's my lifestyle", emoji: "🏋️" },
+      { value: "medium", label: "I keep it up", emoji: "🚴" },
+      { value: "low", label: "Not a priority", emoji: "🛋️" },
+    ],
+  },
+  {
+    key: "healthcarePriority",
+    title: "Top-tier healthcare nearby?",
+    type: "single",
+    options: [
+      { value: "essential", label: "Essential", emoji: "🏥" },
+      { value: "nice", label: "Nice to have", emoji: "🩺" },
+      { value: "low", label: "Not worried", emoji: "🤙" },
+    ],
+  },
+  {
+    key: "airportImportance",
+    title: "How important is a major airport?",
+    type: "single",
+    options: [
+      { value: "essential", label: "I fly constantly", emoji: "✈️" },
+      { value: "important", label: "Fairly important", emoji: "🛫" },
+      { value: "low", label: "I stay put", emoji: "🧳" },
+    ],
+  },
+  {
+    key: "cultureTolerance",
+    title: "Open, progressive culture matters…",
+    type: "single",
+    options: [
+      { value: "important", label: "A lot", emoji: "🌈" },
+      { value: "somewhat", label: "Somewhat", emoji: "🙂" },
+      { value: "neutral", label: "I'm easy", emoji: "🤷" },
+    ],
+  },
+  {
+    key: "riskTolerance",
+    title: "Your appetite for the unknown?",
+    type: "single",
+    options: [
+      { value: "high", label: "Throw me in", emoji: "🎲" },
+      { value: "medium", label: "Calculated", emoji: "⚖️" },
+      { value: "low", label: "I like stability", emoji: "🛟" },
+    ],
+  },
+  {
+    key: "familyProximity",
+    title: "Staying close to family?",
+    type: "single",
+    options: [
+      { value: "close", label: "Keep them close", emoji: "👨‍👩‍👧" },
+      { value: "flexible", label: "Flexible", emoji: "🔁" },
+      { value: "far", label: "Distance is fine", emoji: "🌍" },
+    ],
+  },
+  {
+    key: "industries",
+    title: "What's your field?",
+    subtitle: "Pick any that fit.",
+    type: "multi",
+    options: [
+      { value: "tech", label: "Tech", emoji: "💻" },
+      { value: "creative", label: "Creative", emoji: "🎨" },
+      { value: "finance", label: "Finance", emoji: "📈" },
+      { value: "other", label: "Something else", emoji: "🧰" },
+    ],
+  },
+  {
+    key: "dealBreakers",
+    title: "Any hard deal-breakers?",
+    subtitle: "We'll push these places down hard.",
+    type: "multi",
+    options: [
+      { value: "high-crime", label: "Unsafe areas", emoji: "🚫" },
+      { value: "expensive", label: "Too expensive", emoji: "💰" },
+    ],
+  },
+];
