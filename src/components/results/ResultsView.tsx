@@ -15,7 +15,7 @@ import { LockedTopMatch } from "./LockedTopMatch";
 import { DeepenMatch } from "./DeepenMatch";
 import { Paywall } from "./Paywall";
 import { PaidReveal } from "./PaidReveal";
-import { ShareToStory } from "./ShareToStory";
+import { ShareSlides } from "./ShareSlides";
 import { RelocationToolkit } from "@/components/affiliates/RelocationToolkit";
 import { Loader2, ArrowLeft } from "lucide-react";
 
@@ -112,9 +112,9 @@ export function ResultsView({ runId }: { runId: string }) {
           <>
             <PaidReveal ranking={locked.ranking} circuit={locked.circuit} />
             <RelocationToolkit run={free} />
-            <div className="rounded-2xl border border-border bg-card p-5 text-center">
-              <p className="mb-3 text-sm font-medium">Show the world where you belong.</p>
-              <ShareToStory runId={runId} variant="reveal" />
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <p className="mb-3 text-center text-sm font-medium">Show the world where you belong.</p>
+              <ShareSlides free={free} variant="reveal" />
             </div>
           </>
         ) : (
@@ -126,12 +126,12 @@ export function ResultsView({ runId }: { runId: string }) {
               confidence={free.confidence}
             />
             <DeepenMatch free={free} onRefined={setFree} />
-            <div className="rounded-2xl border border-border bg-card p-5 text-center">
-              <p className="mb-1 text-sm font-medium">Pull your friends in 👀</p>
-              <p className="mb-3 text-xs text-muted-foreground">
-                Share your card — your match score and the mystery of where you belong.
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <p className="mb-1 text-center text-sm font-medium">Pull your friends in 👀</p>
+              <p className="mb-3 text-center text-xs text-muted-foreground">
+                Share your slides — your archetype, your gap, and the mystery of where you belong.
               </p>
-              <ShareToStory runId={runId} variant="teaser" />
+              <ShareSlides free={free} variant="teaser" />
             </div>
             <Paywall runId={runId} onUnlocked={refresh} />
           </>
