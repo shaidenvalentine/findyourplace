@@ -1,16 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRun, putRun } from "@/lib/server/runStore";
 import { buildScoredRun } from "@/lib/buildRun";
-import { PRICE_CENTS, CURRENCY, isStripeConfigured } from "@/lib/pricing";
+import { PRICE_CENTS, CURRENCY, activePaymentProvider } from "@/lib/pricing";
+import { createLemonCheckout } from "@/lib/server/lemonsqueezy";
 import type { OnboardingData } from "@/types/onboarding";
 
 /**
- * Starts the one-time unlock checkout.
- * - With STRIPE_SECRET_KEY: creates a real Stripe Checkout Session (server-side),
- *   tagging the runId in metadata so the webhook can unlock it after payment.
- * - Without Stripe (local/dev): returns `{ mode: "dev" }` so the UI can use the
- *   dev unlock path. The gate is still server-enforced — dev unlock is refused in
- *   production (see /api/unlock).
+ * Starts the one-time unlock checkout. The active rail is chosen by config
+ * (see activePaymentProvider — Lemon Squeezy first, then Stripe, then dev):
+ * - Lemon Squeezy: creates a hosted LS checkout, returns `{ mode: "lemonsqueezy", url }`.
+ * - Stripe: creates a Stripe Checkout Session, returns `{ mode: "stripe", url }`.
+ *   Both tag the runId so their webhook can unlock it after a verified payment.
+ * - Dev (no rail configured): returns `{ mode: "dev" }` so the UI uses the dev unlock.
+ *   The gate is still server-enforced — dev unlock is refused once a rail is live
+ *   (see /api/unlock).
  */
 export const runtime = "nodejs";
 
@@ -31,13 +34,29 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  if (!isStripeConfigured()) {
+  const provider = activePaymentProvider();
+  const origin = req.headers.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
+  if (provider === "dev") {
     return NextResponse.json({ mode: "dev" });
+  }
+
+  if (provider === "lemonsqueezy") {
+    try {
+      const url = await createLemonCheckout({
+        runId,
+        email: body.email,
+        redirectUrl: `${origin}/results/${runId}?unlocked=1`,
+      });
+      return NextResponse.json({ mode: "lemonsqueezy", url });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Checkout failed";
+      return NextResponse.json({ error: msg }, { status: 502 });
+    }
   }
 
   const { default: Stripe } = await import("stripe");
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-  const origin = req.headers.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",

@@ -49,12 +49,13 @@ export function Paywall({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Checkout failed");
 
-      if (data.mode === "stripe" && data.url) {
-        window.location.href = data.url; // hand off to Stripe Checkout
+      // Hosted-checkout rails (Stripe or Lemon Squeezy) return a URL to hand off to.
+      if (data.url) {
+        window.location.href = data.url;
         return;
       }
 
-      // Dev mode (no Stripe key): simulate a verified unlock so the funnel completes.
+      // Dev mode (no rail configured): simulate a verified unlock so the funnel completes.
       const unlock = await fetch("/api/unlock", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

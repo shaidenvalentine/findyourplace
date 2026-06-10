@@ -9,3 +9,32 @@ export const ANCHOR_LABEL = "$39";
 export function isStripeConfigured(): boolean {
   return Boolean(process.env.STRIPE_SECRET_KEY);
 }
+
+export function isLemonSqueezyConfigured(): boolean {
+  return Boolean(
+    process.env.LEMONSQUEEZY_API_KEY &&
+      process.env.LEMONSQUEEZY_STORE_ID &&
+      process.env.LEMONSQUEEZY_VARIANT_ID,
+  );
+}
+
+/** True when ANY real payment rail is live — used to refuse the dev-unlock bypass. */
+export function isPaymentConfigured(): boolean {
+  return isStripeConfigured() || isLemonSqueezyConfigured();
+}
+
+export type PaymentProvider = "lemonsqueezy" | "stripe" | "dev";
+
+/**
+ * Which rail handles checkout. Lemon Squeezy is the launch default (the Stripe account
+ * is locked behind 2FA), but the two stay fully decoupled so either can run alone. Set
+ * PAYMENT_PROVIDER to force one; otherwise prefer LS, then Stripe, then the dev unlock.
+ */
+export function activePaymentProvider(): PaymentProvider {
+  const forced = process.env.PAYMENT_PROVIDER?.toLowerCase();
+  if (forced === "lemonsqueezy") return isLemonSqueezyConfigured() ? "lemonsqueezy" : "dev";
+  if (forced === "stripe") return isStripeConfigured() ? "stripe" : "dev";
+  if (isLemonSqueezyConfigured()) return "lemonsqueezy";
+  if (isStripeConfigured()) return "stripe";
+  return "dev";
+}
