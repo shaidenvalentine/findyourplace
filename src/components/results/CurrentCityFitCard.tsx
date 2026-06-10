@@ -29,8 +29,11 @@ export function CurrentCityFitCard({ city, fit }: { city: string; fit: CurrentCi
               </div>
             ))}
           </div>
-          {!fit.cityFound && (
-            <p className="mt-2 text-xs text-muted-foreground">Estimated — your city isn&apos;t in our scored set yet.</p>
+          {fit.estimated && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Estimated from regional data — we read {fit.resolvedName ? titleCase(fit.resolvedName) : "your area"} from
+              the area around it, so this is a close approximation rather than an exact score.
+            </p>
           )}
         </div>
       </CardContent>

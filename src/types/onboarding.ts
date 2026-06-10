@@ -79,6 +79,11 @@ export interface OnboardingData {
   dealBreakers?: string[];
   topPriorities?: string[];
 
+  // Revealed preference — places the user has loved / felt most at home. The strongest
+  // signal for the "I always knew" match: we surface places similar in character, and a
+  // loved place that's in-universe and clears constraints is pulled toward #1.
+  lovedPlaces?: string[];
+
   // Mobility & Lifestyle Mode
   lifestyleMode?: "rooted" | "nomadic";
   locationChangesPerYear?: "3-4" | "4-6" | "6+";

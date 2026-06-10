@@ -13,6 +13,7 @@ import type { OnboardingData } from "@/types/onboarding";
  */
 
 export const HIGH_SIGNAL_DIMENSIONS: (keyof OnboardingData)[] = [
+  "lovedPlaces",
   "preferredClimate",
   "beachMountain",
   "budgetRange",

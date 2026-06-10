@@ -1,4 +1,6 @@
 import type { OnboardingData } from "@/types/onboarding";
+import { rankLocationsV2, scoreCurrentCityV2, fitCategories } from "@/lib/match/engine";
+import { LOCATIONS } from "@/data/locations";
 
 export interface Location {
   id: string;
@@ -66,9 +68,9 @@ export interface CategoryScore {
 
 export interface MatchResult {
   location: Location;
-  /** Ranking-only score (includes alignment bonus + deal-breaker). NOT shown to users. */
+  /** Ranking score (fit + revealed-preference resonance), spread for display. */
   totalScore: number;
-  /** Honest score for display + comparison — same formula used for current-city fit. */
+  /** Honest display score — identical to totalScore so bars and rank never disagree. */
   displayScore: number;
   categoryScores: CategoryScore[];
   reasons: string[];
@@ -76,415 +78,61 @@ export interface MatchResult {
   rank: number;
 }
 
-// Base weights - will be dynamically adjusted based on user preferences
-const BASE_WEIGHTS = {
-  climate: 0.1,
-  nature: 0.1,
-  community: 0.1,
-  career: 0.1,
-  cost: 0.12,
-  safety: 0.1,
-  wellness: 0.08,
-  travel: 0.08,
-  culture: 0.1,
-  lifestyle: 0.12,
-};
+/**
+ * Public scoring API. The IP now lives in `lib/match/engine` (fit-based matching, not
+ * amenity-maximization) + `lib/match/resolve` (worldwide current-city resolution). These
+ * functions keep the original signatures so the rest of the app is unchanged.
+ */
 
-// Calculate dynamic weights based on user preferences
-function calculateDynamicWeights(preferences: OnboardingData): typeof BASE_WEIGHTS {
-  const weights = { ...BASE_WEIGHTS };
-
-  // Boost weights based on what user cares about most
-  if (preferences.taxSensitivity === "very-sensitive" || preferences.taxConsideration === "major-factor") {
-    weights.cost *= 1.6;
-  }
-  if (preferences.airportConnectivity === "important" || preferences.airportImportance === "essential") {
-    weights.travel *= 1.5;
-  }
-  if (preferences.safetyPriority === "top-priority" || preferences.riskTolerance === "low") {
-    weights.safety *= 1.5;
-  }
-  if (preferences.wellnessImportance === "high" || preferences.gymCulture === "important") {
-    weights.wellness *= 1.4;
-  }
-  if (preferences.preferredClimate) {
-    weights.climate *= 1.3;
-  }
-  if (preferences.beachMountain) {
-    weights.nature *= 1.4;
-  }
-  if (preferences.workStyle === "remote" || preferences.industries?.length) {
-    weights.career *= 1.3;
-  }
-  if (preferences.communityVibes?.length) {
-    weights.community *= 1.3;
-  }
-
-  // Check for must-haves and top priorities
-  if (preferences.mustHaves?.includes("safety")) weights.safety *= 1.4;
-  if (preferences.mustHaves?.includes("affordable")) weights.cost *= 1.4;
-  if (preferences.mustHaves?.includes("nature")) weights.nature *= 1.4;
-  if (preferences.mustHaves?.includes("nightlife")) weights.lifestyle *= 1.3;
-
-  if (preferences.topPriorities?.includes("cost")) weights.cost *= 1.3;
-  if (preferences.topPriorities?.includes("weather")) weights.climate *= 1.3;
-  if (preferences.topPriorities?.includes("safety")) weights.safety *= 1.3;
-
-  // Normalize weights to sum to 1.0
-  const totalWeight = Object.values(weights).reduce((sum, w) => sum + w, 0);
-  const normalizedWeights = {} as typeof BASE_WEIGHTS;
-  for (const key of Object.keys(weights) as Array<keyof typeof weights>) {
-    normalizedWeights[key] = weights[key] / totalWeight;
-  }
-
-  return normalizedWeights;
+export function calculateTotalScore(categoryScores: CategoryScore[]): number {
+  const weightedSum = categoryScores.reduce((sum, cat) => sum + cat.score * cat.weight, 0);
+  const totalWeight = categoryScores.reduce((sum, cat) => sum + cat.weight, 0) || 1;
+  return Math.round((weightedSum / totalWeight) * 100) / 100;
 }
 
-// Check for deal-breaker conditions that severely penalize score
-function calculateDealBreakerMultiplier(location: Location, preferences: OnboardingData): number {
-  let multiplier = 1.0;
-
-  // Safety deal-breaker
-  if (preferences.safetyPriority === "top-priority" && (location.safety_score || 70) < 50) {
-    multiplier *= 0.7;
-  }
-
-  // Beach deal-breaker
-  if (preferences.beachMountain === "beach" && (location.beach_access_score || 0) < 30) {
-    multiplier *= 0.8;
-  }
-
-  // Mountain deal-breaker
-  if (preferences.beachMountain === "mountains" && (location.mountain_access_score || 0) < 30) {
-    multiplier *= 0.8;
-  }
-
-  // Climate deal-breaker
-  if (preferences.preferredClimate === "tropical" && (location.avg_temp_winter || 10) < 15) {
-    multiplier *= 0.75;
-  }
-  if (preferences.preferredClimate === "cold" && (location.avg_temp_summer || 25) > 30) {
-    multiplier *= 0.75;
-  }
-
-  // Budget deal-breaker
-  if (preferences.budgetRange === "budget" && (location.cost_of_living_score || 50) < 50) {
-    multiplier *= 0.75;
-  }
-
-  // Tax sensitivity deal-breaker
-  if (preferences.taxSensitivity === "very-sensitive" && (location.tax_friendliness_score || 50) < 40) {
-    multiplier *= 0.8;
-  }
-
-  // Check explicit deal-breakers
-  if (preferences.dealBreakers?.includes("high-crime") && (location.safety_score || 70) < 60) {
-    multiplier *= 0.65;
-  }
-  if (preferences.dealBreakers?.includes("expensive") && (location.cost_of_living_score || 50) < 40) {
-    multiplier *= 0.7;
-  }
-
-  return multiplier;
-}
-
-// Calculate alignment bonus - how well location's strengths match user's priorities.
-// Kept for reference; no longer applied (categoryScores already adjust for preferences
-// via dynamic weighting, and the extra bonus broke math consistency between current-city
-// fit and best-match display).
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function calculateAlignmentBonus(location: Location, preferences: OnboardingData): number {
-  let bonus = 0;
-
-  // Get location's top strengths (scores > 80)
-  const strengths: string[] = [];
-  if ((location.beach_access_score || 0) > 80) strengths.push("beach");
-  if ((location.mountain_access_score || 0) > 80) strengths.push("mountains");
-  if ((location.safety_score || 0) > 85) strengths.push("safety");
-  if ((location.cost_of_living_score || 0) > 75) strengths.push("affordable");
-  if ((location.nightlife_score || 0) > 80) strengths.push("nightlife");
-  if ((location.wellness_score || 0) > 80) strengths.push("wellness");
-  if ((location.startup_ecosystem_score || 0) > 80) strengths.push("career");
-  if ((location.airport_connectivity_score || 0) > 85) strengths.push("travel");
-  if ((location.tax_friendliness_score || 0) > 80) strengths.push("taxes");
-
-  // Check alignment with user priorities
-  const userPriorities = [...(preferences.mustHaves || []), ...(preferences.topPriorities || [])];
-
-  for (const priority of userPriorities) {
-    if (strengths.includes(priority)) {
-      bonus += 8; // Significant bonus for each aligned priority
-    }
-  }
-
-  // Specific preference alignments
-  if (preferences.beachMountain === "beach" && strengths.includes("beach")) bonus += 12;
-  if (preferences.beachMountain === "mountains" && strengths.includes("mountains")) bonus += 12;
-  if (preferences.taxSensitivity === "very-sensitive" && strengths.includes("taxes")) bonus += 10;
-  if (preferences.budgetRange === "budget" && strengths.includes("affordable")) bonus += 10;
-  if (preferences.safetyPriority === "top-priority" && strengths.includes("safety")) bonus += 10;
-
-  return Math.min(bonus, 25); // Cap at 25 points
-}
-
-// Transform score to spread the distribution (stretches 65-85 range into 50-95)
-function spreadScore(rawScore: number): number {
-  const center = 72;
-  const spread = 1.8;
-  const transformed = center + (rawScore - center) * spread;
-  return Math.max(45, Math.min(98, Math.round(transformed)));
-}
-
+/** Per-category FIT (0–100) against the user's expressed preferences. */
 export function calculateCategoryScores(location: Location, preferences: OnboardingData): CategoryScore[] {
-  const scores: CategoryScore[] = [];
-  const weights = calculateDynamicWeights(preferences);
+  return fitCategories(location, preferences, LOCATIONS);
+}
 
-  // Climate fit - larger bonuses/penalties
-  let climateScore = location.climate_score || 50;
-  if (preferences.preferredClimate) {
-    if (preferences.preferredClimate === "tropical" && (location.avg_temp_winter || 0) > 20) {
-      climateScore += 35;
-    } else if (preferences.preferredClimate === "tropical" && (location.avg_temp_winter || 0) < 10) {
-      climateScore -= 25;
-    }
-    if (preferences.preferredClimate === "mediterranean" && location.sunshine_days && location.sunshine_days > 250) {
-      climateScore += 30;
-    }
-    if (
-      preferences.preferredClimate === "temperate" &&
-      (location.humidity_level || 50) < 70 &&
-      (location.avg_temp_summer || 25) < 30
-    ) {
-      climateScore += 25;
-    }
-    if (preferences.preferredClimate === "cold" && (location.avg_temp_summer || 25) < 25) {
-      climateScore += 30;
-    } else if (preferences.preferredClimate === "cold" && (location.avg_temp_summer || 25) > 32) {
-      climateScore -= 30;
-    }
-  }
-  scores.push({
-    category: "climate",
-    score: Math.min(100, Math.max(20, climateScore)),
-    weight: weights.climate,
-    label: "Climate Fit",
-  });
+export function scoreLocations(locations: Location[], preferences: OnboardingData): MatchResult[] {
+  return rankLocationsV2(locations, preferences).map((r) => ({
+    location: r.location,
+    totalScore: r.displayScore,
+    displayScore: r.displayScore,
+    categoryScores: r.categoryScores,
+    reasons: generateReasons(r.location, r.categoryScores),
+    tradeoffs: generateTradeoffs(r.location, r.categoryScores),
+    rank: r.rank,
+  }));
+}
 
-  // Nature fit - stronger differentiation
-  let natureScore = location.outdoor_score || 50;
-  if (preferences.beachMountain) {
-    if (preferences.beachMountain === "beach") {
-      if (location.beach_access_score && location.beach_access_score > 80) {
-        natureScore = location.beach_access_score + 15;
-      } else if (location.beach_access_score && location.beach_access_score > 50) {
-        natureScore = (natureScore + location.beach_access_score) / 2 + 10;
-      } else {
-        natureScore -= 20;
-      }
-    }
-    if (preferences.beachMountain === "mountains") {
-      if (location.mountain_access_score && location.mountain_access_score > 80) {
-        natureScore = location.mountain_access_score + 15;
-      } else if (location.mountain_access_score && location.mountain_access_score > 50) {
-        natureScore = (natureScore + location.mountain_access_score) / 2 + 10;
-      } else {
-        natureScore -= 20;
-      }
-    }
-  }
-  if (preferences.outdoorUrban === "urban" && location.walkability_score) {
-    natureScore = (natureScore + location.walkability_score) / 2;
-  }
-  scores.push({
-    category: "nature",
-    score: Math.min(100, Math.max(25, natureScore)),
-    weight: weights.nature,
-    label: "Nature & Outdoors",
-  });
+export interface CurrentCityScore {
+  score: number;
+  categoryScores: {
+    label: string;
+    score: number;
+  }[];
+  cityFound: boolean;
+  /** The place we actually scored (a curated match, or a synthesized estimate). */
+  resolvedName?: string;
+  /** True when the score was synthesized from country/global data, not a curated place. */
+  estimated?: boolean;
+}
 
-  // Community fit - stronger bonuses
-  let communityScore = location.community_score || 50;
-  if (location.english_friendliness_score) communityScore = (communityScore + location.english_friendliness_score) / 2;
-  const vibes = preferences.communityVibes || [];
-  if (vibes.includes("expat") && location.culture_openness_score && location.culture_openness_score > 70) {
-    communityScore += 25;
-  }
-  if (vibes.includes("local") && (location.english_friendliness_score || 0) < 70) {
-    communityScore += 15;
-  }
-  if (vibes.includes("startup") && (location.startup_ecosystem_score || 0) > 70) {
-    communityScore += 20;
-  }
-  if (vibes.includes("digital-nomad") && location.tags?.includes("digital-nomad")) {
-    communityScore += 20;
-  }
-  scores.push({
-    category: "community",
-    score: Math.min(100, Math.max(30, communityScore)),
-    weight: weights.community,
-    label: "Community & Social",
-  });
-
-  // Career fit - larger bonuses
-  let careerScore = ((location.startup_ecosystem_score || 50) + (location.internet_quality_score || 70)) / 2;
-  if (preferences.workStyle === "remote") {
-    if ((location.internet_quality_score || 0) > 85) {
-      careerScore += 30;
-    } else if ((location.internet_quality_score || 0) < 60) {
-      careerScore -= 20;
-    }
-  }
-  if (preferences.industries?.includes("tech") && (location.startup_ecosystem_score || 0) > 75) {
-    careerScore += 30;
-  }
-  if (preferences.industries?.includes("creative") && location.tags?.includes("creative")) {
-    careerScore += 25;
-  }
-  if (preferences.industries?.includes("finance") && location.tags?.includes("finance-hub")) {
-    careerScore += 25;
-  }
-  scores.push({
-    category: "career",
-    score: Math.min(100, Math.max(25, careerScore)),
-    weight: weights.career,
-    label: "Career & Work",
-  });
-
-  // Cost fit - much larger impact
-  let costScore = ((location.cost_of_living_score || 50) + (location.rent_score || 50)) / 2;
-  if (preferences.budgetRange === "budget") {
-    if (costScore > 75) {
-      costScore += 30;
-    } else if (costScore < 50) {
-      costScore -= 25;
-    }
-  }
-  if (preferences.budgetRange === "mid-range") {
-    if (costScore > 50 && costScore < 80) costScore += 20;
-  }
-  if (preferences.budgetRange === "luxury") {
-    if ((location.cost_of_living_score || 0) < 40) costScore -= 15;
-  }
-  // Tax consideration has bigger impact
-  if (location.tax_friendliness_score) {
-    if (preferences.taxSensitivity === "very-sensitive") {
-      if (location.tax_friendliness_score > 80) {
-        costScore += 25;
-      } else if (location.tax_friendliness_score < 50) {
-        costScore -= 20;
-      }
-    }
-    costScore = costScore * 0.6 + location.tax_friendliness_score * 0.4;
-  }
-  scores.push({
-    category: "cost",
-    score: Math.min(100, Math.max(20, costScore)),
-    weight: weights.cost,
-    label: "Cost & Value",
-  });
-
-  // Safety fit
-  let safetyScore = ((location.safety_score || 70) + (location.healthcare_score || 70)) / 2;
-  if (preferences.safetyPriority === "top-priority") {
-    if (safetyScore > 85) safetyScore += 15;
-    else if (safetyScore < 60) safetyScore -= 25;
-  }
-  if (preferences.healthcarePriority === "essential" && (location.healthcare_score || 0) > 85) {
-    safetyScore += 15;
-  }
-  scores.push({
-    category: "safety",
-    score: Math.min(100, Math.max(30, safetyScore)),
-    weight: weights.safety,
-    label: "Safety & Stability",
-  });
-
-  // Wellness fit - stronger differentiation
-  let wellnessScore = location.wellness_score || 50;
-  if (preferences.gymCulture === "important") {
-    if ((location.wellness_score || 0) > 75) wellnessScore += 25;
-    else if ((location.wellness_score || 0) < 50) wellnessScore -= 15;
-  }
-  if (preferences.wellnessImportance === "high") {
-    if ((location.outdoor_score || 0) > 75) wellnessScore += 20;
-  }
-  scores.push({
-    category: "wellness",
-    score: Math.min(100, Math.max(30, wellnessScore)),
-    weight: weights.wellness,
-    label: "Health & Wellness",
-  });
-
-  // Travel fit - stronger bonuses
-  let travelScore = location.airport_connectivity_score || 50;
-  if (preferences.airportConnectivity === "important" || preferences.airportImportance === "essential") {
-    if ((location.airport_connectivity_score || 0) > 85) {
-      travelScore += 30;
-    } else if ((location.airport_connectivity_score || 0) < 50) {
-      travelScore -= 25;
-    }
-  }
-  if (preferences.travelFrequency === "frequent" && location.transit_score) {
-    travelScore = (travelScore + location.transit_score) / 2 + 10;
-  }
-  scores.push({
-    category: "travel",
-    score: Math.min(100, Math.max(25, travelScore)),
-    weight: weights.travel,
-    label: "Travel & Connectivity",
-  });
-
-  // Culture fit
-  let cultureScore = location.culture_openness_score || 50;
-  if (location.nightlife_score && preferences.dailyRoutine === "night-owl") {
-    cultureScore = (cultureScore + location.nightlife_score) / 2 + 15;
-  }
-  if (preferences.cultureTolerance === "important" && (location.culture_openness_score || 0) > 80) {
-    cultureScore += 20;
-  }
-  if (preferences.lgbtqFriendliness === "essential" && (location.culture_openness_score || 0) > 85) {
-    cultureScore += 15;
-  }
-  scores.push({
-    category: "culture",
-    score: Math.min(100, Math.max(30, cultureScore)),
-    weight: weights.culture,
-    label: "Culture & Openness",
-  });
-
-  // Lifestyle fit - much stronger differentiation
-  let lifestyleScore = 50;
-  if (preferences.noiseTolerance === "high") {
-    if ((location.nightlife_score || 0) > 80) lifestyleScore = 95;
-    else if ((location.nightlife_score || 0) > 60) lifestyleScore = 80;
-    else lifestyleScore = 55;
-  }
-  if (preferences.noiseTolerance === "medium") {
-    if ((location.walkability_score || 0) > 70 && (location.nightlife_score || 50) < 85) lifestyleScore = 85;
-    else lifestyleScore = 65;
-  }
-  if (preferences.noiseTolerance === "low") {
-    if ((location.outdoor_score || 0) > 75 && (location.nightlife_score || 50) < 60) lifestyleScore = 95;
-    else if ((location.nightlife_score || 50) > 80) lifestyleScore = 40;
-    else lifestyleScore = 70;
-  }
-
-  // Lifestyle mode affects score
-  if (preferences.lifestyleMode === "nomadic" && location.tags?.includes("digital-nomad")) {
-    lifestyleScore += 15;
-  }
-  if (preferences.lifestyleMode === "rooted" && (location.community_score || 0) > 75) {
-    lifestyleScore += 10;
-  }
-
-  scores.push({
-    category: "lifestyle",
-    score: Math.min(100, Math.max(25, lifestyleScore)),
-    weight: weights.lifestyle,
-    label: "Lifestyle Match",
-  });
-
-  return scores;
+export function scoreCurrentCity(
+  currentCityName: string,
+  locations: Location[],
+  preferences: OnboardingData
+): CurrentCityScore {
+  const r = scoreCurrentCityV2(currentCityName, locations, preferences);
+  return {
+    score: r.score,
+    categoryScores: r.categoryScores,
+    cityFound: r.cityFound,
+    resolvedName: r.resolvedName,
+    estimated: r.estimated,
+  };
 }
 
 export function generateReasons(location: Location, categoryScores: CategoryScore[]): string[] {
@@ -627,151 +275,4 @@ export function generateTradeoffs(location: Location, categoryScores: CategorySc
   }
 
   return tradeoffs.slice(0, 3);
-}
-
-export function calculateTotalScore(categoryScores: CategoryScore[]): number {
-  const weightedSum = categoryScores.reduce((sum, cat) => sum + cat.score * cat.weight, 0);
-  const totalWeight = categoryScores.reduce((sum, cat) => sum + cat.weight, 0);
-  return Math.round((weightedSum / totalWeight) * 100) / 100;
-}
-
-/**
- * The HONEST display score — same formula used for both the current city and the best
- * match. No alignment bonus, no deal-breaker penalty (those are for internal RANKING).
- * This is what users see anywhere we compare two places, so the math is consistent: if
- * the buckets favor side A, the overall score will too.
- */
-export function calculateDisplayScore(categoryScores: CategoryScore[]): number {
-  return spreadScore(calculateTotalScore(categoryScores));
-}
-
-export function scoreLocations(locations: Location[], preferences: OnboardingData): MatchResult[] {
-  const results: MatchResult[] = locations.map((location) => {
-    const categoryScores = calculateCategoryScores(location, preferences);
-
-    // ONE score for everything — same formula as the current-city fit, so the ranking,
-    // the displayed number, and the bucket breakdown all tell the same story. Includes
-    // the deal-breaker multiplier (a place that fails a hard requirement deserves a
-    // penalty), but NOT the redundant alignment bonus (category scores already adjust
-    // for user preferences via dynamic weighting — adding another bonus on top inflates
-    // rankings and breaks the math vs the current-city display).
-    const dealBreakerMultiplier = calculateDealBreakerMultiplier(location, preferences);
-    const rawScore = calculateTotalScore(categoryScores) * dealBreakerMultiplier;
-    const score = spreadScore(rawScore);
-
-    const reasons = generateReasons(location, categoryScores);
-    const tradeoffs = generateTradeoffs(location, categoryScores);
-
-    return {
-      location,
-      totalScore: score,
-      displayScore: score,
-      categoryScores,
-      reasons,
-      tradeoffs,
-      rank: 0,
-    };
-  });
-
-  // Sort by the unified score (now consistent with what users see)
-  results.sort((a, b) => b.totalScore - a.totalScore);
-
-  // Assign ranks
-  results.forEach((result, index) => {
-    result.rank = index + 1;
-  });
-
-  return results;
-}
-
-// Score user's current city to show fit comparison
-export interface CurrentCityScore {
-  score: number;
-  categoryScores: {
-    label: string;
-    score: number;
-  }[];
-  cityFound: boolean;
-}
-
-export function scoreCurrentCity(
-  currentCityName: string,
-  locations: Location[],
-  preferences: OnboardingData
-): CurrentCityScore {
-  // Try to find matching city in database (case-insensitive)
-  const normalizedInput = currentCityName.toLowerCase().trim();
-
-  // First try exact match
-  let matchedCity = locations.find((loc) => loc.name.toLowerCase() === normalizedInput);
-
-  // If exact match has no scores, try fuzzy matching or related places
-  // E.g., "Canggu" -> "Bali", "Seminyak" -> "Bali", "Ubud" -> "Bali"
-  const baliNeighborhoods = ["canggu", "ubud", "seminyak", "kuta", "sanur", "uluwatu", "denpasar", "nusa dua"];
-  const isInBali = baliNeighborhoods.some((n) => normalizedInput.includes(n) || n.includes(normalizedInput));
-
-  if ((!matchedCity || !matchedCity.cost_of_living_score) && isInBali) {
-    matchedCity = locations.find((loc) => loc.name.toLowerCase() === "bali");
-  }
-
-  // Check if the matched city has actual scores (not null)
-  const hasScores =
-    matchedCity &&
-    (matchedCity.cost_of_living_score !== null ||
-      matchedCity.climate_score !== null ||
-      matchedCity.safety_score !== null);
-
-  if (matchedCity && hasScores) {
-    const categoryScores = calculateCategoryScores(matchedCity, preferences);
-    // Apply the SAME deal-breaker as scoreLocations so both sides are on the same scale.
-    // (Previously skipped to be "kind" but it made ranking inconsistent with display.)
-    const dealBreakerMultiplier = calculateDealBreakerMultiplier(matchedCity, preferences);
-    const totalScore = spreadScore(calculateTotalScore(categoryScores) * dealBreakerMultiplier);
-
-    // Simplify to 6 main categories for the UI — covers the dimensions that actually
-    // drive most matches (cost and safety are missing from a 4-bucket view and that hides
-    // why a #1 is a #1 for tax-sensitive / budget / safety-first users).
-    const get = (cat: string) => categoryScores.find((c) => c.category === cat)?.score || 50;
-    const simplifiedScores = [
-      { label: "Cost & Value", score: Math.round(get("cost")) },
-      { label: "Lifestyle Fit", score: Math.round(get("lifestyle") * 0.5 + get("wellness") * 0.5) },
-      { label: "Community Fit", score: Math.round(get("community") * 0.6 + get("culture") * 0.4) },
-      { label: "Nature & Environment", score: Math.round(get("nature") * 0.6 + get("climate") * 0.4) },
-      { label: "Safety & Stability", score: Math.round(get("safety")) },
-      { label: "Career & Opportunity", score: Math.round(get("career") * 0.7 + get("travel") * 0.3) },
-    ];
-
-    return {
-      score: Math.round(totalScore),
-      categoryScores: simplifiedScores,
-      cityFound: true,
-    };
-  }
-
-  // Fallback: Generate a DETERMINISTIC estimate for unknown cities
-  // Use a hash of the city name to ensure same city always gets same score
-  const hashString = (str: string): number => {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = (hash << 5) - hash + str.charCodeAt(i);
-      hash = hash & hash; // Convert to 32-bit integer
-    }
-    return Math.abs(hash);
-  };
-
-  const cityHash = hashString(currentCityName.toLowerCase());
-  const baseScore = 48 + (cityHash % 12); // 48-59 range, deterministic
-
-  return {
-    score: baseScore,
-    categoryScores: [
-      { label: "Cost & Value", score: 48 + ((cityHash * 11) % 18) },
-      { label: "Lifestyle Fit", score: 45 + ((cityHash * 7) % 15) },
-      { label: "Community Fit", score: 50 + ((cityHash * 13) % 10) },
-      { label: "Nature & Environment", score: 40 + ((cityHash * 17) % 20) },
-      { label: "Safety & Stability", score: 55 + ((cityHash * 19) % 18) },
-      { label: "Career & Opportunity", score: 50 + ((cityHash * 23) % 15) },
-    ],
-    cityFound: false,
-  };
 }

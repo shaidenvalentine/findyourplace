@@ -14,7 +14,8 @@ import { ArrowRight, Sparkles, Compass, MapPin, PenLine } from "lucide-react";
 export default function StartPage() {
   const router = useRouter();
   const [city, setCity] = useState("");
-  const [step, setStep] = useState<"city" | "path">("city");
+  const [loved, setLoved] = useState("");
+  const [step, setStep] = useState<"city" | "loved" | "path">("city");
 
   // Meta "ViewContent" — funnel entry. This is the page ads point to, so it marks the
   // top of the measured quiz funnel for optimization + cost-per-result reporting.
@@ -24,6 +25,16 @@ export default function StartPage() {
 
   function commitCity() {
     saveDraft({ currentCity: city.trim() });
+    setStep("loved");
+  }
+
+  function commitLoved() {
+    const places = loved
+      .split(/[,\n]/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .slice(0, 5);
+    saveDraft({ lovedPlaces: places });
     setStep("path");
   }
 
@@ -81,10 +92,48 @@ export default function StartPage() {
               </button>
             </form>
           </div>
+        ) : step === "loved" ? (
+          <div className="animate-fade-up">
+            <Badge variant="primary" className="mb-4">
+              <MapPin className="size-3" /> Step 2
+            </Badge>
+            <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
+              Where have you felt most at home?
+            </h1>
+            <p className="mt-2 text-muted-foreground">
+              Anywhere you&apos;ve loved — lived, traveled, or just couldn&apos;t stop thinking about.
+              This is the strongest signal for finding your place. (Optional.)
+            </p>
+            <form
+              className="mt-6 flex flex-col gap-3"
+              onSubmit={(e) => {
+                e.preventDefault();
+                commitLoved();
+              }}
+            >
+              <Input
+                autoFocus
+                value={loved}
+                onChange={(e) => setLoved(e.target.value)}
+                placeholder="e.g. Bali, Lisbon, Mexico City…"
+                aria-label="Places you've loved"
+              />
+              <Button type="submit" size="lg" variant="gradient">
+                Continue <ArrowRight className="size-4" />
+              </Button>
+              <button
+                type="button"
+                onClick={() => setStep("path")}
+                className="text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
+              >
+                Skip — I&apos;m not sure
+              </button>
+            </form>
+          </div>
         ) : (
           <div className="animate-fade-up">
             <Badge variant="primary" className="mb-4">
-              <Sparkles className="size-3" /> Step 2 — choose your path
+              <Sparkles className="size-3" /> Step 3 — choose your path
             </Badge>
             <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
               How should we get to know you?
@@ -151,7 +200,7 @@ export default function StartPage() {
             </div>
 
             <button
-              onClick={() => setStep("city")}
+              onClick={() => setStep("loved")}
               className="mt-6 text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
             >
               ← Back

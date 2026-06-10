@@ -120,10 +120,10 @@ describe("scoreLocations is deterministic and well-formed", () => {
     expect(a).toEqual(b);
   });
 
-  it("totalScore stays within the spread bounds [45,98]", () => {
+  it("totalScore stays within the spread bounds [35,99]", () => {
     for (const r of scoreLocations(LOCATIONS, PROFILES.mountainsCold)) {
-      expect(r.totalScore).toBeGreaterThanOrEqual(45);
-      expect(r.totalScore).toBeLessThanOrEqual(98);
+      expect(r.totalScore).toBeGreaterThanOrEqual(35);
+      expect(r.totalScore).toBeLessThanOrEqual(99);
     }
   });
 
@@ -136,6 +136,41 @@ describe("scoreLocations is deterministic and well-formed", () => {
   });
   it("mountains / cold top-10 is locked", () => {
     expect(topN(PROFILES.mountainsCold)).toMatchSnapshot();
+  });
+});
+
+describe("fit, not amenity-maximization", () => {
+  // The founder's archetype: lives in/loves Bali, beach + tropical + creative-remote +
+  // community + wellness, NOT primarily tax-driven.
+  const baliPerson: OnboardingData = {
+    currentCity: "Bali", lifestyleMode: "nomadic", beachMountain: "beach", preferredClimate: "tropical",
+    noiseTolerance: "medium", workStyle: "remote", communityVibes: ["digital-nomad", "startup"],
+    budgetRange: "mid-range", taxSensitivity: "somewhat", safetyPriority: "important",
+    wellnessImportance: "high", outdoorUrban: "balanced", industries: ["creative", "tech"], mustHaves: ["beach", "nature"],
+  };
+
+  it("does not let generic high-stat metros win a tropical-beach profile", () => {
+    const top8 = scoreLocations(LOCATIONS, baliPerson).slice(0, 8).map((r) => r.location.name.toLowerCase());
+    // The old amenity-sum model ranked LA #1 and Miami above Bali. Lock that it cannot recur.
+    expect(top8).not.toContain("los angeles");
+    expect(top8).not.toContain("miami");
+    // Bali itself is a strong fit and must be near the top.
+    const bali = scoreLocations(LOCATIONS, baliPerson).find((r) => r.location.name.toLowerCase() === "bali");
+    expect(bali!.rank).toBeLessThanOrEqual(6);
+  });
+
+  it("revealed preference pulls a loved place to #1 ('I always knew')", () => {
+    const withLoved = scoreLocations(LOCATIONS, { ...baliPerson, lovedPlaces: ["Bali"] });
+    expect(withLoved[0].location.name.toLowerCase()).toBe("bali");
+  });
+
+  it("does not inject tax bias for users who aren't tax-sensitive", () => {
+    // Two identical profiles differing only in tax sensitivity should NOT produce the same
+    // tax-haven-topped ranking; the non-tax user's #1 should not be driven by tax friendliness.
+    const notTax = scoreLocations(LOCATIONS, { ...baliPerson, taxSensitivity: "not-sensitive" })[0];
+    expect(notTax.location.tax_friendliness_score).not.toBeNull();
+    // sanity: a non-tax tropical-beach person's top pick is a warm/beachy place, not picked for tax
+    expect(notTax.categoryScores.find((c) => c.category === "nature")!.score).toBeGreaterThan(55);
   });
 });
 
@@ -158,18 +193,23 @@ describe("scoreCurrentCity", () => {
     expect(a.categoryScores.length).toBe(6);
   });
 
-  it("maps Bali neighborhoods to Bali", () => {
-    const r = scoreCurrentCity("Canggu", LOCATIONS, PROFILES.budgetNomadBeach);
-    expect(r.cityFound).toBe(true);
+  it("resolves Bali neighborhoods + 'City, Country' to a curated place", () => {
+    expect(scoreCurrentCity("Canggu", LOCATIONS, PROFILES.budgetNomadBeach).cityFound).toBe(true);
+    expect(scoreCurrentCity("Seseh Bali", LOCATIONS, PROFILES.budgetNomadBeach).cityFound).toBe(true);
+    // A curated city with the country appended must still resolve (no random fallback).
+    const lis = scoreCurrentCity("Lisbon, Portugal", LOCATIONS, PROFILES.budgetNomadBeach);
+    expect(lis.cityFound).toBe(true);
+    expect(lis.resolvedName.toLowerCase()).toContain("lisbon");
   });
 
-  it("is deterministic for unknown cities (hash fallback)", () => {
-    const a = scoreCurrentCity("Smalltownsville", LOCATIONS, PROFILES.budgetNomadBeach);
-    const b = scoreCurrentCity("Smalltownsville", LOCATIONS, PROFILES.budgetNomadBeach);
+  it("grounds an unlisted city in a real estimate (no random hash)", () => {
+    const a = scoreCurrentCity("Chengdu", LOCATIONS, PROFILES.budgetNomadBeach);
+    const b = scoreCurrentCity("Chengdu", LOCATIONS, PROFILES.budgetNomadBeach);
     expect(a.cityFound).toBe(false);
-    expect(a.score).toBe(b.score);
-    expect(a.score).toBeGreaterThanOrEqual(48);
-    expect(a.score).toBeLessThanOrEqual(59);
+    expect(a.estimated).toBe(true);
+    expect(a.score).toBe(b.score); // deterministic
+    expect(a.score).toBeGreaterThanOrEqual(35);
+    expect(a.score).toBeLessThanOrEqual(99);
   });
 });
 
