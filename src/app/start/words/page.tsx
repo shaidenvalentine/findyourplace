@@ -4,59 +4,49 @@ import { useState } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { loadDraft } from "@/lib/draft";
 import { useScoreSubmit } from "@/lib/useScoreSubmit";
 import type { OnboardingData } from "@/types/onboarding";
-import { ArrowRight, Camera, Loader2, Pencil, Upload, ShieldCheck } from "lucide-react";
+import { ArrowRight, Loader2, PenLine, Pencil } from "lucide-react";
 
 type Readback = { key: string; label: string; value: string };
 
-function fileToBase64(file: File): Promise<{ data: string; mediaType: string }> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = String(reader.result);
-      const comma = result.indexOf(",");
-      resolve({ data: result.slice(comma + 1), mediaType: file.type || "image/png" });
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
+const PROMPTS = [
+  "Where you live now and how you really feel about it",
+  "The climate and pace of life you're drawn to",
+  "Your work, your budget, and what \"living well\" costs you",
+  "Your top non-negotiables — and your hard deal-breakers",
+];
 
-export default function InstagramPage() {
-  const [stage, setStage] = useState<"upload" | "confirm">("upload");
-  const [preview, setPreview] = useState<string | null>(null);
-  const [file, setFile] = useState<File | null>(null);
+/**
+ * The consent-based open-text path. The user writes about themselves in their own words;
+ * we parse it server-side (same normalizer as the AI-profile path) into structured
+ * scoring signal and read it back for confirmation. No uploads, no images, no scraping —
+ * fully on-guardrail (CLAUDE.md: identity signal from consent-based input only).
+ */
+export default function WordsPage() {
+  const [stage, setStage] = useState<"write" | "confirm">("write");
+  const [text, setText] = useState("");
   const [reading, setReading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [inputs, setInputs] = useState<OnboardingData>({});
   const [readback, setReadback] = useState<Readback[]>([]);
   const { submit, submitting, error } = useScoreSubmit();
 
-  function onPick(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    setFile(f);
-    setPreview(URL.createObjectURL(f));
-    setErr(null);
-  }
-
-  async function readVibe() {
-    if (!file) return;
+  async function read() {
     setReading(true);
     setErr(null);
     try {
-      const { data, mediaType } = await fileToBase64(file);
       const draft = loadDraft();
-      const res = await fetch("/api/vibe-read", {
+      const res = await fetch("/api/normalize-profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageBase64: data, mediaType, currentCity: draft.currentCity ?? "" }),
+        body: JSON.stringify({ profileText: text, currentCity: draft.currentCity ?? "" }),
       });
       const d = await res.json();
-      if (!res.ok) throw new Error(d.error || "Couldn't read that image");
+      if (!res.ok) throw new Error(d.error || "Couldn't read that yet");
       setInputs({ ...draft, ...d.inputs });
       setReadback(d.readback ?? []);
       setStage("confirm");
@@ -74,79 +64,72 @@ export default function InstagramPage() {
           <Logo withWordmark={false} />
         </Link>
         <Badge variant="primary">
-          <Camera className="size-3" /> Instagram vibe
+          <PenLine className="size-3" /> In your words
         </Badge>
       </header>
 
       <div className="mx-auto w-full max-w-xl flex-1 px-4 pb-24 pt-2">
-        {stage === "upload" ? (
+        {stage === "write" ? (
           <div className="animate-fade-up">
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Upload your Instagram</h1>
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Tell us about you</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Screenshot your own profile grid and drop it here. We read your{" "}
-              <span className="font-medium text-foreground">vibe</span> — the places, activities, and
-              aesthetic — to understand what fits you.
+              A few honest sentences are all we need. The more real, the sharper your match. Touch on:
             </p>
+            <ul className="mt-3 flex flex-col gap-1.5">
+              {PROMPTS.map((p) => (
+                <li key={p} className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" />
+                  {p}
+                </li>
+              ))}
+            </ul>
 
-            <label className="mt-5 flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border bg-card p-8 text-center transition-colors hover:border-primary/50">
-              {preview ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={preview} alt="preview" className="max-h-64 rounded-lg object-contain" />
-              ) : (
-                <>
-                  <span className="grid size-12 place-items-center rounded-full bg-primary/15 text-primary">
-                    <Upload className="size-6" />
-                  </span>
-                  <span className="text-sm font-medium">Tap to choose a screenshot</span>
-                  <span className="text-xs text-muted-foreground">PNG or JPG</span>
-                </>
-              )}
-              <input type="file" accept="image/*" className="hidden" onChange={onPick} />
-            </label>
-
-            <div className="mt-4 flex items-start gap-2 rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">
-              <ShieldCheck className="mt-0.5 size-4 shrink-0 text-success" />
-              <span>
-                We read your <strong>vibe, never your face</strong> — no facial analysis. The image is
-                processed privately and never stored. This is opt-in; you can use the quiz instead.
-              </span>
-            </div>
-
-            {err && <p className="mt-3 text-sm text-destructive">{err}</p>}
+            <Textarea
+              className="mt-4"
+              rows={9}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="I'm in Chicago and the winters are wearing me down. I work remotely in tech, I'd love to be near the ocean and somewhere warm, I want my money to stretch further, and safety matters a lot…"
+            />
+            <p className="mt-2 text-xs text-muted-foreground">
+              🔒 Processed privately on our server to read your preferences. We never store or log the
+              text.
+            </p>
+            {err && <p className="mt-2 text-sm text-destructive">{err}</p>}
 
             <Button
               className="mt-4 w-full"
               size="lg"
               variant="gradient"
-              disabled={!file || reading}
-              onClick={readVibe}
+              disabled={text.trim().length < 40 || reading}
+              onClick={read}
             >
               {reading ? (
                 <>
-                  <Loader2 className="size-4 animate-spin" /> Reading your vibe…
+                  <Loader2 className="size-4 animate-spin" /> Reading what you wrote…
                 </>
               ) : (
                 <>
-                  Read my vibe <ArrowRight className="size-4" />
+                  Read my answer <ArrowRight className="size-4" />
                 </>
               )}
             </Button>
             <p className="mt-3 text-center text-sm">
               <Link href="/start/ai" className="text-muted-foreground underline underline-offset-4">
-                Rather use your AI or the quiz?
+                Rather have your own AI write it?
               </Link>
             </p>
           </div>
         ) : (
           <div className="animate-fade-up">
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Here&apos;s your vibe</h1>
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Here&apos;s what we picked up</h1>
             <p className="mt-2 text-sm text-muted-foreground">
               Fix anything that&apos;s off before we score — this is what your match is built on.
             </p>
             <div className="mt-5 flex flex-col gap-2">
               {readback.length === 0 ? (
                 <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
-                  We couldn&apos;t pull much from that one — try a fuller screenshot, or just score it.
+                  We couldn&apos;t pull much signal yet — go back and add a little more, or just score it.
                 </p>
               ) : (
                 readback.map((r) => (
@@ -177,10 +160,10 @@ export default function InstagramPage() {
                 )}
               </Button>
               <button
-                onClick={() => setStage("upload")}
+                onClick={() => setStage("write")}
                 className="text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
               >
-                ← Try another screenshot
+                ← Edit what I wrote
               </button>
             </div>
           </div>

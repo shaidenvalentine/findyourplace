@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRun, markUnlocked } from "@/lib/server/runStore";
 import { getCreatorStore } from "@/lib/creators/store";
 import { verifyLemonSignature } from "@/lib/server/lemonsqueezy";
-import { PRICE_CENTS } from "@/lib/pricing";
+import { PRICE_CENTS, CURRENCY } from "@/lib/pricing";
+import { sendCapiEvent } from "@/lib/server/metaCapi";
 
 /**
  * Lemon Squeezy webhook — the SERVER-VERIFIED source of truth for unlocks on the LS rail.
@@ -47,6 +48,15 @@ export async function POST(req: NextRequest) {
     const runId = event.meta?.custom_data?.run_id;
     if (runId) {
       markUnlocked(runId);
+
+      // Server-verified Purchase → Meta CAPI (deduped with the client copy by event_id).
+      await sendCapiEvent({
+        event: "purchase",
+        eventId: `purchase_${runId}`,
+        value: (attrs.total ?? PRICE_CENTS) / 100,
+        currency: CURRENCY.toUpperCase(),
+        email: attrs.user_email ?? null,
+      });
 
       // Record the creator conversion (50% cut by default).
       const run = getRun(runId);

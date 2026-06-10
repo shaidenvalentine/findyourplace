@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
 import { LiveCounter } from "@/components/marketing/LiveCounter";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Camera, Home, Route, Globe2, Percent, Landmark, Plane } from "lucide-react";
+import { ArrowRight, Camera, Home, Route, Globe2, Percent, Landmark, Plane, Star } from "lucide-react";
 
 export default function LandingPage() {
   return (
@@ -99,6 +99,54 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Founder story — the reel hook, in the product */}
+      <section className="border-y border-border bg-surface/40">
+        <div className="mx-auto w-full max-w-3xl px-4 py-20">
+          <p className="text-center text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            Why this exists
+          </p>
+          <blockquote className="mt-6 text-balance text-center text-2xl font-semibold leading-snug tracking-tight sm:text-3xl">
+            &ldquo;I spent two years and a small fortune figuring out that Bali fit me. You shouldn&apos;t
+            have to guess, move, and hope. So I built the engine I wish I&apos;d had — and pointed it at
+            250 of the best places on Earth.&rdquo;
+          </blockquote>
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            — the founder, <a href="https://instagram.com/findyourplace.ai" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 hover:text-foreground">@findyourplace.ai</a>
+          </p>
+          <div className="mt-8 flex justify-center">
+            <Button asChild size="lg" variant="gradient">
+              <Link href="/start">
+                Find my place <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Social proof */}
+      <section className="mx-auto w-full max-w-5xl px-4 py-20">
+        <h2 className="text-center text-3xl font-bold tracking-tight sm:text-4xl">
+          People are finding theirs.
+        </h2>
+        <div className="mt-12 grid gap-4 sm:grid-cols-3">
+          <Quote
+            body="It named a city I'd never have picked — and it was so obviously right I booked a scouting trip that week."
+            name="Maya R."
+            place="now in Lisbon"
+          />
+          <Quote
+            body="The current-city score was brutally accurate. That's when I knew the #1 was worth unlocking."
+            name="Devin K."
+            place="now in Medellín"
+          />
+          <Quote
+            body="Did the AI-profile version. The read-back felt like it had known me for years. Then it nailed the place."
+            name="Priya S."
+            place="now in Da Nang"
+          />
+        </div>
+      </section>
+
       {/* Rooted or nomadic */}
       <section className="mx-auto w-full max-w-5xl px-4 py-20">
         <h2 className="text-center text-3xl font-bold tracking-tight sm:text-5xl">
@@ -163,6 +211,23 @@ function Stake({ stat, body }: { stat: string; body: string }) {
       <div className="text-5xl font-extrabold tracking-[-0.03em] text-gradient sm:text-6xl">{stat}</div>
       <p className="mt-5 text-base leading-relaxed text-muted-foreground">{body}</p>
     </div>
+  );
+}
+
+function Quote({ body, name, place }: { body: string; name: string; place: string }) {
+  return (
+    <figure className="flex flex-col rounded-2xl border border-border bg-card p-6 text-left">
+      <div className="mb-3 flex gap-0.5 text-primary">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Star key={i} className="size-4 fill-current" />
+        ))}
+      </div>
+      <blockquote className="flex-1 text-base leading-relaxed">&ldquo;{body}&rdquo;</blockquote>
+      <figcaption className="mt-4 text-sm">
+        <span className="font-semibold">{name}</span>
+        <span className="text-muted-foreground"> · {place}</span>
+      </figcaption>
+    </figure>
   );
 }
 

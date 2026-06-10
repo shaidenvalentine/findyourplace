@@ -10,7 +10,7 @@ import { QUIZ } from "@/lib/quiz";
 import { loadDraft } from "@/lib/draft";
 import { useScoreSubmit } from "@/lib/useScoreSubmit";
 import type { OnboardingData } from "@/types/onboarding";
-import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Sparkles } from "lucide-react";
 
 export default function QuizPage() {
   const [idx, setIdx] = useState(0);
@@ -23,6 +23,8 @@ export default function QuizPage() {
   const selectedArr = Array.isArray(current) ? current : current ? [current] : [];
   const canAdvance = isMulti ? selectedArr.length > 0 : Boolean(current);
   const progress = ((idx + (canAdvance ? 1 : 0)) / QUIZ.length) * 100;
+  // Mid-quiz dopamine: the reactive line for the currently picked single-select option.
+  const insight = !isMulti && typeof current === "string" ? q.options.find((o) => o.value === current)?.insight : undefined;
 
   function select(value: string) {
     setAnswers((prev) => {
@@ -84,6 +86,13 @@ export default function QuizPage() {
               />
             ))}
           </div>
+
+          {insight && (
+            <p className="animate-fade-up mt-4 flex items-start gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2.5 text-sm text-foreground">
+              <Sparkles className="mt-0.5 size-4 shrink-0 text-primary" />
+              {insight}
+            </p>
+          )}
         </div>
       </div>
 

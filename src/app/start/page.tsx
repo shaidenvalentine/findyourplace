@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
@@ -8,23 +8,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { saveDraft, loadDraft } from "@/lib/draft";
-import { ArrowRight, Sparkles, Compass, MapPin, Camera } from "lucide-react";
+import { track } from "@/lib/analytics";
+import { ArrowRight, Sparkles, Compass, MapPin, PenLine } from "lucide-react";
 
 export default function StartPage() {
   const router = useRouter();
   const [city, setCity] = useState("");
   const [step, setStep] = useState<"city" | "path">("city");
 
+  // Meta "ViewContent" — funnel entry. This is the page ads point to, so it marks the
+  // top of the measured quiz funnel for optimization + cost-per-result reporting.
+  useEffect(() => {
+    track("quiz_start");
+  }, []);
+
   function commitCity() {
     saveDraft({ currentCity: city.trim() });
     setStep("path");
   }
 
-  function choose(path: "ai" | "ig" | "quiz") {
+  function choose(path: "ai" | "words" | "quiz") {
     // ensure city persisted even if user edited then jumped
     if (city.trim()) saveDraft({ currentCity: city.trim() });
     else if (!loadDraft().currentCity) saveDraft({ currentCity: "" });
-    const route = path === "ai" ? "/start/ai" : path === "ig" ? "/start/instagram" : "/quiz";
+    const route = path === "ai" ? "/start/ai" : path === "words" ? "/start/words" : "/quiz";
     router.push(route);
   }
 
@@ -106,21 +113,21 @@ export default function StartPage() {
               </button>
 
               <button
-                onClick={() => choose("ig")}
+                onClick={() => choose("words")}
                 className="group rounded-2xl border border-border bg-card p-5 text-left transition-all hover:border-accent/60 active:scale-[0.99]"
               >
                 <div className="mb-3 flex items-center gap-2">
                   <span className="grid size-9 place-items-center rounded-lg bg-accent/15 text-accent">
-                    <Camera className="size-5" />
+                    <PenLine className="size-5" />
                   </span>
                 </div>
-                <h2 className="text-lg font-semibold">Read my Instagram vibe</h2>
+                <h2 className="text-lg font-semibold">Describe yourself in your own words</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Upload a screenshot of your profile. We read your vibe — never your face — to feel
-                  out what fits you.
+                  Write a few sentences about your life and what you want. We read it for the signal
+                  that drives your match — nothing else.
                 </p>
                 <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-accent">
-                  Upload screenshot <ArrowRight className="size-4" />
+                  Write it out <ArrowRight className="size-4" />
                 </span>
               </button>
 

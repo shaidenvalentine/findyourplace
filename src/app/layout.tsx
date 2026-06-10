@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Space_Grotesk } from "next/font/google";
+import { Suspense } from "react";
+import { MetaPixel } from "@/components/analytics/MetaPixel";
 import "./globals.css";
 
 // Space Grotesk — clean, futuristic, geometric. The display face for the whole app.
@@ -43,7 +45,12 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${sans.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-background text-foreground">{children}</body>
+      <body className="min-h-full flex flex-col bg-background text-foreground">
+        <Suspense fallback={null}>
+          <MetaPixel />
+        </Suspense>
+        {children}
+      </body>
     </html>
   );
 }

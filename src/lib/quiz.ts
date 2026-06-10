@@ -7,6 +7,8 @@ export interface QuizOption {
   label: string;
   emoji?: string;
   hint?: string;
+  /** Reactive micro-insight shown after the user picks this (mid-quiz dopamine). */
+  insight?: string;
 }
 
 export interface QuizQuestion {
@@ -32,8 +34,8 @@ export const QUIZ: QuizQuestion[] = [
     subtitle: "This unlocks your annual circuit if you roam.",
     type: "single",
     options: [
-      { value: "rooted", label: "Put down roots", emoji: "🏡", hint: "One home base" },
-      { value: "nomadic", label: "Stay on the move", emoji: "✈️", hint: "Multiple stops a year" },
+      { value: "rooted", label: "Put down roots", emoji: "🏡", hint: "One home base", insight: "Got it — we'll hunt for the single best home base on Earth for you." },
+      { value: "nomadic", label: "Stay on the move", emoji: "✈️", hint: "Multiple stops a year", insight: "Nice — we'll also build you a year-round circuit that chases your perfect weather." },
     ],
   },
   {
@@ -41,9 +43,9 @@ export const QUIZ: QuizQuestion[] = [
     title: "Pulled toward…",
     type: "single",
     options: [
-      { value: "beach", label: "Ocean & beaches", emoji: "🏝️" },
-      { value: "mountains", label: "Mountains & trails", emoji: "🏔️" },
-      { value: "either", label: "Either, honestly", emoji: "🌍" },
+      { value: "beach", label: "Ocean & beaches", emoji: "🏝️", insight: "Noted — that already reshuffles your whole top 20." },
+      { value: "mountains", label: "Mountains & trails", emoji: "🏔️", insight: "Noted — that already reshuffles your whole top 20." },
+      { value: "either", label: "Either, honestly", emoji: "🌍", insight: "Open to both — that keeps more of the world in play for you." },
     ],
   },
   {
@@ -51,10 +53,10 @@ export const QUIZ: QuizQuestion[] = [
     title: "Your ideal climate?",
     type: "single",
     options: [
-      { value: "tropical", label: "Tropical & warm", emoji: "🌴" },
-      { value: "mediterranean", label: "Sunny & mild", emoji: "☀️" },
-      { value: "temperate", label: "Four real seasons", emoji: "🍂" },
-      { value: "cold", label: "Crisp & cool", emoji: "❄️" },
+      { value: "tropical", label: "Tropical & warm", emoji: "🌴", insight: "Warm it is — we just ruled out a lot of grey winters." },
+      { value: "mediterranean", label: "Sunny & mild", emoji: "☀️", insight: "The climate most people score highest in — strong choice." },
+      { value: "temperate", label: "Four real seasons", emoji: "🍂", insight: "Four seasons — that points somewhere very different from the beach crowd." },
+      { value: "cold", label: "Crisp & cool", emoji: "❄️", insight: "Cool and crisp — a rarer taste, and it narrows things fast." },
     ],
   },
   {

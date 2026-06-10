@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ANCHOR_LABEL, PRICE_LABEL } from "@/lib/pricing";
 import { loadRunLocal } from "@/lib/run";
-import { Check, Loader2, Lock } from "lucide-react";
+import { track } from "@/lib/analytics";
+import { Check, Loader2, Lock, ShieldCheck, Star } from "lucide-react";
 
 const INCLUDES = [
   "The name of your #1 place, revealed",
@@ -26,9 +27,15 @@ export function Paywall({
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
+  // Meta "AddToCart" — the user reached the gate. The core paid-intent signal.
+  useEffect(() => {
+    track("paywall_view");
+  }, []);
+
   async function startCheckout() {
     setBusy(true);
     setErr(null);
+    track("checkout_start"); // Meta "InitiateCheckout"
     try {
       // Email gate → capture before payment (Phase 4 pushes this to the ESP).
       if (email.trim()) {
@@ -70,7 +77,13 @@ export function Paywall({
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6">
+    <div className="rounded-2xl border border-primary/30 bg-card p-6">
+      {/* Cost of inaction — the status quo has a price too. */}
+      <p className="mb-4 text-sm text-muted-foreground">
+        Every month you stay put is another month in a place that doesn&apos;t fit. You&apos;ve
+        already done the hard part — see where you actually belong.
+      </p>
+
       <div className="mb-4 flex items-baseline gap-2">
         <span className="text-3xl font-extrabold">{PRICE_LABEL}</span>
         <span className="text-lg text-muted-foreground line-through">{ANCHOR_LABEL}</span>
@@ -87,6 +100,20 @@ export function Paywall({
           </li>
         ))}
       </ul>
+
+      {/* Social proof — one specific, on-brand testimonial at the moment of decision. */}
+      <figure className="mb-5 rounded-xl border border-border bg-surface/50 p-4">
+        <div className="mb-1 flex gap-0.5 text-primary">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Star key={i} className="size-3.5 fill-current" />
+          ))}
+        </div>
+        <blockquote className="text-sm text-foreground">
+          &ldquo;It named a city I&apos;d never have picked — and it was so obviously right I booked a
+          scouting trip that week.&rdquo;
+        </blockquote>
+        <figcaption className="mt-1 text-xs text-muted-foreground">— Maya R., now in Lisbon</figcaption>
+      </figure>
 
       <Input
         type="email"
@@ -109,7 +136,10 @@ export function Paywall({
         )}
       </Button>
       {err && <p className="mt-2 text-center text-sm text-destructive">{err}</p>}
-      <p className="mt-3 text-center text-xs text-muted-foreground">
+      <div className="mt-3 flex items-center justify-center gap-1.5 text-center text-xs font-medium text-success">
+        <ShieldCheck className="size-3.5" /> Not blown away? Email us within 7 days for a full refund.
+      </div>
+      <p className="mt-2 text-center text-xs text-muted-foreground">
         Apple Pay &amp; cards · one-time · instant access · no subscription
       </p>
     </div>

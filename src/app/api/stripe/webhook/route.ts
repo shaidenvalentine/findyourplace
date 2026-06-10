@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRun, markUnlocked } from "@/lib/server/runStore";
 import { getCreatorStore } from "@/lib/creators/store";
-import { PRICE_CENTS } from "@/lib/pricing";
+import { PRICE_CENTS, CURRENCY } from "@/lib/pricing";
+import { sendCapiEvent } from "@/lib/server/metaCapi";
 
 /**
  * Stripe webhook — the SERVER-VERIFIED source of truth for unlocks.
@@ -43,6 +44,16 @@ export async function POST(req: NextRequest) {
     const runId = session.metadata?.runId;
     if (runId && session.payment_status === "paid") {
       markUnlocked(runId);
+
+      // Server-verified Purchase → Meta CAPI. Same event_id as the client copy so Meta
+      // dedups; this server copy fires even when the browser Pixel is blocked.
+      await sendCapiEvent({
+        event: "purchase",
+        eventId: `purchase_${runId}`,
+        value: (session.amount_total ?? PRICE_CENTS) / 100,
+        currency: (session.currency ?? CURRENCY).toUpperCase(),
+        email: session.customer_details?.email ?? null,
+      });
 
       // Record the creator conversion (50% cut by default).
       const run = getRun(runId);

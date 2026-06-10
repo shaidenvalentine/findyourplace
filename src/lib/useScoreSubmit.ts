@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { saveRunLocal, type FreeRun } from "@/lib/run";
+import { track } from "@/lib/analytics";
 import type { OnboardingData } from "@/types/onboarding";
 
 /** Submits inputs to the authoritative scoring endpoint, caches the run, and routes to results. */
@@ -23,6 +24,7 @@ export function useScoreSubmit() {
       if (!res.ok) throw new Error(`Scoring failed (${res.status})`);
       const { runId, free } = (await res.json()) as { runId: string; free: FreeRun };
       saveRunLocal(free);
+      track("quiz_complete"); // Meta "Lead" — the key pre-purchase optimization event
       router.push(`/results/${runId}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");
