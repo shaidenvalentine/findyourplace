@@ -39,7 +39,7 @@ export default async function SettingsPage() {
             <CardTitle className="text-base">Rev share</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
-            You earn <strong className="text-foreground">{creator.revSharePct}%</strong> of every $19 unlock attributed to your code. Paid monthly via Wise.
+            You earn <strong className="text-foreground">{creator.revSharePct}%</strong> of every $29 unlock attributed to your code. Paid monthly via Wise.
           </CardContent>
         </Card>
       </div>

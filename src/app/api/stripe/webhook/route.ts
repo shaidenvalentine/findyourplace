@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRun, markUnlocked } from "@/lib/server/runStore";
 import { getCreatorStore } from "@/lib/creators/store";
+import { PRICE_CENTS } from "@/lib/pricing";
 
 /**
  * Stripe webhook — the SERVER-VERIFIED source of truth for unlocks.
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
         const store = getCreatorStore();
         const creator = await store.getCreatorById(run.creatorId);
         if (creator && session.id) {
-          const amountCents = session.amount_total ?? 1900;
+          const amountCents = session.amount_total ?? PRICE_CENTS;
           await store.recordConversion({
             creatorId: creator.id,
             runId,

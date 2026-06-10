@@ -7,7 +7,7 @@ import { ArrowRight, Sparkles, Users, Wallet, Link as LinkIcon, BarChart3 } from
 export const metadata: Metadata = {
   title: "Founding Creators · Find Your Place",
   description:
-    "Bring your audience. Keep 50% of every $19 unlock — for life. Real-time dashboard, monthly payouts.",
+    "Bring your audience. Keep 50% of every $29 unlock — for life. Real-time dashboard, monthly payouts.",
 };
 
 export default function CreatorsLanding() {
@@ -44,7 +44,7 @@ export default function CreatorsLanding() {
 
             <p className="mt-8 max-w-xl text-pretty text-lg text-muted-foreground sm:text-xl">
               Find Your Place is the quiz that finds the one place on Earth that actually fits you.
-              Promote it to your audience and earn $9.50 of every $19 unlock — for life.
+              Promote it to your audience and earn $14.50 of every $29 unlock — for life.
             </p>
 
             <Button asChild size="lg" variant="gradient" className="mt-10 w-full sm:w-auto">
