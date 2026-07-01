@@ -38,8 +38,12 @@ and a dev unlock so you can click the whole funnel end-to-end.
 ## Going live — the credentials checklist
 Copy `.env.example` → `.env.local` and fill in, block by block:
 1. **Supabase** — create a project, run `supabase/migrations/0001_init.sql`, then
-   `npx tsx scripts/seed-locations.ts` to seed the 250 locations. Swap the in-memory
-   `runStore.ts` for Supabase reads/writes.
+   `npx tsx scripts/seed-locations.ts` to seed the 250 locations. Set
+   `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and
+   `SUPABASE_SERVICE_ROLE_KEY` — `runStore.ts` automatically persists runs + unlocks to
+   Supabase when these are present (and falls back to an in-memory store when they're not,
+   so local dev still works). **This is required in production**: without it, unlock state
+   isn't shared across serverless instances and paying users won't get unlocked.
 2. **Payment rail** (pick one — they're decoupled):
    - **Lemon Squeezy** (launch default — merchant of record, handles global tax): set
      `LEMONSQUEEZY_API_KEY`, `LEMONSQUEEZY_STORE_ID`, `LEMONSQUEEZY_VARIANT_ID`,
