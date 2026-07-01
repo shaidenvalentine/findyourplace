@@ -1,6 +1,7 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { getCreatorStore } from "./store";
+import { getSessionSecret } from "@/lib/session/secret";
 import type { Creator } from "./types";
 
 /**
@@ -11,8 +12,9 @@ import type { Creator } from "./types";
 const SESSION_COOKIE = "fyp_creator_session";
 const MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 
-function sign(creatorId: string): string {
-  const secret = process.env.SESSION_SECRET || "dev-secret-change-me";
+function sign(creatorId: string): string | null {
+  const secret = getSessionSecret();
+  if (!secret) return null; // prod without SESSION_SECRET → no forgeable sessions
   // Simple HMAC-style suffix for tamper resistance. Replace with real auth when Supabase lands.
   const data = `${creatorId}.${Date.now()}`;
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -22,10 +24,11 @@ function sign(creatorId: string): string {
 }
 
 function verify(value: string): string | null {
+  const secret = getSessionSecret();
+  if (!secret) return null;
   try {
     const [creatorId, ts, sig] = value.split(".");
     if (!creatorId || !ts || !sig) return null;
-    const secret = process.env.SESSION_SECRET || "dev-secret-change-me";
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const crypto = require("node:crypto") as typeof import("node:crypto");
     const expected = crypto.createHmac("sha256", secret).update(`${creatorId}.${ts}`).digest("base64url");
@@ -39,8 +42,10 @@ function verify(value: string): string | null {
 }
 
 export async function setCreatorSession(creatorId: string) {
+  const value = sign(creatorId);
+  if (!value) return; // secret not configured in prod — no session issued
   const jar = await cookies();
-  jar.set(SESSION_COOKIE, sign(creatorId), {
+  jar.set(SESSION_COOKIE, value, {
     maxAge: MAX_AGE,
     path: "/",
     sameSite: "lax",
