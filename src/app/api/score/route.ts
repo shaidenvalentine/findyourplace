@@ -5,7 +5,10 @@ import { toFreeRun } from "@/lib/run";
 import { putRun } from "@/lib/server/runStore";
 import { getAttributedCreator } from "@/lib/creators/attribution";
 import { getCreatorStore } from "@/lib/creators/store";
+import type { RunSource } from "@/lib/run";
 import type { OnboardingData } from "@/types/onboarding";
+
+const SOURCES: RunSource[] = ["quiz", "ai-profile", "words"];
 
 /**
  * Authoritative scoring endpoint. Runs the deterministic engine server-side so the
@@ -14,7 +17,7 @@ import type { OnboardingData } from "@/types/onboarding";
  * never sent until a server-verified unlock.
  */
 export async function POST(req: NextRequest) {
-  let body: { inputs?: OnboardingData; source?: "quiz" | "ai-profile" };
+  let body: { inputs?: OnboardingData; source?: RunSource };
   try {
     body = await req.json();
   } catch {
@@ -29,7 +32,7 @@ export async function POST(req: NextRequest) {
     runId: crypto.randomUUID(),
     createdAt: Date.now(),
     inputs: body.inputs ?? {},
-    source: body.source === "ai-profile" ? "ai-profile" : "quiz",
+    source: body.source && SOURCES.includes(body.source) ? body.source : "quiz",
   });
 
   // Tag the run with the referring creator (if attribution cookie is set), and log the

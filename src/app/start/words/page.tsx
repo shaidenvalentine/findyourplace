@@ -8,10 +8,9 @@ import { Textarea } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { loadDraft } from "@/lib/draft";
 import { useScoreSubmit } from "@/lib/useScoreSubmit";
+import { EditableReadback } from "@/components/entry/EditableReadback";
 import type { OnboardingData } from "@/types/onboarding";
-import { ArrowRight, Loader2, PenLine, Pencil } from "lucide-react";
-
-type Readback = { key: string; label: string; value: string };
+import { ArrowRight, Loader2, PenLine } from "lucide-react";
 
 const PROMPTS = [
   "Where you live now and how you really feel about it",
@@ -32,7 +31,6 @@ export default function WordsPage() {
   const [reading, setReading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [inputs, setInputs] = useState<OnboardingData>({});
-  const [readback, setReadback] = useState<Readback[]>([]);
   const { submit, submitting, error } = useScoreSubmit();
 
   async function read() {
@@ -48,7 +46,6 @@ export default function WordsPage() {
       const d = await res.json();
       if (!res.ok) throw new Error(d.error || "Couldn't read that yet");
       setInputs({ ...draft, ...d.inputs });
-      setReadback(d.readback ?? []);
       setStage("confirm");
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Something went wrong");
@@ -124,31 +121,14 @@ export default function WordsPage() {
           <div className="animate-fade-up">
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Here&apos;s what we picked up</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Fix anything that&apos;s off before we score — this is what your match is built on.
+              Tap any row to fix it or fill a gap before we score — this is what your match is built on.
             </p>
-            <div className="mt-5 flex flex-col gap-2">
-              {readback.length === 0 ? (
-                <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
-                  We couldn&apos;t pull much signal yet — go back and add a little more, or just score it.
-                </p>
-              ) : (
-                readback.map((r) => (
-                  <div
-                    key={r.key}
-                    className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3"
-                  >
-                    <span className="text-sm text-muted-foreground">{r.label}</span>
-                    <span className="flex items-center gap-2 text-sm font-semibold">
-                      {r.value}
-                      <Pencil className="size-3 text-muted-foreground" />
-                    </span>
-                  </div>
-                ))
-              )}
+            <div className="mt-5">
+              <EditableReadback value={inputs} onChange={setInputs} />
             </div>
             {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
             <div className="mt-6 flex flex-col gap-2">
-              <Button size="lg" variant="gradient" disabled={submitting} onClick={() => submit(inputs, "ai-profile")}>
+              <Button size="lg" variant="gradient" disabled={submitting} onClick={() => submit(inputs, "words")}>
                 {submitting ? (
                   <>
                     <Loader2 className="size-4 animate-spin" /> Scoring the best places on Earth…
@@ -161,7 +141,7 @@ export default function WordsPage() {
               </Button>
               <button
                 onClick={() => setStage("write")}
-                className="text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
+                className="min-h-[44px] text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
               >
                 ← Edit what I wrote
               </button>

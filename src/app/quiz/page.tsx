@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { OptionButton } from "@/components/entry/OptionButton";
 import { QUIZ } from "@/lib/quiz";
-import { loadDraft } from "@/lib/draft";
+import { loadDraft, loadQuizProgress, saveQuizProgress, clearQuizProgress } from "@/lib/draft";
 import { useScoreSubmit } from "@/lib/useScoreSubmit";
 import type { OnboardingData } from "@/types/onboarding";
 import { ArrowLeft, ArrowRight, Loader2, Sparkles } from "lucide-react";
@@ -16,6 +16,26 @@ export default function QuizPage() {
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const { submit, submitting, error } = useScoreSubmit();
+  const hydrated = useRef(false);
+
+  // Rehydrate in-progress answers so a refresh / app-switch never wipes the quiz. We sync
+  // from sessionStorage AFTER mount (not via a lazy initializer) on purpose: the server
+  // has no sessionStorage, so reading it during render would cause a hydration mismatch.
+  useEffect(() => {
+    const saved = loadQuizProgress();
+    if (saved) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setAnswers(saved.answers);
+      setIdx(Math.min(saved.idx, QUIZ.length - 1));
+    }
+    hydrated.current = true;
+  }, []);
+
+  // Persist on every change (but not before the initial rehydrate has run).
+  useEffect(() => {
+    if (!hydrated.current) return;
+    saveQuizProgress({ idx, answers });
+  }, [idx, answers]);
 
   const q = QUIZ[idx];
   const current = answers[q.key as string];
@@ -54,6 +74,7 @@ export default function QuizPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (inputs as any)[question.key] = v;
     }
+    clearQuizProgress(); // consumed — a fresh quiz should start clean
     submit(inputs, "quiz");
   }
 

@@ -138,7 +138,7 @@ export default function StartPage() {
             <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
               How should we get to know you?
             </h1>
-            <p className="mt-2 text-muted-foreground">Both lead to the same scored result.</p>
+            <p className="mt-2 text-muted-foreground">All three lead to the same scored result.</p>
 
             <div className="mt-6 flex flex-col gap-4">
               <button

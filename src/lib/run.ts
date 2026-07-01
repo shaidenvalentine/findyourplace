@@ -4,13 +4,16 @@ import type { LifeChange } from "@/lib/lifeChange";
 import type { TaxComparison } from "@/lib/tax";
 import type { OnboardingData } from "@/types/onboarding";
 
+/** How the run was created — used for analytics/attribution, never for gating. */
+export type RunSource = "quiz" | "ai-profile" | "words";
+
 /** A fully scored run. The FREE surface uses everything except the locked fields. */
 export interface ScoredRun {
   runId: string;
   createdAt: number;
   currentCity: string;
   inputs: OnboardingData;
-  source: "quiz" | "ai-profile";
+  source: RunSource;
   /** Creator who referred this run (attribution cookie). Set when run is created. */
   creatorId?: string | null;
   personality: PersonalityRead;

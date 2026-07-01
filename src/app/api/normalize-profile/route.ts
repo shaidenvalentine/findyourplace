@@ -17,6 +17,10 @@ const EXTRACT_KEYS = `lifestyleMode(rooted|nomadic), preferredClimate(tropical|m
 async function normalizeWithLLM(text: string, currentCity: string): Promise<NormalizedProfile | null> {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) return null;
+  // Never let a slow model hang the user on "Reading your profile…". Abort after 9s and
+  // let the caller fall through to the always-available heuristic.
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 9000);
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -35,6 +39,7 @@ async function normalizeWithLLM(text: string, currentCity: string): Promise<Norm
           ". Omit any field you have no signal for. No prose, no markdown.",
         messages: [{ role: "user", content: text.slice(0, 12000) }],
       }),
+      signal: ctrl.signal,
     });
     if (!res.ok) return null;
     const data = await res.json();
@@ -44,7 +49,9 @@ async function normalizeWithLLM(text: string, currentCity: string): Promise<Norm
     const inputs: OnboardingData = { ...parsed, currentCity };
     return { inputs, readback: buildReadback(inputs) };
   } catch {
-    return null; // any failure → caller falls back to heuristic
+    return null; // any failure (incl. timeout abort) → caller falls back to heuristic
+  } finally {
+    clearTimeout(timer);
   }
 }
 

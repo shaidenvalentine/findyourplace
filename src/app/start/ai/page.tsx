@@ -10,19 +10,18 @@ import { AI_PROFILE_PROMPT } from "@/lib/aiPrompt";
 import { copyText } from "@/lib/utils";
 import { loadDraft } from "@/lib/draft";
 import { useScoreSubmit } from "@/lib/useScoreSubmit";
+import { EditableReadback } from "@/components/entry/EditableReadback";
 import type { OnboardingData } from "@/types/onboarding";
-import { ArrowRight, Copy, Check, Loader2, Sparkles, Pencil } from "lucide-react";
-
-type Readback = { key: string; label: string; value: string };
+import { ArrowRight, Copy, Check, Loader2, Sparkles } from "lucide-react";
 
 export default function AiProfilePage() {
   const [stage, setStage] = useState<"prompt" | "confirm">("prompt");
   const [copied, setCopied] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
   const [profile, setProfile] = useState("");
   const [normalizing, setNormalizing] = useState(false);
   const [normErr, setNormErr] = useState<string | null>(null);
   const [inputs, setInputs] = useState<OnboardingData>({});
-  const [readback, setReadback] = useState<Readback[]>([]);
   const [usedModel, setUsedModel] = useState(false);
   const { submit, submitting, error } = useScoreSubmit();
   const promptRef = useRef<HTMLTextAreaElement>(null);
@@ -34,6 +33,7 @@ export default function AiProfilePage() {
     promptRef.current?.select();
     const ok = await copyText(AI_PROFILE_PROMPT);
     setCopied(ok);
+    setCopyFailed(!ok);
     if (ok) setTimeout(() => setCopied(false), 2200);
   }
 
@@ -50,7 +50,6 @@ export default function AiProfilePage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Couldn't read that profile");
       setInputs({ ...draft, ...data.inputs });
-      setReadback(data.readback ?? []);
       setUsedModel(Boolean(data.usedModel));
       setStage("confirm");
     } catch (e) {
@@ -114,6 +113,11 @@ export default function AiProfilePage() {
                 </>
               )}
             </Button>
+            {copyFailed && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Couldn&apos;t auto-copy — the prompt is selected above, long-press to copy it.
+              </p>
+            )}
 
             <h2 className="mt-8 text-lg font-semibold">Step 2 — paste what it wrote</h2>
             <Textarea
@@ -149,7 +153,8 @@ export default function AiProfilePage() {
           </div>
         ) : (
           <ConfirmStep
-            readback={readback}
+            inputs={inputs}
+            setInputs={setInputs}
             usedModel={usedModel}
             submitting={submitting}
             error={error}
@@ -163,14 +168,16 @@ export default function AiProfilePage() {
 }
 
 function ConfirmStep({
-  readback,
+  inputs,
+  setInputs,
   usedModel,
   submitting,
   error,
   onBack,
   onConfirm,
 }: {
-  readback: Readback[];
+  inputs: OnboardingData;
+  setInputs: (next: OnboardingData) => void;
   usedModel: boolean;
   submitting: boolean;
   error: string | null;
@@ -181,30 +188,12 @@ function ConfirmStep({
     <div className="animate-fade-up">
       <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Here&apos;s what we picked up</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        {usedModel ? "Read by our AI." : "Read from your profile."} Fix anything that&apos;s off
-        before we score — this is what your match is built on.
+        {usedModel ? "Read by our AI." : "Read from your profile."} Tap any row to fix it — this is
+        exactly what your match is built on.
       </p>
 
-      <div className="mt-5 flex flex-col gap-2">
-        {readback.length === 0 ? (
-          <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
-            We couldn&apos;t pull much signal — you can still score, or go back and paste a fuller
-            profile.
-          </p>
-        ) : (
-          readback.map((r) => (
-            <div
-              key={r.key}
-              className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3"
-            >
-              <span className="text-sm text-muted-foreground">{r.label}</span>
-              <span className="flex items-center gap-2 text-sm font-semibold">
-                {r.value}
-                <Pencil className="size-3 text-muted-foreground" />
-              </span>
-            </div>
-          ))
-        )}
+      <div className="mt-5">
+        <EditableReadback value={inputs} onChange={setInputs} />
       </div>
 
       {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
@@ -223,7 +212,7 @@ function ConfirmStep({
         </Button>
         <button
           onClick={onBack}
-          className="text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
+          className="min-h-[44px] text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
         >
           ← Re-paste profile
         </button>

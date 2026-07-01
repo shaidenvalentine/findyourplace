@@ -5,7 +5,7 @@ import { buildPersonalityRead } from "@/lib/personality";
 import { computeLifeChange } from "@/lib/lifeChange";
 import { computeConfidence } from "@/lib/confidence";
 import { computeTaxComparison } from "@/lib/tax";
-import { toRankedPlace, type ScoredRun } from "@/lib/run";
+import { toRankedPlace, type ScoredRun, type RunSource } from "@/lib/run";
 import type { OnboardingData } from "@/types/onboarding";
 
 /**
@@ -16,7 +16,7 @@ export function buildScoredRun(opts: {
   runId: string;
   createdAt: number;
   inputs: OnboardingData;
-  source: "quiz" | "ai-profile";
+  source: RunSource;
 }): ScoredRun {
   const { runId, createdAt, inputs, source } = opts;
   const currentCity = (inputs.currentCity ?? "").trim();
