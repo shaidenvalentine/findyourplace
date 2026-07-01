@@ -27,9 +27,10 @@ export function PlacePhoto({
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={src}
-          alt={location?.name ?? "place"}
+          alt={location?.name ? `${location.name}` : ""}
           loading={priority ? "eager" : "lazy"}
           decoding="async"
+          fetchPriority={priority ? "high" : "auto"}
           className="absolute inset-0 h-full w-full object-cover"
         />
       ) : (

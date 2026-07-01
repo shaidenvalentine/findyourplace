@@ -25,6 +25,7 @@ export const metadata: Metadata = {
   title: { default: `${SITE.name} — ${SITE.tagline}`, template: `%s · ${SITE.name}` },
   description: SITE.description,
   applicationName: SITE.name,
+  alternates: { canonical: "/" },
   openGraph: {
     title: `${SITE.name} — ${SITE.tagline}`,
     description: SITE.description,
@@ -39,7 +40,7 @@ export const viewport: Viewport = {
   themeColor: "#0a0b12",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  // No maximumScale — users must be able to pinch-zoom (WCAG 1.4.4).
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

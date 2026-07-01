@@ -26,7 +26,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return {
     title,
     description,
-    openGraph: { title, description, images: loc.image_url ? [loc.image_url] : [] },
+    alternates: { canonical: `/places/${loc.id}` },
+    openGraph: { title, description, type: "article", images: loc.image_url ? [loc.image_url] : [] },
     twitter: { card: "summary_large_image", title, description, images: loc.image_url ? [loc.image_url] : [] },
   };
 }

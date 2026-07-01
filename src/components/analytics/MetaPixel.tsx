@@ -2,7 +2,7 @@
 
 import Script from "next/script";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 /**
  * Meta Pixel base loader. Injects the pixel once and fires a PageView on every client
@@ -15,9 +15,16 @@ import { useEffect } from "react";
 export function MetaPixel() {
   const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
   const pathname = usePathname();
+  const firstLoad = useRef(true);
 
   useEffect(() => {
     if (!pixelId) return;
+    // The base pixel code already fires the initial PageView on load. Only fire on
+    // SUBSEQUENT client route changes so the first page view isn't double-counted.
+    if (firstLoad.current) {
+      firstLoad.current = false;
+      return;
+    }
     const fbq = (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq;
     if (typeof fbq === "function") fbq("track", "PageView");
   }, [pixelId, pathname]);
