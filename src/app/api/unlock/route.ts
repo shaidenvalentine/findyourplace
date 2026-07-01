@@ -27,19 +27,19 @@ export async function POST(req: NextRequest) {
   }
   const runId = body.runId ?? "";
   // Cold-lambda fallback: rebuild from inputs so we never error on the first try.
-  if (!getRun(runId)) {
+  if (!(await getRun(runId))) {
     if (body.inputs) {
-      putRun(buildScoredRun({ runId, createdAt: Date.now(), inputs: body.inputs, source: "quiz" }));
+      await putRun(buildScoredRun({ runId, createdAt: Date.now(), inputs: body.inputs, source: "quiz" }));
     } else {
       return NextResponse.json({ error: "Run not found" }, { status: 404 });
     }
   }
 
-  markUnlocked(runId);
+  await markUnlocked(runId);
 
   // Record the creator conversion (dev mode — simulated unlock). In production this
   // happens in the Stripe webhook instead so it's tied to verified payment.
-  const run = getRun(runId);
+  const run = await getRun(runId);
   if (run?.creatorId) {
     const creator = await getCreatorStore().getCreatorById(run.creatorId);
     if (creator) {

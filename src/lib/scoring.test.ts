@@ -199,7 +199,7 @@ describe("scoreCurrentCity", () => {
     // A curated city with the country appended must still resolve (no random fallback).
     const lis = scoreCurrentCity("Lisbon, Portugal", LOCATIONS, PROFILES.budgetNomadBeach);
     expect(lis.cityFound).toBe(true);
-    expect(lis.resolvedName.toLowerCase()).toContain("lisbon");
+    expect(lis.resolvedName?.toLowerCase()).toContain("lisbon");
   });
 
   it("grounds an unlisted city in a real estimate (no random hash)", () => {

@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
   }
 
   const runId = body.runId ?? "";
-  const existing = getRun(runId);
+  const existing = await getRun(runId);
   if (!existing) {
     return NextResponse.json({ error: "Run not found" }, { status: 404 });
   }
@@ -35,6 +35,6 @@ export async function POST(req: NextRequest) {
     source: existing.source,
   });
 
-  putRun(updated);
+  await putRun(updated);
   return NextResponse.json({ free: toFreeRun(updated) });
 }

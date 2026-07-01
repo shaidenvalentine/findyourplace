@@ -11,10 +11,15 @@ export function isStripeConfigured(): boolean {
 }
 
 export function isLemonSqueezyConfigured(): boolean {
+  // Require the webhook secret too: without it, checkout would succeed but the
+  // order_created webhook returns 503 and NO ONE gets unlocked. Treating the rail as
+  // "unconfigured" until the webhook secret is present prevents shipping a config that
+  // charges customers but can never unlock them.
   return Boolean(
     process.env.LEMONSQUEEZY_API_KEY &&
       process.env.LEMONSQUEEZY_STORE_ID &&
-      process.env.LEMONSQUEEZY_VARIANT_ID,
+      process.env.LEMONSQUEEZY_VARIANT_ID &&
+      process.env.LEMONSQUEEZY_WEBHOOK_SECRET,
   );
 }
 

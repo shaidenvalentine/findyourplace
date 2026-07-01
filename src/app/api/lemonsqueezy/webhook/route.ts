@@ -47,7 +47,10 @@ export async function POST(req: NextRequest) {
   if (event.meta?.event_name === "order_created" && attrs?.status === "paid") {
     const runId = event.meta?.custom_data?.run_id;
     if (runId) {
-      markUnlocked(runId);
+      await markUnlocked(runId, {
+        providerRef: event.data?.id ? `ls_${event.data.id}` : null,
+        amountCents: attrs.total ?? PRICE_CENTS,
+      });
 
       // Server-verified Purchase → Meta CAPI (deduped with the client copy by event_id).
       await sendCapiEvent({
@@ -59,7 +62,7 @@ export async function POST(req: NextRequest) {
       });
 
       // Record the creator conversion (50% cut by default).
-      const run = getRun(runId);
+      const run = await getRun(runId);
       const orderId = event.data?.id;
       if (run?.creatorId && orderId) {
         const store = getCreatorStore();

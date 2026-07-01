@@ -14,7 +14,7 @@ import type { OnboardingData } from "@/types/onboarding";
  * Result: no more "run error on first try" cold-start race.
  */
 async function handleResult(runId: string, fallbackInputs?: OnboardingData) {
-  let run = getRun(runId);
+  let run = await getRun(runId);
 
   // Cold-lambda fallback: rebuild from the client's cached inputs.
   if (!run && fallbackInputs) {
@@ -24,14 +24,14 @@ async function handleResult(runId: string, fallbackInputs?: OnboardingData) {
       inputs: fallbackInputs,
       source: "quiz",
     });
-    putRun(run);
+    await putRun(run);
   }
 
   if (!run) {
     return NextResponse.json({ error: "Run not found or expired" }, { status: 404 });
   }
 
-  const unlocked = isUnlocked(runId);
+  const unlocked = await isUnlocked(runId);
   const free = toFreeRun(run);
   if (!unlocked) return NextResponse.json({ free, unlocked: false });
   return NextResponse.json({

@@ -100,7 +100,7 @@ function frame(content: React.ReactNode) {
 
 export async function GET(req: Request, { params }: { params: Promise<{ runId: string }> }) {
   const { runId } = await params;
-  const run = getRun(runId);
+  const run = await getRun(runId);
   const url = new URL(req.url);
   const slide = url.searchParams.get("slide") || "identity";
   const isOg = url.searchParams.get("format") === "og";
@@ -132,7 +132,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ runId: s
     );
   }
 
-  const unlocked = isUnlocked(runId);
+  const unlocked = await isUnlocked(runId);
   const archetype = run.personality.archetype.replace(/^The /, "");
   const traits = run.personality.traits.slice(0, 3);
   const top = run.ranking[0];

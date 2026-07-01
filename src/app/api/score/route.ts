@@ -40,6 +40,6 @@ export async function POST(req: NextRequest) {
     await getCreatorStore().recordClick({ creatorId: creator.id, source: "link", referrer: null });
   }
 
-  putRun(run);
+  await putRun(run);
   return NextResponse.json({ runId: run.runId, free: toFreeRun(run) });
 }

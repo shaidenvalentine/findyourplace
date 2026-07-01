@@ -43,7 +43,10 @@ export async function POST(req: NextRequest) {
     const session = event.data.object as import("stripe").Stripe.Checkout.Session;
     const runId = session.metadata?.runId;
     if (runId && session.payment_status === "paid") {
-      markUnlocked(runId);
+      await markUnlocked(runId, {
+        providerRef: session.id,
+        amountCents: session.amount_total ?? PRICE_CENTS,
+      });
 
       // Server-verified Purchase → Meta CAPI. Same event_id as the client copy so Meta
       // dedups; this server copy fires even when the browser Pixel is blocked.
@@ -56,7 +59,7 @@ export async function POST(req: NextRequest) {
       });
 
       // Record the creator conversion (50% cut by default).
-      const run = getRun(runId);
+      const run = await getRun(runId);
       if (run?.creatorId) {
         const store = getCreatorStore();
         const creator = await store.getCreatorById(run.creatorId);

@@ -26,9 +26,9 @@ export async function POST(req: NextRequest) {
   }
   const runId = body.runId ?? "";
   // Cold-lambda fallback: rebuild the run from client-cached inputs if needed.
-  if (!getRun(runId)) {
+  if (!(await getRun(runId))) {
     if (body.inputs) {
-      putRun(buildScoredRun({ runId, createdAt: Date.now(), inputs: body.inputs, source: "quiz" }));
+      await putRun(buildScoredRun({ runId, createdAt: Date.now(), inputs: body.inputs, source: "quiz" }));
     } else {
       return NextResponse.json({ error: "Run not found" }, { status: 404 });
     }
@@ -55,30 +55,35 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const { default: Stripe } = await import("stripe");
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+  try {
+    const { default: Stripe } = await import("stripe");
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    payment_method_types: ["card"],
-    customer_email: body.email || undefined,
-    line_items: [
-      {
-        quantity: 1,
-        price_data: {
-          currency: CURRENCY,
-          unit_amount: PRICE_CENTS,
-          product_data: {
-            name: "Find Your Place — full results unlock",
-            description: "Your #1 match, full 250-place ranking, tax deep-dive, and annual circuit.",
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      payment_method_types: ["card"],
+      customer_email: body.email || undefined,
+      line_items: [
+        {
+          quantity: 1,
+          price_data: {
+            currency: CURRENCY,
+            unit_amount: PRICE_CENTS,
+            product_data: {
+              name: "Find Your Place — full results unlock",
+              description: "Your #1 match, full 250-place ranking, tax deep-dive, and annual circuit.",
+            },
           },
         },
-      },
-    ],
-    metadata: { runId },
-    success_url: `${origin}/results/${runId}?unlocked=1&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/results/${runId}`,
-  });
+      ],
+      metadata: { runId },
+      success_url: `${origin}/results/${runId}?unlocked=1&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/results/${runId}`,
+    });
 
-  return NextResponse.json({ mode: "stripe", url: session.url });
+    return NextResponse.json({ mode: "stripe", url: session.url });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Checkout failed";
+    return NextResponse.json({ error: msg }, { status: 502 });
+  }
 }
