@@ -95,10 +95,12 @@ export function ResultsView({ runId }: { runId: string }) {
     return (
       <div className="grid min-h-dvh place-items-center px-4 text-center">
         <div>
-          <p className="text-lg font-semibold">This result has expired.</p>
-          <p className="mt-1 text-sm text-muted-foreground">Runs are temporary in this build. Take the quiz again.</p>
+          <p className="text-lg font-semibold">We couldn&apos;t find that result.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            The link may be incomplete or from another device. It only takes a minute to get a fresh match.
+          </p>
           <Button asChild variant="gradient" className="mt-4">
-            <Link href="/start">Start over</Link>
+            <Link href="/start">Find my place</Link>
           </Button>
         </div>
       </div>
