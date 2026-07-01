@@ -29,6 +29,7 @@ export function DeepenMatch({ free, onRefined }: { free: FreeRun; onRefined: (up
   const [pending, setPending] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [justGained, setJustGained] = useState<number | null>(null);
+  const [err, setErr] = useState(false);
 
   const remaining = DEEP_QUIZ.filter((q) => !hasVal(free.inputs, q.key));
   const confidence = free.confidence;
@@ -43,28 +44,32 @@ export function DeepenMatch({ free, onRefined }: { free: FreeRun; onRefined: (up
 
   async function commit(q: QuizQuestion, value: string | string[]) {
     setBusy(true);
+    setErr(false);
     const before = free.confidence;
     try {
       const res = await fetch("/api/refine", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ runId: free.runId, additionalInputs: { [q.key]: value } }),
+        // Send cached inputs so any server instance can rebuild the run — no silent 404s.
+        body: JSON.stringify({ runId: free.runId, inputs: free.inputs, additionalInputs: { [q.key]: value } }),
       });
-      if (res.ok) {
-        const { free: updated } = (await res.json()) as { free: FreeRun };
-        saveRunLocal(updated);
-        onRefined(updated);
-        const gain = updated.confidence - before;
-        if (gain > 0) {
-          setJustGained(gain);
-          setTimeout(() => setJustGained(null), 1600);
-        }
+      if (!res.ok) throw new Error("refine failed");
+      const { free: updated } = (await res.json()) as { free: FreeRun };
+      saveRunLocal(updated);
+      onRefined(updated);
+      const gain = updated.confidence - before;
+      if (gain > 0) {
+        setJustGained(gain);
+        setTimeout(() => setJustGained(null), 1600);
       }
-    } finally {
-      setBusy(false);
+      // Advance only on success, so a dropped answer isn't silently lost.
       setPending([]);
       if (idx + 1 >= queue.length) setExpanded(false);
       else setIdx((i) => i + 1);
+    } catch {
+      setErr(true); // keep the question up so the user can retry the tap
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -158,6 +163,11 @@ export function DeepenMatch({ free, onRefined }: { free: FreeRun; onRefined: (up
           {busy && q.type === "single" && (
             <p className="mt-2 text-center text-xs text-muted-foreground">
               <Loader2 className="mr-1 inline size-3 animate-spin" /> sharpening…
+            </p>
+          )}
+          {err && (
+            <p className="mt-2 text-center text-xs text-destructive">
+              That didn&apos;t go through — tap your answer again.
             </p>
           )}
         </div>

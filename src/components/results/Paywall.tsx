@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ANCHOR_LABEL, PRICE_LABEL } from "@/lib/pricing";
 import { loadRunLocal } from "@/lib/run";
+import { LOCATION_COUNT } from "@/data/locations";
 import { track } from "@/lib/analytics";
 import { Check, Loader2, Lock, ShieldCheck, Star } from "lucide-react";
 
 const INCLUDES = [
   "The name of your #1 place, revealed",
   "Your move plan — the steps to actually get there",
-  "The full ranking of all 250 places",
+  `The full ranking of all ${LOCATION_COUNT} places`,
   "Per-place tax deep-dive + annual circuit",
   "Your shareable result card",
 ];

@@ -11,7 +11,7 @@ import type { OnboardingData } from "@/types/onboarding";
  * gate. Unlock state lives in a separate ledger and is preserved across refinement.
  */
 export async function POST(req: NextRequest) {
-  let body: { runId?: string; additionalInputs?: OnboardingData };
+  let body: { runId?: string; additionalInputs?: OnboardingData; inputs?: OnboardingData };
   try {
     body = await req.json();
   } catch {
@@ -19,7 +19,13 @@ export async function POST(req: NextRequest) {
   }
 
   const runId = body.runId ?? "";
-  const existing = await getRun(runId);
+  let existing = await getRun(runId);
+
+  // Cold-lambda / no-DB fallback: rebuild from the client's cached inputs so refine never
+  // dead-ends the way the other routes already guard against.
+  if (!existing && body.inputs) {
+    existing = buildScoredRun({ runId, createdAt: Date.now(), inputs: body.inputs, source: "quiz" });
+  }
   if (!existing) {
     return NextResponse.json({ error: "Run not found" }, { status: 404 });
   }

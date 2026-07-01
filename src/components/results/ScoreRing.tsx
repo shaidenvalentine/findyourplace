@@ -18,8 +18,20 @@ export function ScoreRing({
   const r = (size - stroke) / 2;
   const circ = 2 * Math.PI * r;
   const [shown, setShown] = useState(0);
+  const [animate, setAnimate] = useState(true);
 
   useEffect(() => {
+    // Respect reduced-motion: paint the final value with no sweep/transition.
+    const reduce =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      // Syncing with a platform API (matchMedia) — the intended use of an effect.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setAnimate(false);
+      setShown(score);
+      return;
+    }
     const id = requestAnimationFrame(() => setShown(score));
     return () => cancelAnimationFrame(id);
   }, [score]);
@@ -40,7 +52,7 @@ export function ScoreRing({
           strokeLinecap="round"
           strokeDasharray={circ}
           strokeDashoffset={offset}
-          style={{ transition: "stroke-dashoffset 1.1s cubic-bezier(0.2,0.8,0.2,1)" }}
+          style={{ transition: animate ? "stroke-dashoffset 1.1s cubic-bezier(0.2,0.8,0.2,1)" : "none" }}
         />
         <defs>
           <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">

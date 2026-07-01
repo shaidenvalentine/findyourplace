@@ -3,6 +3,7 @@ import { getRun, putRun } from "@/lib/server/runStore";
 import { buildScoredRun } from "@/lib/buildRun";
 import { PRICE_CENTS, CURRENCY, activePaymentProvider } from "@/lib/pricing";
 import { createLemonCheckout } from "@/lib/server/lemonsqueezy";
+import { LOCATION_COUNT } from "@/data/locations";
 import type { OnboardingData } from "@/types/onboarding";
 
 /**
@@ -71,7 +72,7 @@ export async function POST(req: NextRequest) {
             unit_amount: PRICE_CENTS,
             product_data: {
               name: "Find Your Place — full results unlock",
-              description: "Your #1 match, full 250-place ranking, tax deep-dive, and annual circuit.",
+              description: `Your #1 match, full ${LOCATION_COUNT}-place ranking, tax deep-dive, and annual circuit.`,
             },
           },
         },

@@ -25,16 +25,19 @@ export function TaxProfile({ free, onRefined }: { free: FreeRun; onRefined: (u: 
   const [usCitizen, setUsCitizen] = useState(Boolean(free.inputs.isUsCitizen));
   const [investor, setInvestor] = useState(Boolean(free.inputs.hasInvestmentIncome));
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(false);
 
   async function submit() {
     if (!band || !country.trim()) return;
     setBusy(true);
+    setErr(false);
     try {
       const res = await fetch("/api/refine", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           runId: free.runId,
+          inputs: free.inputs, // cold-lambda rebuild fallback — never dead-end
           additionalInputs: {
             annualIncomeBand: band,
             taxResidenceCountry: country.trim(),
@@ -44,12 +47,13 @@ export function TaxProfile({ free, onRefined }: { free: FreeRun; onRefined: (u: 
           },
         }),
       });
-      if (res.ok) {
-        const { free: updated } = (await res.json()) as { free: FreeRun };
-        saveRunLocal(updated);
-        onRefined(updated);
-        setEditing(false);
-      }
+      if (!res.ok) throw new Error("refine failed");
+      const { free: updated } = (await res.json()) as { free: FreeRun };
+      saveRunLocal(updated);
+      onRefined(updated);
+      setEditing(false);
+    } catch {
+      setErr(true);
     } finally {
       setBusy(false);
     }
@@ -95,6 +99,11 @@ export function TaxProfile({ free, onRefined }: { free: FreeRun; onRefined: (u: 
               {busy ? <Loader2 className="size-4 animate-spin" /> : <ArrowRight className="size-4" />}
               See my tax picture
             </Button>
+            {err && (
+              <p className="text-center text-xs text-destructive">
+                Couldn&apos;t crunch that just now — tap to try again.
+              </p>
+            )}
             <p className="text-[11px] text-muted-foreground">
               Estimate only — not tax advice. We never store your income.
             </p>

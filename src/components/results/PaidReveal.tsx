@@ -150,7 +150,7 @@ function CircuitSection({ circuit }: { circuit: AnnualCircuit }) {
 }
 
 function FullRanking({ ranking }: { ranking: RankedPlace[] }) {
-  const [limit, setLimit] = useState(25);
+  const [limit, setLimit] = useState(50);
   const shown = ranking.slice(0, limit);
   return (
     <Card>
@@ -182,7 +182,7 @@ function FullRanking({ ranking }: { ranking: RankedPlace[] }) {
         })}
         {limit < ranking.length && (
           <button
-            onClick={() => setLimit((l) => l + 50)}
+            onClick={() => setLimit((l) => l + 100)}
             className="mt-2 flex items-center justify-center gap-1 rounded-lg border border-border py-2 text-sm font-medium text-muted-foreground hover:bg-muted/40"
           >
             Show more <ChevronDown className="size-4" />
