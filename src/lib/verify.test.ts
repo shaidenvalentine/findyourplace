@@ -185,4 +185,22 @@ describe("scoring sanity — canonical user archetypes produce sensible #1s", ()
     // San Diego shouldn't score in the floor for a SoCal-y profile.
     expect(fit.score).toBeGreaterThanOrEqual(60);
   });
+
+  it("current-city fit distinguishes a mediocre place from a terrible one", () => {
+    // For a tropical-beach person: a cold, landlocked-feeling city (Reykjavik) must score
+    // clearly WORSE than a temperate coastal one (Lisbon), and the decent option must not
+    // be pinned to the old display floor. Locks the display-curve fix for current-city.
+    const profile: OnboardingData = {
+      preferredClimate: "tropical",
+      beachMountain: "beach",
+      budgetRange: "budget",
+      workStyle: "remote",
+    };
+    const lisbon = scoreCurrentCity("Lisbon", LOCATIONS, profile).score;
+    const reykjavik = scoreCurrentCity("Reykjavik", LOCATIONS, profile).score;
+    const bali = scoreCurrentCity("Bali", LOCATIONS, profile).score;
+    expect(reykjavik).toBeLessThan(lisbon); // terrible < mediocre
+    expect(lisbon).toBeLessThan(bali); // mediocre < ideal
+    expect(lisbon).toBeGreaterThan(35); // not stuck at the old floor
+  });
 });
