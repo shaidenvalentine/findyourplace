@@ -33,7 +33,7 @@ function TopMatchHero({ place }: { place: RankedPlace }) {
     <div className="animate-fade-up overflow-hidden rounded-2xl border border-primary/30">
       {/* Photo hero */}
       <div className="relative">
-        <PlacePhoto location={loc} rounded="rounded-none" className="h-56 w-full" sizes="600px" priority scrim />
+        <PlacePhoto location={loc} rounded="rounded-none" className="h-56 w-full" w={640} priority scrim />
         <div className="absolute inset-x-0 bottom-0 p-5">
           <Badge variant="primary" className="mb-2 w-fit">
             <Trophy className="size-3" /> Your #1 match
@@ -171,7 +171,7 @@ function FullRanking({ ranking }: { ranking: RankedPlace[] }) {
               <span className="w-6 shrink-0 text-right text-sm font-semibold tabular-nums text-muted-foreground">
                 {p.rank}
               </span>
-              <PlacePhoto location={loc} className="size-9 shrink-0" rounded="rounded-md" sizes="36px" />
+              <PlacePhoto location={loc} className="size-9 shrink-0" rounded="rounded-md" w={72} />
               <span className="min-w-0 flex-1 truncate">
                 <span className="font-medium">{p.name}</span>
                 <span className="ml-2 text-xs text-muted-foreground">{p.country}</span>

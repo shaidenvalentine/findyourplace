@@ -63,7 +63,7 @@ export default async function PlacePage({ params }: { params: Promise<{ id: stri
 
       {/* Hero */}
       <div className="relative overflow-hidden rounded-2xl">
-        <PlacePhoto location={loc} className="h-64 w-full sm:h-80" sizes="700px" priority scrim />
+        <PlacePhoto location={loc} className="h-64 w-full sm:h-80" w={720} priority scrim />
         <div className="absolute inset-x-0 bottom-0 p-5">
           <div className="mb-2 flex flex-wrap gap-1.5">
             {loc.tags?.slice(0, 4).map((t) => (

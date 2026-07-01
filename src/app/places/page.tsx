@@ -57,7 +57,7 @@ export default function PlacesIndex() {
                   href={`/places/${l.id}`}
                   className="group overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/40"
                 >
-                  <PlacePhoto location={l} className="aspect-[4/3] w-full" rounded="rounded-none" sizes="(max-width:640px) 50vw, 25vw" />
+                  <PlacePhoto location={l} className="aspect-[4/3] w-full" rounded="rounded-none" w={360} />
                   <div className="p-3">
                     <div className="truncate font-semibold leading-tight">{l.name}</div>
                     <div className="truncate text-xs text-muted-foreground">{l.country}</div>
