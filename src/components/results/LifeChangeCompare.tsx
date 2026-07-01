@@ -57,15 +57,17 @@ export function LifeChangeCompare({ city, lifeChange }: { city: string; lifeChan
                 </span>
               </div>
               <div className="relative h-2 w-full overflow-hidden rounded-full bg-muted">
-                {/* current marker */}
-                <div
-                  className="absolute inset-y-0 left-0 rounded-full bg-muted-foreground/40"
-                  style={{ width: `${Math.max(2, Math.min(100, c.current))}%` }}
-                />
-                {/* best fill */}
+                {/* best fill (the achievable) */}
                 <div
                   className="absolute inset-y-0 left-0 rounded-full bg-[linear-gradient(90deg,hsl(var(--secondary)),hsl(var(--primary)))]"
-                  style={{ width: `${Math.max(2, Math.min(100, c.best))}%`, opacity: 0.85 }}
+                  style={{ width: `${Math.max(2, Math.min(100, c.best))}%` }}
+                />
+                {/* current-city tick, drawn on top so the gap to "best" is always visible
+                    (and reads correctly even when the current city is the stronger one) */}
+                <div
+                  className="absolute inset-y-0 w-0.5 bg-foreground/80"
+                  style={{ left: `${Math.max(0, Math.min(99, c.current))}%` }}
+                  aria-hidden
                 />
               </div>
               <p className="mt-1 text-xs text-muted-foreground">{c.note}</p>
