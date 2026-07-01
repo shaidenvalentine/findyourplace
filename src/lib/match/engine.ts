@@ -270,10 +270,12 @@ function lovedVectors(p: OnboardingData, locations: Location[]): { ids: Set<stri
   const vecs: number[][] = [];
   for (const raw of p.lovedPlaces ?? []) {
     const r = resolvePlace(raw, locations);
-    if (r.matched) {
-      ids.add(r.matched.id);
-      vecs.push(vec(r.matched, locations));
-    }
+    // Always let the loved place's CHARACTER influence resonance — resolvePlace returns a
+    // real vector even when the exact name isn't in our curated set (it synthesizes one
+    // from the country). Only an exact curated match gets pinned toward #1 (via ids), so an
+    // unresolved "Oaxaca"/"Tbilisi" still shapes the blend instead of silently no-op'ing.
+    vecs.push(vec(r.location, locations));
+    if (r.matched) ids.add(r.matched.id);
   }
   return { ids, vecs };
 }

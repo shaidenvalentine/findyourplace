@@ -137,8 +137,10 @@ export function scoreCurrentCity(
 
 export function generateReasons(location: Location, categoryScores: CategoryScore[]): string[] {
   const reasons: string[] = [];
-  const sortedScores = [...categoryScores].sort((a, b) => b.score - a.score);
-  const topCategories = sortedScores.slice(0, 5);
+  // Lead with the categories that matter MOST TO THIS USER and where the place delivers —
+  // impact = fit × expressed importance (weight). This surfaces "you wanted X, and it's
+  // strong here" instead of just whatever the place happens to be objectively good at.
+  const topCategories = [...categoryScores].sort((a, b) => b.score * b.weight - a.score * a.weight).slice(0, 5);
 
   for (const cat of topCategories) {
     switch (cat.category) {
@@ -204,7 +206,15 @@ export function generateReasons(location: Location, categoryScores: CategoryScor
         }
         break;
       case "lifestyle":
-        reasons.push(`Lifestyle that matches your preferences ${cat.score > 75 ? "perfectly" : "well"}`);
+        if (cat.score > 70) {
+          if (location.walkability_score && location.walkability_score > 80) {
+            reasons.push("Highly walkable — daily life on foot, not behind a wheel");
+          } else if (location.nightlife_score && location.nightlife_score > 80) {
+            reasons.push("A lively scene with plenty going on after dark");
+          } else {
+            reasons.push("The everyday pace and energy fit the life you described");
+          }
+        }
         break;
     }
   }
