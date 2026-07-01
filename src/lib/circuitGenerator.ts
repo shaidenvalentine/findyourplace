@@ -86,7 +86,8 @@ function scoreLocationForMonth(location: Location, month: number, preferences: O
   // Mountain/snowboarding in winter
   if (preferences.beachMountain === "mountains" && location.mountain_access_score) {
     const isSouthern = isSouthernHemisphere(location);
-    const winterMonths = isSouthern ? [6, 7, 8] : [12, 0, 1, 2];
+    // Northern-hemisphere winter is Dec–Mar; month indices are 0–11 (11 = December).
+    const winterMonths = isSouthern ? [6, 7, 8] : [11, 0, 1, 2];
     if (winterMonths.includes(month)) {
       score += (location.mountain_access_score - 50) * 0.3;
     }

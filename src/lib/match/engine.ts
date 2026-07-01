@@ -239,11 +239,15 @@ function weightedFit(cats: CategoryScoreV2[]): number {
   return cats.reduce((s, c) => s + c.score * c.weight, 0) / w;
 }
 
-// spread a 0..100 fit into a punchier display range (keeps the headline numbers exciting
-// without inverting order). Centered so a true match lands high, a poor one clearly low.
+// Map the raw fit/resonance score (which, because unexpressed axes sit at neutral, tends
+// to cluster in the ~10..75 band) into a believable display range. This is a MONOTONIC
+// affine transform — it never changes rank order, only the displayed numbers. The old
+// curve (center 64, gain 1.6) pushed the bulk below its floor, so a real ranking read as a
+// wall of identical "35"s. This one (slope 0.95, intercept 22, floor 28) gives a genuine
+// #1 ~90+ and a smooth gradient down the list, with almost nothing pinned to the floor.
+// Tuned empirically against representative profiles; a distribution test locks it.
 function spread(v: number): number {
-  const center = 64;
-  return clamp(Math.round(center + (v - center) * 1.6), 35, 99);
+  return clamp(Math.round(22 + v * 0.95), 28, 99);
 }
 
 // ── Revealed preference: cosine similarity of a candidate to the user's loved places. ────
@@ -304,7 +308,15 @@ export function rankLocationsV2(locations: Location[], p: OnboardingData): Ranke
     return { location: loc, totalScore: blended, displayScore: display, categoryScores: cats, rank: 0 };
   });
 
-  scored.sort((a, b) => b.totalScore - a.totalScore);
+  // Primary: fit/resonance. Tie-break: a bigger, safer city — so a near-tie (and the
+  // degenerate all-neutral case of an empty profile) resolves to a sensible, notable place
+  // instead of whatever happens to sit first in the dataset.
+  scored.sort(
+    (a, b) =>
+      b.totalScore - a.totalScore ||
+      num(b.location.population, 0) - num(a.location.population, 0) ||
+      num(b.location.safety_score, 0) - num(a.location.safety_score, 0),
+  );
   scored.forEach((s, i) => (s.rank = i + 1));
   return scored;
 }

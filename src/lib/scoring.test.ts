@@ -120,10 +120,23 @@ describe("scoreLocations is deterministic and well-formed", () => {
     expect(a).toEqual(b);
   });
 
-  it("totalScore stays within the spread bounds [35,99]", () => {
+  it("totalScore stays within the spread bounds [28,99]", () => {
     for (const r of scoreLocations(LOCATIONS, PROFILES.mountainsCold)) {
-      expect(r.totalScore).toBeGreaterThanOrEqual(35);
+      expect(r.totalScore).toBeGreaterThanOrEqual(28);
       expect(r.totalScore).toBeLessThanOrEqual(99);
+    }
+  });
+
+  // Locks the display curve against regressing to a "wall of identical floor scores".
+  // For every representative profile: a genuinely strong #1 (>=85), and the ranking must
+  // NOT pile up at the floor (fewer than 25% of places at the minimum displayed score).
+  it("produces a believable display distribution (no floor pileup)", () => {
+    for (const profile of Object.values(PROFILES)) {
+      const results = scoreLocations(LOCATIONS, profile);
+      expect(results[0].totalScore).toBeGreaterThanOrEqual(85);
+      const min = Math.min(...results.map((r) => r.totalScore));
+      const atFloor = results.filter((r) => r.totalScore === min).length;
+      expect(atFloor / results.length).toBeLessThan(0.25);
     }
   });
 
