@@ -31,9 +31,12 @@ export default function QuizPage() {
     hydrated.current = true;
   }, []);
 
-  // Persist on every change (but not before the initial rehydrate has run).
+  // Persist on every change (but not before the initial rehydrate has run). Also skip the
+  // empty initial state so the first post-hydrate commit can't transiently overwrite saved
+  // progress with {idx:0, answers:{}} before the restored values are applied.
   useEffect(() => {
     if (!hydrated.current) return;
+    if (idx === 0 && Object.keys(answers).length === 0) return;
     saveQuizProgress({ idx, answers });
   }, [idx, answers]);
 
