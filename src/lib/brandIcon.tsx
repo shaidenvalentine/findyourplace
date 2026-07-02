@@ -1,10 +1,37 @@
 /**
- * The Find Your Place brand mark — coral→amber gradient + a white location pin holding a
- * little globe. One source of truth for the favicon, Apple touch icon, PWA/app icon, the
- * /api/icon generator, and the Instagram profile picture.
+ * The Find Your Place brand mark — a refined location pin holding a small globe, in the
+ * app's dark + lime identity. One vector source of truth for the favicon, Apple touch
+ * icon, PWA/app icon, the /api/icon generator, the Instagram profile picture, and the
+ * in-app header logo. Pure SVG so it stays razor-crisp at every size.
  */
+
+/** The pin+globe glyph on its own (transparent) — used over any background. */
+export function BrandMark({
+  size,
+  pin = "#c8e85a",
+  well = "#14160f",
+}: {
+  size: number;
+  pin?: string;
+  well?: string;
+}) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      {/* teardrop pin */}
+      <path d="M12 22.6c4.75-4.3 7.05-7.75 7.05-11.1A7.05 7.05 0 1 0 4.95 11.5c0 3.35 2.3 6.8 7.05 11.1Z" fill={pin} />
+      {/* globe well (negative space) */}
+      <circle cx="12" cy="10.45" r="3.65" fill={well} />
+      {/* equator + meridians, in the pin color */}
+      <path d="M8.35 10.45h7.3" stroke={pin} strokeWidth="0.75" strokeLinecap="round" />
+      <path d="M12 6.8c1.95 1.2 1.95 6.1 0 7.3" stroke={pin} strokeWidth="0.75" fill="none" strokeLinecap="round" />
+      <path d="M12 6.8c-1.95 1.2-1.95 6.1 0 7.3" stroke={pin} strokeWidth="0.75" fill="none" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/** Full-bleed icon canvas (dark, subtle lime glow) — for favicons / PWA / og profile. */
 export function BrandIcon({ size }: { size: number }) {
-  const pin = Math.round(size * 0.52);
+  const glyph = Math.round(size * 0.56);
   return (
     <div
       style={{
@@ -13,22 +40,10 @@ export function BrandIcon({ size }: { size: number }) {
         height: "100%",
         alignItems: "center",
         justifyContent: "center",
-        background: "radial-gradient(120% 120% at 28% 22%, #ffd27a 0%, #f9b13c 34%, #f26a3e 74%, #e1542c 100%)",
+        background: "radial-gradient(120% 120% at 30% 20%, #21271a 0%, #171a12 45%, #0d0f0a 100%)",
       }}
     >
-      <svg width={pin} height={pin} viewBox="0 0 24 24" fill="none">
-        <path d="M12 23s7.5-6.4 7.5-12.2A7.5 7.5 0 1 0 4.5 10.8C4.5 16.6 12 23 12 23Z" fill="rgba(120,30,10,0.28)" transform="translate(0,0.45)" />
-        <path d="M12 23s7.5-6.4 7.5-12.2A7.5 7.5 0 1 0 4.5 10.8C4.5 16.6 12 23 12 23Z" fill="#ffffff" />
-        <circle cx="12" cy="10.4" r="3.5" fill="url(#fyp_g)" />
-        <circle cx="12" cy="10.4" r="3.5" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.5" />
-        <path d="M8.5 10.4h7M12 6.9c1.7 1 1.7 6 0 7M12 6.9c-1.7 1-1.7 6 0 7" stroke="rgba(255,255,255,0.85)" strokeWidth="0.55" fill="none" />
-        <defs>
-          <linearGradient id="fyp_g" x1="9" y1="7" x2="15" y2="14" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#f9b13c" />
-            <stop offset="1" stopColor="#e1542c" />
-          </linearGradient>
-        </defs>
-      </svg>
+      <BrandMark size={glyph} />
     </div>
   );
 }
