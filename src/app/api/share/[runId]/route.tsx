@@ -159,6 +159,103 @@ function Ring({ score, size, label }: { score: number; size: number; label?: str
   );
 }
 
+/** Map the engine's category labels to short radar labels. */
+const RADAR_SHORT: Record<string, string> = {
+  "Climate Fit": "Climate",
+  "Nature & Outdoors": "Nature",
+  "Community & Social": "People",
+  "Career & Work": "Career",
+  "Cost & Value": "Cost",
+  "Safety & Stability": "Safety",
+  "Health & Wellness": "Wellness",
+  "Travel & Connectivity": "Travel",
+  "Culture & Openness": "Culture",
+  "Lifestyle Match": "Lifestyle",
+};
+
+/**
+ * The "Place DNA" radar — a 10-dimension fingerprint of who the sharer is. No two
+ * people's polygons look alike; that uniqueness is what makes the card feel personal
+ * enough to post. Pure SVG for Satori.
+ */
+function Radar({ items, size }: { items: { label: string; score: number }[]; size: number }) {
+  const cx = size / 2;
+  const cy = size / 2;
+  const r = size * 0.33;
+  const n = items.length;
+  const pt = (i: number, radius: number) => {
+    const a = (Math.PI * 2 * i) / n - Math.PI / 2;
+    return [cx + radius * Math.cos(a), cy + radius * Math.sin(a)] as const;
+  };
+  const poly = (radius: number) =>
+    Array.from({ length: n }, (_, i) => pt(i, radius).map((v) => v.toFixed(1)).join(",")).join(" ");
+  // Floor at 18% so a weak axis still draws — the shape stays readable.
+  const dataPts = items.map((c, i) => pt(i, r * (0.18 + 0.82 * Math.max(0, Math.min(100, c.score)) / 100)));
+  const dataPoly = dataPts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+
+  return (
+    <div style={{ display: "flex", position: "relative", width: size, height: size }}>
+      <svg width={size} height={size}>
+        {[1 / 3, 2 / 3, 1].map((f) => (
+          <polygon key={f} points={poly(r * f)} fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth={1.5} />
+        ))}
+        {items.map((_, i) => {
+          const [x, y] = pt(i, r);
+          return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="rgba(255,255,255,0.07)" strokeWidth={1.5} />;
+        })}
+        <polygon points={dataPoly} fill="rgba(84,224,207,0.22)" stroke={TEAL_BRIGHT} strokeWidth={4} strokeLinejoin="round" />
+        {dataPts.map(([x, y], i) => (
+          <circle key={i} cx={x} cy={y} r={7} fill={TEAL_BRIGHT} />
+        ))}
+      </svg>
+      {items.map((c, i) => {
+        const [x, y] = pt(i, r + size * 0.085);
+        return (
+          <div
+            key={c.label}
+            style={{
+              display: "flex",
+              position: "absolute",
+              left: x - 90,
+              top: y - 18,
+              width: 180,
+              justifyContent: "center",
+              fontSize: 25,
+              fontWeight: 500,
+              color: "rgba(255,255,255,0.55)",
+              textTransform: "uppercase",
+              letterSpacing: 3,
+            }}
+          >
+            {RADAR_SHORT[c.label] ?? c.label}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Redacted-digit blocks for the mystery coordinates. */
+function RedactedDigits() {
+  return (
+    <div style={{ display: "flex", flexDirection: "row", alignItems: "center", marginLeft: 6, marginRight: 6 }}>
+      {[22, 22, 22].map((w, i) => (
+        <div
+          key={i}
+          style={{
+            display: "flex",
+            width: w,
+            height: 30,
+            borderRadius: 6,
+            background: "rgba(255,255,255,0.28)",
+            marginRight: i === 2 ? 0 : 6,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 function Chip({ children, color = INK }: { children: React.ReactNode; color?: string }) {
   return (
     <div
@@ -302,6 +399,65 @@ export async function GET(req: Request, { params }: { params: Promise<{ runId: s
             findyourplace.app · 60 seconds, free to start
           </div>
         </div>
+      ),
+      opts,
+    );
+  }
+
+  // ── PLACE DNA slide (the flagship share) ────────────────────────────────────
+  // Identity flex (radar fingerprint + archetype) + a game for the viewer (the real
+  // latitude of their #1 place with the longitude redacted). Free and paid share the
+  // same card — the coordinates never name the place.
+  if (slide === "dna") {
+    const lat = loc?.latitude ?? null;
+    const lon = loc?.longitude ?? null;
+    const latStr = lat !== null ? `${Math.abs(lat).toFixed(1)}°${lat >= 0 ? "N" : "S"}` : null;
+    const ew = lon !== null ? (lon >= 0 ? "E" : "W") : "E";
+
+    return new ImageResponse(
+      frame(
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+            <div style={{ display: "flex", width: 12, height: 12, borderRadius: 999, background: TEAL_BRIGHT, marginRight: 16 }} />
+            <MicroLabel color="rgba(255,255,255,0.7)" size={28}>
+              My place DNA
+            </MicroLabel>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              fontSize: archetype.length > 14 ? 86 : 104,
+              fontWeight: 300,
+              lineHeight: 1.0,
+              letterSpacing: -3,
+              color: INK,
+              marginTop: 28,
+              textAlign: "center",
+            }}
+          >
+            The {archetype}
+          </div>
+
+          <div style={{ display: "flex", marginTop: 30 }}>
+            <Radar items={run.categoryAverages} size={800} />
+          </div>
+
+          {/* The hooks: mystery coordinates of the #1 place + the proof score */}
+          <div style={{ display: "flex", flexDirection: "row", alignItems: "center", marginTop: 34 }}>
+            {latStr && (
+              <Chip color={TEAL_BRIGHT}>
+                <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+                  <div style={{ display: "flex" }}>my #1 place: {latStr} ·</div>
+                  <RedactedDigits />
+                  <div style={{ display: "flex" }}>°{ew}</div>
+                </div>
+              </Chip>
+            )}
+            <Chip>{teaseScore} match</Chip>
+          </div>
+        </div>,
+        "guess where I belong?",
       ),
       opts,
     );

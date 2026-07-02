@@ -12,12 +12,12 @@ import { Share2, Check, Loader2, Download } from "lucide-react";
  */
 export function ShareSlides({ free, variant }: { free: FreeRun; variant: "teaser" | "reveal" }) {
   const runId = free.runId;
-  // Decks designed for what people ACTUALLY share.
-  // Pre-unlock: identity card (the universal share) + a curiosity locked-place tease.
-  // Post-unlock: identity card + the place reveal with photo + a soft CTA.
-  // Tax + gap math slides removed — nobody posts their income or a comparison chart.
+  // Decks designed for what people ACTUALLY share. The flagship is the Place DNA card:
+  // an identity flex (radar fingerprint + archetype) PLUS a game for the viewer (the
+  // redacted coordinates of the #1 place) — a share that starts conversations.
+  // Post-unlock swaps in the place reveal; a soft CTA closes the deck.
   const slides = useMemo(() => {
-    return variant === "reveal" ? ["identity", "place", "cta"] : ["identity", "place"];
+    return variant === "reveal" ? ["dna", "place", "cta"] : ["dna", "place"];
   }, [variant]);
 
   const [busy, setBusy] = useState(false);
@@ -25,8 +25,8 @@ export function ShareSlides({ free, variant }: { free: FreeRun; variant: "teaser
 
   const text =
     variant === "reveal"
-      ? `I'm ${free.personality.archetype}. I just found the place that fits me.`
-      : `I'm ${free.personality.archetype}`;
+      ? `I'm ${free.personality.archetype} — and I just found my place. Where's yours?`
+      : `I'm ${free.personality.archetype}. My #1 place on Earth scored ${free.topTease.score}/100 — guess where it is.`;
   const resultUrl = typeof window !== "undefined" ? `${window.location.origin}/results/${runId}` : "";
 
   async function fetchFiles(): Promise<File[]> {
