@@ -103,7 +103,6 @@ export default function QuizPage() {
               <OptionButton
                 key={opt.value}
                 label={opt.label}
-                emoji={opt.emoji}
                 hint={opt.hint}
                 selected={selectedArr.includes(opt.value)}
                 onClick={() => select(opt.value)}

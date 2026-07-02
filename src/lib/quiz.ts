@@ -34,8 +34,8 @@ export const QUIZ: QuizQuestion[] = [
     subtitle: "This unlocks your annual circuit if you roam.",
     type: "single",
     options: [
-      { value: "rooted", label: "Put down roots", emoji: "🏡", hint: "One home base", insight: "Got it — we'll hunt for the single best home base on Earth for you." },
-      { value: "nomadic", label: "Stay on the move", emoji: "✈️", hint: "Multiple stops a year", insight: "Nice — we'll also build you a year-round circuit that chases your perfect weather." },
+      { value: "rooted", label: "Put down roots", hint: "One home base", insight: "Got it — we'll hunt for the single best home base on Earth for you." },
+      { value: "nomadic", label: "Stay on the move", hint: "Multiple stops a year", insight: "Nice — we'll also build you a year-round circuit that chases your perfect weather." },
     ],
   },
   {
@@ -43,9 +43,9 @@ export const QUIZ: QuizQuestion[] = [
     title: "Pulled toward…",
     type: "single",
     options: [
-      { value: "beach", label: "Ocean & beaches", emoji: "🏝️", insight: "Noted — that already reshuffles your whole top 20." },
-      { value: "mountains", label: "Mountains & trails", emoji: "🏔️", insight: "Noted — that already reshuffles your whole top 20." },
-      { value: "either", label: "Either, honestly", emoji: "🌍", insight: "Open to both — that keeps more of the world in play for you." },
+      { value: "beach", label: "Ocean & beaches", insight: "Noted — that already reshuffles your whole top 20." },
+      { value: "mountains", label: "Mountains & trails", insight: "Noted — that already reshuffles your whole top 20." },
+      { value: "either", label: "Either, honestly", insight: "Open to both — that keeps more of the world in play for you." },
     ],
   },
   {
@@ -53,10 +53,10 @@ export const QUIZ: QuizQuestion[] = [
     title: "Your ideal climate?",
     type: "single",
     options: [
-      { value: "tropical", label: "Tropical & warm", emoji: "🌴", insight: "Warm it is — we just ruled out a lot of grey winters." },
-      { value: "mediterranean", label: "Sunny & mild", emoji: "☀️", insight: "The climate most people score highest in — strong choice." },
-      { value: "temperate", label: "Four real seasons", emoji: "🍂", insight: "Four seasons — that points somewhere very different from the beach crowd." },
-      { value: "cold", label: "Crisp & cool", emoji: "❄️", insight: "Cool and crisp — a rarer taste, and it narrows things fast." },
+      { value: "tropical", label: "Tropical & warm", insight: "Warm it is — we just ruled out a lot of grey winters." },
+      { value: "mediterranean", label: "Sunny & mild", insight: "The climate most people score highest in — strong choice." },
+      { value: "temperate", label: "Four real seasons", insight: "Four seasons — that points somewhere very different from the beach crowd." },
+      { value: "cold", label: "Crisp & cool", insight: "Cool and crisp — a rarer taste, and it narrows things fast." },
     ],
   },
   {
@@ -64,9 +64,9 @@ export const QUIZ: QuizQuestion[] = [
     title: "Your ideal day sounds like…",
     type: "single",
     options: [
-      { value: "low", label: "Quiet & calm", emoji: "🧘" },
-      { value: "medium", label: "Walkable buzz", emoji: "🚶" },
-      { value: "high", label: "Energy & nightlife", emoji: "🎉" },
+      { value: "low", label: "Quiet & calm" },
+      { value: "medium", label: "Walkable buzz" },
+      { value: "high", label: "Energy & nightlife" },
     ],
   },
   {
@@ -74,9 +74,9 @@ export const QUIZ: QuizQuestion[] = [
     title: "How do you work?",
     type: "single",
     options: [
-      { value: "remote", label: "Fully remote", emoji: "💻" },
-      { value: "hybrid", label: "Hybrid / flexible", emoji: "🔀" },
-      { value: "onsite", label: "On-site / local", emoji: "🏢" },
+      { value: "remote", label: "Fully remote" },
+      { value: "hybrid", label: "Hybrid / flexible" },
+      { value: "onsite", label: "On-site / local" },
     ],
   },
   {
@@ -85,10 +85,10 @@ export const QUIZ: QuizQuestion[] = [
     subtitle: "Pick any that fit.",
     type: "multi",
     options: [
-      { value: "digital-nomad", label: "Nomads & remote folks", emoji: "🌐" },
-      { value: "startup", label: "Founders & builders", emoji: "🚀" },
-      { value: "expat", label: "International expats", emoji: "🛫" },
-      { value: "local", label: "Locals & deep culture", emoji: "🏘️" },
+      { value: "digital-nomad", label: "Nomads & remote folks" },
+      { value: "startup", label: "Founders & builders" },
+      { value: "expat", label: "International expats" },
+      { value: "local", label: "Locals & deep culture" },
     ],
   },
   {
@@ -96,9 +96,9 @@ export const QUIZ: QuizQuestion[] = [
     title: "Monthly budget to live well?",
     type: "single",
     options: [
-      { value: "budget", label: "Stretch it far", emoji: "💸", hint: "Under ~$1.5k" },
-      { value: "mid-range", label: "Comfortable", emoji: "💳", hint: "~$2–4k" },
-      { value: "luxury", label: "No real ceiling", emoji: "💎", hint: "$5k+" },
+      { value: "budget", label: "Stretch it far", hint: "Under ~$1.5k" },
+      { value: "mid-range", label: "Comfortable", hint: "~$2–4k" },
+      { value: "luxury", label: "No real ceiling", hint: "$5k+" },
     ],
   },
   {
@@ -106,9 +106,9 @@ export const QUIZ: QuizQuestion[] = [
     title: "How much do taxes matter?",
     type: "single",
     options: [
-      { value: "very-sensitive", label: "A lot — optimize it", emoji: "📉" },
-      { value: "somewhat", label: "Nice to have", emoji: "🤷" },
-      { value: "not-sensitive", label: "Not a factor", emoji: "🙅" },
+      { value: "very-sensitive", label: "A lot — optimize it" },
+      { value: "somewhat", label: "Nice to have" },
+      { value: "not-sensitive", label: "Not a factor" },
     ],
   },
   {
@@ -116,9 +116,9 @@ export const QUIZ: QuizQuestion[] = [
     title: "Safety & stability is…",
     type: "single",
     options: [
-      { value: "top-priority", label: "Non-negotiable", emoji: "🛡️" },
-      { value: "important", label: "Important", emoji: "✅" },
-      { value: "flexible", label: "I'm adaptable", emoji: "😎" },
+      { value: "top-priority", label: "Non-negotiable" },
+      { value: "important", label: "Important" },
+      { value: "flexible", label: "I'm adaptable" },
     ],
   },
   {
@@ -128,11 +128,11 @@ export const QUIZ: QuizQuestion[] = [
     type: "multi",
     max: 3,
     options: [
-      { value: "affordable", label: "Affordable", emoji: "💸" },
-      { value: "safety", label: "Safe", emoji: "🛡️" },
-      { value: "nature", label: "Nature access", emoji: "🌲" },
-      { value: "nightlife", label: "Nightlife", emoji: "🌃" },
-      { value: "beach", label: "Beach", emoji: "🏖️" },
+      { value: "affordable", label: "Affordable" },
+      { value: "safety", label: "Safe" },
+      { value: "nature", label: "Nature access" },
+      { value: "nightlife", label: "Nightlife" },
+      { value: "beach", label: "Beach" },
     ],
   },
 ];
@@ -149,9 +149,9 @@ export const DEEP_QUIZ: QuizQuestion[] = [
     title: "When do you come alive?",
     type: "single",
     options: [
-      { value: "early-bird", label: "Early mornings", emoji: "🌅" },
-      { value: "balanced", label: "Middle of the day", emoji: "🌤️" },
-      { value: "night-owl", label: "Late nights", emoji: "🌙" },
+      { value: "early-bird", label: "Early mornings" },
+      { value: "balanced", label: "Middle of the day" },
+      { value: "night-owl", label: "Late nights" },
     ],
   },
   {
@@ -159,9 +159,9 @@ export const DEEP_QUIZ: QuizQuestion[] = [
     title: "City energy or open space?",
     type: "single",
     options: [
-      { value: "urban", label: "In the middle of it", emoji: "🏙️" },
-      { value: "balanced", label: "A bit of both", emoji: "🌳" },
-      { value: "outdoor", label: "Out in nature", emoji: "⛰️" },
+      { value: "urban", label: "In the middle of it" },
+      { value: "balanced", label: "A bit of both" },
+      { value: "outdoor", label: "Out in nature" },
     ],
   },
   {
@@ -169,9 +169,9 @@ export const DEEP_QUIZ: QuizQuestion[] = [
     title: "Your ideal density?",
     type: "single",
     options: [
-      { value: "dense", label: "Dense & buzzing", emoji: "🚇" },
-      { value: "mid", label: "Mid-size", emoji: "🏘️" },
-      { value: "spacious", label: "Room to breathe", emoji: "🌾" },
+      { value: "dense", label: "Dense & buzzing" },
+      { value: "mid", label: "Mid-size" },
+      { value: "spacious", label: "Room to breathe" },
     ],
   },
   {
@@ -179,9 +179,9 @@ export const DEEP_QUIZ: QuizQuestion[] = [
     title: "How central is fitness & wellness?",
     type: "single",
     options: [
-      { value: "high", label: "It's my lifestyle", emoji: "🏋️" },
-      { value: "medium", label: "I keep it up", emoji: "🚴" },
-      { value: "low", label: "Not a priority", emoji: "🛋️" },
+      { value: "high", label: "It's my lifestyle" },
+      { value: "medium", label: "I keep it up" },
+      { value: "low", label: "Not a priority" },
     ],
   },
   {
@@ -189,9 +189,9 @@ export const DEEP_QUIZ: QuizQuestion[] = [
     title: "Top-tier healthcare nearby?",
     type: "single",
     options: [
-      { value: "essential", label: "Essential", emoji: "🏥" },
-      { value: "nice", label: "Nice to have", emoji: "🩺" },
-      { value: "low", label: "Not worried", emoji: "🤙" },
+      { value: "essential", label: "Essential" },
+      { value: "nice", label: "Nice to have" },
+      { value: "low", label: "Not worried" },
     ],
   },
   {
@@ -199,9 +199,9 @@ export const DEEP_QUIZ: QuizQuestion[] = [
     title: "How important is a major airport?",
     type: "single",
     options: [
-      { value: "essential", label: "I fly constantly", emoji: "✈️" },
-      { value: "important", label: "Fairly important", emoji: "🛫" },
-      { value: "low", label: "I stay put", emoji: "🧳" },
+      { value: "essential", label: "I fly constantly" },
+      { value: "important", label: "Fairly important" },
+      { value: "low", label: "I stay put" },
     ],
   },
   {
@@ -209,9 +209,9 @@ export const DEEP_QUIZ: QuizQuestion[] = [
     title: "Open, progressive culture matters…",
     type: "single",
     options: [
-      { value: "important", label: "A lot", emoji: "🌈" },
-      { value: "somewhat", label: "Somewhat", emoji: "🙂" },
-      { value: "neutral", label: "I'm easy", emoji: "🤷" },
+      { value: "important", label: "A lot" },
+      { value: "somewhat", label: "Somewhat" },
+      { value: "neutral", label: "I'm easy" },
     ],
   },
   {
@@ -219,9 +219,9 @@ export const DEEP_QUIZ: QuizQuestion[] = [
     title: "Your appetite for the unknown?",
     type: "single",
     options: [
-      { value: "high", label: "Throw me in", emoji: "🎲" },
-      { value: "medium", label: "Calculated", emoji: "⚖️" },
-      { value: "low", label: "I like stability", emoji: "🛟" },
+      { value: "high", label: "Throw me in" },
+      { value: "medium", label: "Calculated" },
+      { value: "low", label: "I like stability" },
     ],
   },
   {
@@ -229,9 +229,9 @@ export const DEEP_QUIZ: QuizQuestion[] = [
     title: "Staying close to family?",
     type: "single",
     options: [
-      { value: "close", label: "Keep them close", emoji: "👨‍👩‍👧" },
-      { value: "flexible", label: "Flexible", emoji: "🔁" },
-      { value: "far", label: "Distance is fine", emoji: "🌍" },
+      { value: "close", label: "Keep them close" },
+      { value: "flexible", label: "Flexible" },
+      { value: "far", label: "Distance is fine" },
     ],
   },
   {
@@ -240,10 +240,10 @@ export const DEEP_QUIZ: QuizQuestion[] = [
     subtitle: "Pick any that fit.",
     type: "multi",
     options: [
-      { value: "tech", label: "Tech", emoji: "💻" },
-      { value: "creative", label: "Creative", emoji: "🎨" },
-      { value: "finance", label: "Finance", emoji: "📈" },
-      { value: "other", label: "Something else", emoji: "🧰" },
+      { value: "tech", label: "Tech" },
+      { value: "creative", label: "Creative" },
+      { value: "finance", label: "Finance" },
+      { value: "other", label: "Something else" },
     ],
   },
   {
@@ -252,8 +252,8 @@ export const DEEP_QUIZ: QuizQuestion[] = [
     subtitle: "We'll push these places down hard.",
     type: "multi",
     options: [
-      { value: "high-crime", label: "Unsafe areas", emoji: "🚫" },
-      { value: "expensive", label: "Too expensive", emoji: "💰" },
+      { value: "high-crime", label: "Unsafe areas" },
+      { value: "expensive", label: "Too expensive" },
     ],
   },
 ];

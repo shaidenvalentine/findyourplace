@@ -48,7 +48,7 @@ export function LockedTopMatch({
 
       {/* Blurred name plate */}
       <div className="relative mx-auto mt-5 max-w-xs">
-        <div className="rounded-xl border border-border bg-card/70 px-5 py-4 backdrop-blur-sm">
+        <div className="rounded-xl glass/70 px-5 py-4 backdrop-blur-sm">
           <div className="select-none text-2xl font-extrabold blur-md" aria-hidden>
             ███████
           </div>

@@ -26,7 +26,7 @@ export function ShareSlides({ free, variant }: { free: FreeRun; variant: "teaser
   const text =
     variant === "reveal"
       ? `I'm ${free.personality.archetype}. I just found the place that fits me.`
-      : `I'm ${free.personality.archetype} 👀`;
+      : `I'm ${free.personality.archetype}`;
   const resultUrl = typeof window !== "undefined" ? `${window.location.origin}/results/${runId}` : "";
 
   async function fetchFiles(): Promise<File[]> {

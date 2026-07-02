@@ -163,7 +163,7 @@ export default function StartPage() {
 
               <button
                 onClick={() => choose("words")}
-                className="group rounded-2xl border border-border bg-card p-5 text-left transition-all hover:border-accent/60 active:scale-[0.99]"
+                className="group rounded-2xl glass p-5 text-left transition-all hover:border-accent/60 active:scale-[0.99]"
               >
                 <div className="mb-3 flex items-center gap-2">
                   <span className="grid size-9 place-items-center rounded-lg bg-accent/15 text-accent">
@@ -182,7 +182,7 @@ export default function StartPage() {
 
               <button
                 onClick={() => choose("quiz")}
-                className="group rounded-2xl border border-border bg-card p-5 text-left transition-all hover:border-secondary/60 active:scale-[0.99]"
+                className="group rounded-2xl glass p-5 text-left transition-all hover:border-secondary/60 active:scale-[0.99]"
               >
                 <div className="mb-3 flex items-center gap-2">
                   <span className="grid size-9 place-items-center rounded-lg bg-secondary/15 text-secondary">

@@ -115,7 +115,7 @@ export default async function PlacePage({ params }: { params: Promise<{ id: stri
         const corpV = ct?.corporate ?? loc.corporate_tax_rate;
         const cgV = ct?.capitalGains ?? loc.capital_gains_tax_rate;
         return (
-          <div className="mt-6 rounded-xl border border-border bg-card p-5">
+          <div className="mt-6 rounded-xl glass p-5">
             <h3 className="flex items-center gap-2 text-base font-semibold">
               <Coins className="size-4 text-accent" /> Tax in {loc.country}
             </h3>

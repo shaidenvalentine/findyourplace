@@ -192,7 +192,7 @@ function Metric({
   accent?: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-4">
+    <div className="rounded-2xl glass p-4">
       <div className="mb-3 flex items-center gap-1.5 text-muted-foreground">
         {icon}
         <span className="text-xs">{label}</span>

@@ -55,7 +55,7 @@ export default function PlacesIndex() {
                 <Link
                   key={l.id}
                   href={`/places/${l.id}`}
-                  className="group overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/40"
+                  className="group overflow-hidden rounded-xl glass transition-colors hover:border-primary/40"
                 >
                   <PlacePhoto location={l} className="aspect-[4/3] w-full" rounded="rounded-none" w={360} />
                   <div className="p-3">

@@ -89,7 +89,7 @@ export default function WordsPage() {
               placeholder="I'm in Chicago and the winters are wearing me down. I work remotely in tech, I'd love to be near the ocean and somewhere warm, I want my money to stretch further, and safety matters a lot…"
             />
             <p className="mt-2 text-xs text-muted-foreground">
-              🔒 Processed privately on our server to read your preferences. We never store or log the
+              Processed privately on our server to read your preferences. We never store or log the
               text.
             </p>
             {err && <p className="mt-2 text-sm text-destructive">{err}</p>}

@@ -134,7 +134,7 @@ export default function CreatorsLanding() {
 
 function DealCard({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-8">
+    <div className="rounded-2xl glass p-8">
       <div className="mb-5 grid size-11 place-items-center rounded-xl bg-primary/15 text-primary">{icon}</div>
       <h3 className="text-xl font-bold tracking-tight">{title}</h3>
       <p className="mt-2 text-base leading-relaxed text-muted-foreground">{body}</p>
@@ -144,7 +144,7 @@ function DealCard({ icon, title, body }: { icon: React.ReactNode; title: string;
 
 function Why({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
+    <div className="rounded-xl glass p-6">
       <h3 className="text-lg font-bold tracking-tight">{title}</h3>
       <p className="mt-2 text-base leading-relaxed text-muted-foreground">{children}</p>
     </div>

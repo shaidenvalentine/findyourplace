@@ -132,7 +132,6 @@ export function DeepenMatch({ free, onRefined }: { free: FreeRun; onRefined: (up
                 <OptionButton
                   key={opt.value}
                   label={opt.label}
-                  emoji={opt.emoji}
                   hint={opt.hint}
                   selected={selected}
                   onClick={() => {

@@ -212,7 +212,7 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
     <button
       type="button"
       onClick={() => onChange(!checked)}
-      className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-left text-sm transition-colors hover:border-primary/40"
+      className="flex items-center gap-3 rounded-lg glass px-4 py-3 text-left text-sm transition-colors hover:border-primary/40"
     >
       <span
         className={`grid size-5 shrink-0 place-items-center rounded-md border ${

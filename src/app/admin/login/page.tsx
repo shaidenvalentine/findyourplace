@@ -39,7 +39,7 @@ export default function AdminLoginPage() {
         <Link href="/" className="mb-6 flex justify-center">
           <Logo />
         </Link>
-        <div className="rounded-2xl border border-border bg-card p-6">
+        <div className="rounded-2xl glass p-6">
           <div className="mb-3 flex items-center gap-2 text-primary">
             <ShieldCheck className="size-4" />
             <span className="text-xs font-semibold uppercase tracking-wider">Admin</span>

@@ -138,7 +138,7 @@ export function ResultsView({ runId }: { runId: string }) {
           <>
             <PaidReveal ranking={locked.ranking} circuit={locked.circuit} />
             <RelocationToolkit run={free} />
-            <div className="rounded-2xl border border-border bg-card p-5">
+            <div className="rounded-2xl glass p-5">
               <p className="mb-3 text-center text-sm font-medium">Show the world where you belong.</p>
               <ShareSlides free={free} variant="reveal" />
             </div>
@@ -159,8 +159,8 @@ export function ResultsView({ runId }: { runId: string }) {
             />
             <Paywall runId={runId} onUnlocked={refresh} />
             {/* Share lives AFTER the offer decision — never between tension and gate. */}
-            <div className="rounded-2xl border border-border bg-card p-5">
-              <p className="mb-1 text-center text-sm font-medium">Pull your friends in 👀</p>
+            <div className="rounded-2xl glass p-5">
+              <p className="mb-1 text-center text-sm font-medium">Pull your friends in</p>
               <p className="mb-3 text-center text-xs text-muted-foreground">
                 Share your slides — your archetype, your gap, and the mystery of where you belong.
               </p>

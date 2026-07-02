@@ -133,7 +133,7 @@ export default async function AdminCreatorDetail({ params }: { params: Promise<{
 
 function Metric({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-4">
+    <div className="rounded-2xl glass p-4">
       <div className="mb-2 text-xs text-muted-foreground">{label}</div>
       <div className={accent ? "text-xl font-extrabold tabular-nums text-gradient sm:text-2xl" : "text-xl font-extrabold tabular-nums sm:text-2xl"}>
         {value}

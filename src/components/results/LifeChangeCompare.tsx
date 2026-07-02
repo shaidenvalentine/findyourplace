@@ -35,7 +35,7 @@ export function LifeChangeCompare({ city, lifeChange }: { city: string; lifeChan
           </div>
           <div className="flex-1 text-center">
             <div className="text-3xl font-extrabold tabular-nums text-gradient">{lifeChange.bestScore}</div>
-            <div className="mt-0.5 text-[11px] text-muted-foreground">your best-fit place 🔒</div>
+            <div className="mt-0.5 text-[11px] text-muted-foreground">your best-fit place</div>
           </div>
         </div>
 

@@ -17,8 +17,8 @@ export function ShareToStory({ runId, variant }: { runId: string; variant: "teas
   const cardUrl = `/api/share/${runId}?format=story`;
   const text =
     variant === "reveal"
-      ? "I found the place on Earth that actually fits me 🌍"
-      : "I found out where I should actually be living 👀";
+      ? "I found the place on Earth that actually fits me"
+      : "I found out where I should actually be living";
 
   async function share() {
     setBusy(true);

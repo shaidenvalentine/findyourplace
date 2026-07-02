@@ -12,7 +12,7 @@ export function RelocationToolkit({ run }: { run: FreeRun }) {
   if (sections.length === 0) return null;
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-5">
+    <div className="rounded-2xl glass p-5">
       <div className="mb-1 flex items-center gap-2">
         <span className="grid size-8 place-items-center rounded-lg bg-accent/15 text-accent">
           <Briefcase className="size-4" />

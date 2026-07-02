@@ -44,7 +44,7 @@ export function AffiliateCard({
       href={href}
       target="_blank"
       rel="sponsored nofollow noopener"
-      className="group flex items-start gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40"
+      className="group flex items-start gap-3 rounded-xl glass p-4 transition-colors hover:border-primary/40"
     >
       <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
         <Icon className="size-5" />

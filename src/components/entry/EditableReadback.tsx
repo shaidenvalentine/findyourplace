@@ -168,7 +168,7 @@ export function EditableReadback({
         if (f.kind === "text") {
           const val = typeof value[f.key] === "string" ? (value[f.key] as string) : "";
           return (
-            <div key={String(f.key)} className="rounded-lg border border-border bg-card px-4 py-3">
+            <div key={String(f.key)} className="rounded-lg glass px-4 py-3">
               <label className="flex items-center justify-between gap-3">
                 <span className="text-sm text-muted-foreground">{f.label}</span>
                 <input
@@ -203,7 +203,7 @@ export function EditableReadback({
         const isSet = selected.length > 0;
 
         return (
-          <div key={String(f.key)} className="overflow-hidden rounded-lg border border-border bg-card">
+          <div key={String(f.key)} className="overflow-hidden rounded-lg glass">
             <button
               type="button"
               onClick={() => setOpen(isOpen ? null : String(f.key))}

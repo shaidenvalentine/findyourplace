@@ -81,7 +81,7 @@ export default function AiProfilePage() {
               copy what it says and paste it below.
             </p>
 
-            <div className="relative mt-4 rounded-xl border border-border bg-card p-4">
+            <div className="relative mt-4 rounded-xl glass p-4">
               <textarea
                 ref={promptRef}
                 readOnly
@@ -128,7 +128,7 @@ export default function AiProfilePage() {
               placeholder="Paste the full profile your AI generated here…"
             />
             <p className="mt-2 text-xs text-muted-foreground">
-              🔒 Processed privately on our server to read your preferences. We never store or log
+              Processed privately on our server to read your preferences. We never store or log
               the text.
             </p>
             {normErr && <p className="mt-2 text-sm text-destructive">{normErr}</p>}

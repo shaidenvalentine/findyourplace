@@ -40,7 +40,7 @@ export default function LoginPage() {
         <Link href="/creators" className="mb-6 flex justify-center">
           <Logo />
         </Link>
-        <div className="rounded-2xl border border-border bg-card p-6">
+        <div className="rounded-2xl glass p-6">
           <h1 className="text-xl font-bold tracking-tight">Welcome back</h1>
           <p className="mt-1 text-sm text-muted-foreground">Sign in to your creator portal.</p>
           <form onSubmit={submit} className="mt-5 flex flex-col gap-3">
