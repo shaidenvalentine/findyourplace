@@ -6,8 +6,8 @@
   Token = "H S% L%" channels so Tailwind utilities can do hsl(var(--token) / <alpha>).
 */
 :root {
-  /* Light, airy, editorial — warm paper base, near-black ink, one lime accent, frosted
-     glass surfaces. A single dark tone carries all interaction (CTAs/nav), lime is the
+  /* Light, airy, editorial — warm paper base, near-black ink, one teal accent, frosted
+     glass surfaces. A single dark tone carries all interaction (CTAs/nav), teal is the
      one pop reserved for data + highlights. */
   --background: 48 22% 95%;
   --surface: 48 28% 97%;
@@ -18,14 +18,14 @@
   --muted-foreground: 220 8% 42%;
   --border: 44 12% 87%;
   --input: 44 12% 89%;
-  --ring: 74 55% 45%;
+  --ring: 178 55% 42%;
 
-  /* Interaction = near-black (dark pill CTAs / nav). Lime = the one accent, for data. */
+  /* Interaction = near-black (dark pill CTAs / nav). Teal = the one accent, for data. */
   --primary: 220 16% 13%;
   --primary-foreground: 48 30% 97%;
   --secondary: 220 14% 20%;
   --secondary-foreground: 0 0% 98%;
-  --accent: 74 64% 50%;
+  --accent: 178 64% 42%;
   --accent-foreground: 220 24% 12%;
 
   --success: 150 46% 40%;
@@ -112,13 +112,13 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(46% 38% at 10% -2%, hsl(74 78% 60% / 0.16), transparent 60%),
+    radial-gradient(46% 38% at 10% -2%, hsl(178 74% 50% / 0.16), transparent 60%),
     radial-gradient(42% 40% at 102% 6%, hsl(32 88% 70% / 0.15), transparent 55%),
     radial-gradient(50% 46% at 78% 58%, hsl(268 60% 72% / 0.08), transparent 60%),
     radial-gradient(55% 50% at 30% 110%, hsl(190 70% 66% / 0.12), transparent 60%);
 }
 
-/* Soft ambient wash used on hero/reveal surfaces — a whisper of warmth + lime on paper. */
+/* Soft ambient wash used on hero/reveal surfaces — a whisper of warmth + teal on paper. */
 .bg-aurora {
   background-image:
     radial-gradient(55% 45% at 12% 0%, hsl(var(--accent) / 0.12), transparent 62%),
@@ -161,9 +161,9 @@ body::before {
   color: transparent;
 }
 
-/* The one true pop: lime accent text, used sparingly. */
-.text-accent-lime {
-  color: hsl(84 60% 38%);
+/* The one true pop: teal accent text, used sparingly. */
+.text-accent {
+  color: hsl(185 72% 30%);
 }
 
 /* Hero stage — a rich, moody surface the glass panels float over (fallback behind the
@@ -171,8 +171,8 @@ body::before {
 .hero-stage {
   background:
     radial-gradient(70% 60% at 75% 20%, hsl(38 70% 62% / 0.55), transparent 60%),
-    radial-gradient(80% 80% at 20% 90%, hsl(160 40% 30% / 0.65), transparent 65%),
-    linear-gradient(150deg, hsl(150 22% 22%), hsl(210 30% 14%) 55%, hsl(260 24% 16%));
+    radial-gradient(80% 80% at 20% 90%, hsl(186 46% 28% / 0.65), transparent 65%),
+    linear-gradient(150deg, hsl(188 26% 20%), hsl(210 30% 14%) 55%, hsl(250 22% 16%));
 }
 
 .shimmer {

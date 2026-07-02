@@ -225,7 +225,7 @@ function HeroRing({ score, size = 132 }: { score: number; size?: number }) {
           cy={size / 2}
           r={r}
           fill="none"
-          stroke="hsl(84 62% 45%)"
+          stroke="hsl(178 60% 42%)"
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={c}
@@ -255,7 +255,7 @@ function HeroPreview() {
       <div className="glass absolute left-4 top-6 w-52 rounded-3xl p-5 sm:left-6">
         <div className="flex items-center justify-between">
           <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Your #1 match</span>
-          <span className="size-2 rounded-full bg-[hsl(84_62%_45%)]" />
+          <span className="size-2 rounded-full bg-[hsl(178_62%_44%)]" />
         </div>
         <div className="mt-3 grid place-items-center">
           <HeroRing score={94} />
@@ -281,7 +281,7 @@ function HeroPreview() {
       {/* Tax satellite */}
       <div className="glass absolute bottom-6 right-6 w-44 rounded-2xl p-4">
         <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Tax saved</div>
-        <div className="mt-1 text-2xl font-light tabular-nums text-[hsl(84_55%_36%)]">≈ $54k<span className="text-sm text-muted-foreground">/yr</span></div>
+        <div className="mt-1 text-2xl font-light tabular-nums text-[hsl(185_65%_30%)]">≈ $54k<span className="text-sm text-muted-foreground">/yr</span></div>
         <div className="mt-2 flex items-end gap-0.5">
           {[30, 44, 38, 60, 52, 74, 68, 88].map((h, i) => (
             <span key={i} className="w-1.5 rounded-full bg-foreground/25" style={{ height: h * 0.35 }} />
@@ -295,7 +295,7 @@ function HeroPreview() {
 function Stake({ stat, body }: { stat: string; body: string }) {
   return (
     <div className="rounded-2xl glass p-8">
-      <div className="text-5xl font-normal tracking-[-0.03em] text-accent-lime sm:text-6xl">{stat}</div>
+      <div className="text-5xl font-normal tracking-[-0.03em] text-accent sm:text-6xl">{stat}</div>
       <p className="mt-5 text-base leading-relaxed text-muted-foreground">{body}</p>
     </div>
   );
@@ -367,7 +367,7 @@ function Compare({ label, value, muted = false }: { label: string; value: number
         className={
           muted
             ? "text-5xl font-normal tabular-nums tracking-tight text-muted-foreground"
-            : "text-5xl font-normal tabular-nums tracking-tight text-accent-lime"
+            : "text-5xl font-normal tabular-nums tracking-tight text-accent"
         }
       >
         {value}

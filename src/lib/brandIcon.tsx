@@ -1,6 +1,6 @@
 /**
  * The Find Your Place brand mark — a refined location pin holding a small globe, in the
- * app's dark + lime identity. One vector source of truth for the favicon, Apple touch
+ * app's dark + teal identity. One vector source of truth for the favicon, Apple touch
  * icon, PWA/app icon, the /api/icon generator, the Instagram profile picture, and the
  * in-app header logo. Pure SVG so it stays razor-crisp at every size.
  */
@@ -8,7 +8,7 @@
 /** The pin+globe glyph on its own (transparent) — used over any background. */
 export function BrandMark({
   size,
-  pin = "#c8e85a",
+  pin = "#2fbcae",
   well = "#14160f",
 }: {
   size: number;
@@ -29,7 +29,7 @@ export function BrandMark({
   );
 }
 
-/** Full-bleed icon canvas (dark, subtle lime glow) — for favicons / PWA / og profile. */
+/** Full-bleed icon canvas (dark, subtle teal glow) — for favicons / PWA / og profile. */
 export function BrandIcon({ size }: { size: number }) {
   const glyph = Math.round(size * 0.56);
   return (
