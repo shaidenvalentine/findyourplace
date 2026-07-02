@@ -3,6 +3,7 @@ import { LOCATIONS } from "@/data/locations";
 import { buildScoredRun } from "@/lib/buildRun";
 import { toFreeRun } from "@/lib/run";
 import { putRun } from "@/lib/server/runStore";
+import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getAttributedCreator } from "@/lib/creators/attribution";
 import { getCreatorStore } from "@/lib/creators/store";
 import type { RunSource } from "@/lib/run";
@@ -44,5 +45,10 @@ export async function POST(req: NextRequest) {
   }
 
   await putRun(run);
+
+  // Feed the honest live counter — fire-and-forget, never blocks scoring.
+  const db = getSupabaseAdmin();
+  if (db) void db.from("quiz_completions").insert({}).then(() => {});
+
   return NextResponse.json({ runId: run.runId, free: toFreeRun(run) });
 }

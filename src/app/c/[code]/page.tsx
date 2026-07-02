@@ -70,7 +70,8 @@ export default async function CreatorLanding({ params }: { params: Promise<{ cod
             </Button>
 
             <p className="mt-4 text-sm text-muted-foreground">
-              60 seconds · free to start · <LiveCounter /> matched
+              60 seconds · free to start
+              <LiveCounter />
             </p>
           </div>
         </div>

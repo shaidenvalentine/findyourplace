@@ -27,6 +27,7 @@ export function Paywall({
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
   // Meta "AddToCart" — the user reached the gate. The core paid-intent signal.
   useEffect(() => {
@@ -34,18 +35,19 @@ export function Paywall({
   }, []);
 
   async function startCheckout() {
+    if (!emailValid) return;
     setBusy(true);
     setErr(null);
     track("checkout_start"); // Meta "InitiateCheckout"
     try {
-      // Email gate → capture before payment (Phase 4 pushes this to the ESP).
-      if (email.trim()) {
-        fetch("/api/capture-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: email.trim(), runId, stage: "paywall" }),
-        }).catch(() => {});
-      }
+      // Email gate — captured BEFORE payment so the nurture list gets every checkout
+      // starter. keepalive survives the immediate hand-off to hosted checkout.
+      fetch("/api/capture-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), runId, stage: "paywall" }),
+        keepalive: true,
+      }).catch(() => {});
 
       // Include cached inputs as cold-lambda fallback so checkout never 404s.
       const cached = loadRunLocal(runId);
@@ -122,13 +124,20 @@ export function Paywall({
       <Input
         type="email"
         inputMode="email"
-        placeholder="you@email.com (to save your results)"
+        placeholder="you@email.com — where we send your results"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
+        aria-label="Email address"
         className="mb-3"
       />
 
-      <Button className="w-full" size="lg" variant="gradient" onClick={startCheckout} disabled={busy}>
+      <Button
+        className="w-full"
+        size="lg"
+        variant="gradient"
+        onClick={startCheckout}
+        disabled={busy || !emailValid}
+      >
         {busy ? (
           <>
             <Loader2 className="size-4 animate-spin" /> Unlocking…
@@ -145,6 +154,15 @@ export function Paywall({
       </div>
       <p className="mt-2 text-center text-xs text-muted-foreground">
         Apple Pay &amp; cards · one-time · instant access · no subscription
+        <br />
+        By unlocking you agree to the{" "}
+        <a href="/terms" className="underline underline-offset-2 hover:text-foreground">
+          Terms
+        </a>{" "}
+        ·{" "}
+        <a href="/privacy" className="underline underline-offset-2 hover:text-foreground">
+          Privacy
+        </a>
       </p>
     </div>
   );

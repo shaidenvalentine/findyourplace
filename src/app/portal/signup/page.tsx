@@ -109,7 +109,7 @@ export default function SignupPage() {
           </Button>
 
           <p className="text-center text-xs text-muted-foreground">
-            By signing up you agree to a 50% rev share on every $29 unlock attributed to your code,
+            By signing up you agree to a 50% rev share on every unlock attributed to your code,
             paid monthly via Wise. Refunds reverse the cut.
           </p>
         </form>

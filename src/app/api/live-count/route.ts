@@ -1,14 +1,24 @@
 import { NextResponse } from "next/server";
+import { getSupabaseAdmin } from "@/lib/supabase/server";
 
 /**
- * Public live-completion counter for social proof.
- * Phase 5 will back this with the `quiz_completions` table. For now it returns a
- * stable, slowly-growing baseline derived from the current day so it never looks fake-static.
+ * Public live-completion counter — HONEST or absent. Returns the real
+ * `quiz_completions` count once Supabase is configured AND the number has passed a
+ * floor (small numbers hurt more than no number); otherwise `{count: null}` and the
+ * UI shows nothing. No synthetic social proof on launch day.
  */
 export const dynamic = "force-dynamic";
 
-export function GET() {
-  const epochDay = Math.floor(Date.now() / 86_400_000);
-  const count = 14_000 + (epochDay % 365) * 37;
+const FLOOR = 500;
+
+export async function GET() {
+  const db = getSupabaseAdmin();
+  if (!db) return NextResponse.json({ count: null });
+
+  const { count, error } = await db
+    .from("quiz_completions")
+    .select("id", { count: "exact", head: true });
+  if (error || count === null || count < FLOOR) return NextResponse.json({ count: null });
+
   return NextResponse.json({ count });
 }

@@ -3,11 +3,12 @@ import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, Users, Wallet, Link as LinkIcon, BarChart3 } from "lucide-react";
+import { PRICE_LABEL, PRICE_CENTS } from "@/lib/pricing";
 
 export const metadata: Metadata = {
   title: "Founding Creators · Find Your Place",
   description:
-    "Bring your audience. Keep 50% of every $29 unlock — for life. Real-time dashboard, monthly payouts.",
+    "Bring your audience. Keep 50% of every unlock — for life. Real-time dashboard, monthly payouts.",
 };
 
 export default function CreatorsLanding() {
@@ -44,7 +45,7 @@ export default function CreatorsLanding() {
 
             <p className="mt-8 max-w-xl text-pretty text-lg text-muted-foreground sm:text-xl">
               Find Your Place is the quiz that finds the one place on Earth that actually fits you.
-              Promote it to your audience and earn $14.50 of every $29 unlock — for life.
+              Promote it to your audience and earn ${(PRICE_CENTS / 200).toFixed(2)} of every {PRICE_LABEL} unlock — for life.
             </p>
 
             <Button asChild size="lg" variant="gradient" className="mt-10 w-full sm:w-auto">

@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 
 /**
- * Social-proof live counter. Reads from /api/live-count when available and
- * otherwise shows a stable seeded baseline so the surface never looks empty.
- * (Wired to the real `quiz_completions` table in Phase 5.)
+ * Social-proof live counter — renders the whole "· 1,234 matched" segment, and renders
+ * NOTHING until /api/live-count returns a real number (Supabase-backed count past its
+ * floor). No fabricated baseline: the claim only appears once it's true.
  */
-export function LiveCounter({ baseline = 14213 }: { baseline?: number }) {
-  const [count, setCount] = useState(baseline);
+export function LiveCounter() {
+  const [count, setCount] = useState<number | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -23,7 +23,11 @@ export function LiveCounter({ baseline = 14213 }: { baseline?: number }) {
     };
   }, []);
 
+  if (count === null) return null;
   return (
-    <span className="tabular-nums font-semibold text-foreground">{count.toLocaleString()}</span>
+    <>
+      {" · "}
+      <span className="tabular-nums font-semibold text-foreground">{count.toLocaleString()}</span> matched
+    </>
   );
 }

@@ -40,7 +40,8 @@ export default function LandingPage() {
                 </Link>
               </Button>
               <p className="text-sm text-muted-foreground">
-                60 seconds · free to start · <LiveCounter /> matched
+                60 seconds · free to start
+                <LiveCounter />
               </p>
             </div>
           </div>
@@ -202,6 +203,13 @@ export default function LandingPage() {
             >
               <Camera className="size-4" /> @findyourplace.ai
             </a>
+            <span className="hidden sm:inline">·</span>
+            <Link href="/privacy" className="transition-colors hover:text-foreground">
+              Privacy
+            </Link>
+            <Link href="/terms" className="transition-colors hover:text-foreground">
+              Terms
+            </Link>
             <span className="hidden sm:inline">·</span>
             <p>© {new Date().getFullYear()} findyourplace.app</p>
           </div>
