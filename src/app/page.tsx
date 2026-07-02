@@ -219,13 +219,13 @@ function HeroRing({ score, size = 132 }: { score: number; size?: number }) {
   return (
     <div className="relative grid place-items-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(220 14% 90%)" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(0 0% 100% / 0.16)" strokeWidth={stroke} />
         <circle
           cx={size / 2}
           cy={size / 2}
           r={r}
           fill="none"
-          stroke="hsl(178 60% 42%)"
+          stroke="hsl(172 66% 58%)"
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={c}
@@ -274,7 +274,7 @@ function HeroPreview() {
           <span className="text-3xl font-light tabular-nums">61</span>
           <span className="mb-1 text-xs text-muted-foreground">/100 fit</span>
         </div>
-        <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-black/10">
+        <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/15">
           <div className="h-full rounded-full bg-foreground/70" style={{ width: "61%" }} />
         </div>
       </div>
@@ -283,7 +283,7 @@ function HeroPreview() {
       <div className="glass absolute bottom-6 right-6 w-44 rounded-2xl p-4">
         <ArrowUpRight className="absolute right-3 top-3 size-3.5 text-muted-foreground/50" />
         <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Tax saved</div>
-        <div className="mt-1 text-2xl font-light tabular-nums text-[hsl(185_65%_30%)]">≈ $54k<span className="text-sm text-muted-foreground">/yr</span></div>
+        <div className="mt-1 text-2xl font-light tabular-nums text-[hsl(172_66%_60%)]">≈ $54k<span className="text-sm text-muted-foreground">/yr</span></div>
         <div className="mt-2 flex items-end gap-0.5">
           {[30, 44, 38, 60, 52, 74, 68, 88].map((h, i) => (
             <span key={i} className="w-1.5 rounded-full bg-foreground/25" style={{ height: h * 0.35 }} />

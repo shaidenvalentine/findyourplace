@@ -16,9 +16,9 @@ const buttonVariants = cva(
           "border border-border bg-transparent text-foreground hover:bg-muted",
         ghost: "bg-transparent text-foreground hover:bg-muted",
         muted: "bg-muted text-foreground hover:bg-muted/70",
-        // The primary CTA: a refined near-black pill (SOMA-style), subtle vertical depth.
+        // The primary CTA: a light pill that pops on the dark canvas, subtle vertical depth.
         gradient:
-          "text-primary-foreground shadow-md shadow-black/15 hover:brightness-125 bg-[linear-gradient(180deg,hsl(220_14%_20%),hsl(220_16%_11%))]",
+          "text-primary-foreground shadow-md shadow-black/40 hover:brightness-95 bg-[linear-gradient(180deg,hsl(45_30%_98%),hsl(40_18%_87%))]",
       },
       size: {
         sm: "h-9 px-4",

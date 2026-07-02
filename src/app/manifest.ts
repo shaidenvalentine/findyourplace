@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Find the place on Earth that actually fits you.",
     start_url: "/",
     display: "standalone",
-    background_color: "#0a0b12",
-    theme_color: "#0a0b12",
+    background_color: "#10161d",
+    theme_color: "#10161d",
     icons: [
       { src: "/api/icon?size=192", sizes: "192x192", type: "image/png", purpose: "any" },
       { src: "/api/icon?size=512", sizes: "512x512", type: "image/png", purpose: "any" },

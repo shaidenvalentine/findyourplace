@@ -6,30 +6,31 @@
   Token = "H S% L%" channels so Tailwind utilities can do hsl(var(--token) / <alpha>).
 */
 :root {
-  /* Light, airy, editorial — warm paper base, near-black ink, one teal accent, frosted
-     glass surfaces. A single dark tone carries all interaction (CTAs/nav), teal is the
-     one pop reserved for data + highlights. */
-  --background: 48 22% 95%;
-  --surface: 48 28% 97%;
-  --card: 0 0% 100%;
-  --card-foreground: 220 14% 14%;
-  --foreground: 220 16% 13%;
-  --muted: 45 12% 90%;
-  --muted-foreground: 220 8% 42%;
-  --border: 44 12% 87%;
-  --input: 44 12% 89%;
-  --ring: 178 55% 42%;
+  /* Dark, editorial, liquid glass — the "stage" world of the share cards, site-wide.
+     Deep blue-charcoal canvas with warm/teal glows, near-white ink, one teal accent,
+     frosted dark-glass surfaces. Interaction = light pills (they pop on dark); teal is
+     the one pop reserved for data + highlights. */
+  --background: 209 30% 9%;
+  --surface: 209 26% 12%;
+  --card: 210 24% 13%;
+  --card-foreground: 40 20% 96%;
+  --foreground: 40 20% 96%;
+  --muted: 210 20% 18%;
+  --muted-foreground: 213 12% 66%;
+  --border: 210 16% 22%;
+  --input: 210 16% 20%;
+  --ring: 172 60% 55%;
 
-  /* Interaction = near-black (dark pill CTAs / nav). Teal = the one accent, for data. */
-  --primary: 220 16% 13%;
-  --primary-foreground: 48 30% 97%;
-  --secondary: 220 14% 20%;
-  --secondary-foreground: 0 0% 98%;
-  --accent: 178 64% 42%;
-  --accent-foreground: 220 24% 12%;
+  /* Interaction = light pill CTAs / nav on the dark canvas. Teal = the data accent. */
+  --primary: 42 28% 96%;
+  --primary-foreground: 213 28% 10%;
+  --secondary: 213 14% 74%;
+  --secondary-foreground: 213 28% 10%;
+  --accent: 172 62% 52%;
+  --accent-foreground: 214 30% 10%;
 
-  --success: 150 46% 40%;
-  --destructive: 6 72% 52%;
+  --success: 150 55% 55%;
+  --destructive: 4 78% 62%;
   --destructive-foreground: 0 0% 98%;
 
   --radius: 1.1rem;
@@ -102,9 +103,9 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Ambient color field — a soft, fixed mesh behind ALL content so the frosted-glass
-   surfaces have real color to refract (this is what makes the glass read as glass and
-   not flat translucency). Deliberately subtle on the warm-paper base. */
+/* Ambient color field — the "stage" glows, fixed behind ALL content so the dark glass
+   has real color to refract (this is what makes the glass read as glass and not flat
+   translucency): warm gold up top, teal below, a whisper of violet. */
 body::before {
   content: "";
   position: fixed;
@@ -112,50 +113,50 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(46% 38% at 10% -2%, hsl(178 74% 50% / 0.16), transparent 60%),
-    radial-gradient(42% 40% at 102% 6%, hsl(32 88% 70% / 0.15), transparent 55%),
-    radial-gradient(50% 46% at 78% 58%, hsl(268 60% 72% / 0.08), transparent 60%),
-    radial-gradient(55% 50% at 30% 110%, hsl(190 70% 66% / 0.12), transparent 60%);
+    radial-gradient(60% 45% at 78% 4%, hsl(38 62% 56% / 0.16), transparent 60%),
+    radial-gradient(48% 40% at 4% 0%, hsl(174 60% 45% / 0.12), transparent 60%),
+    radial-gradient(70% 60% at 22% 98%, hsl(186 46% 30% / 0.26), transparent 65%),
+    radial-gradient(55% 50% at 94% 82%, hsl(255 30% 32% / 0.18), transparent 60%);
 }
 
-/* Soft ambient wash used on hero/reveal surfaces — a whisper of warmth + teal on paper. */
+/* Soft ambient wash used on hero/reveal surfaces — a whisper of teal + warmth on dark. */
 .bg-aurora {
   background-image:
-    radial-gradient(55% 45% at 12% 0%, hsl(var(--accent) / 0.12), transparent 62%),
-    radial-gradient(50% 45% at 96% 4%, hsl(40 45% 78% / 0.35), transparent 60%),
-    radial-gradient(70% 60% at 50% 112%, hsl(var(--accent) / 0.08), transparent 62%);
+    radial-gradient(55% 45% at 12% 0%, hsl(var(--accent) / 0.10), transparent 62%),
+    radial-gradient(50% 45% at 96% 4%, hsl(38 60% 55% / 0.10), transparent 60%),
+    radial-gradient(70% 60% at 50% 112%, hsl(var(--accent) / 0.07), transparent 62%);
 }
 
-/* Liquid frosted glass — the core surface of the whole UI.
-   Translucent white with a diagonal sheen, heavy blur + saturation (so the ambient color
-   field behind blooms through), a bright hairline top edge (inset highlight) and layered
+/* Liquid frosted dark glass — the core surface of the whole UI.
+   Translucent white-on-dark with a diagonal sheen, heavy blur + saturation (so the
+   ambient glows bloom through), a bright hairline top edge (inset highlight) and layered
    depth shadow. This is the "real glass" recipe: gradient fill + blur + inner highlight. */
 .glass {
-  background: linear-gradient(135deg, hsl(0 0% 100% / 0.58), hsl(0 0% 100% / 0.34));
-  -webkit-backdrop-filter: blur(26px) saturate(1.7);
-  backdrop-filter: blur(26px) saturate(1.7);
-  border: 1px solid hsl(0 0% 100% / 0.65);
+  background: linear-gradient(135deg, hsl(0 0% 100% / 0.10), hsl(0 0% 100% / 0.045));
+  -webkit-backdrop-filter: blur(26px) saturate(1.5);
+  backdrop-filter: blur(26px) saturate(1.5);
+  border: 1px solid hsl(0 0% 100% / 0.12);
   box-shadow:
-    inset 0 1px 0 hsl(0 0% 100% / 0.75),
-    inset 0 -1px 0 hsl(0 0% 100% / 0.18),
-    0 1px 2px hsl(220 30% 18% / 0.04),
-    0 14px 44px hsl(220 30% 18% / 0.09);
+    inset 0 1px 0 hsl(0 0% 100% / 0.14),
+    inset 0 -1px 0 hsl(0 0% 100% / 0.04),
+    0 1px 2px hsl(220 40% 5% / 0.2),
+    0 14px 44px hsl(220 40% 5% / 0.35);
 }
 
-/* Darker glass — for the near-black pill/nav feel over the light UI when depth is wanted. */
+/* Deeper glass — a darker pane for nameplates/wells over already-dark surfaces. */
 .glass-dark {
-  background: linear-gradient(135deg, hsl(220 16% 14% / 0.72), hsl(220 18% 10% / 0.6));
+  background: linear-gradient(135deg, hsl(220 20% 8% / 0.72), hsl(220 22% 5% / 0.6));
   -webkit-backdrop-filter: blur(20px) saturate(1.4);
   backdrop-filter: blur(20px) saturate(1.4);
   border: 1px solid hsl(0 0% 100% / 0.1);
   box-shadow:
-    inset 0 1px 0 hsl(0 0% 100% / 0.12),
-    0 12px 40px hsl(220 40% 10% / 0.28);
+    inset 0 1px 0 hsl(0 0% 100% / 0.10),
+    0 12px 40px hsl(220 40% 4% / 0.4);
 }
 
-/* Headline "accent" — a subtle near-black gradient for depth (no more rainbow). */
+/* Headline "accent" — a subtle white→silver gradient for depth. */
 .text-gradient {
-  background: linear-gradient(100deg, hsl(220 16% 13%), hsl(220 10% 34%));
+  background: linear-gradient(100deg, hsl(40 20% 97%), hsl(213 15% 72%));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -163,16 +164,19 @@ body::before {
 
 /* The one true pop: teal accent text, used sparingly. */
 .text-accent {
-  color: hsl(185 72% 30%);
+  color: hsl(172 68% 60%);
 }
 
 /* Hero stage — a rich, moody surface the glass panels float over (fallback behind the
-   hero image, and the source of depth so the frosted panels genuinely read as glass). */
+   hero image, and the source of depth so the frosted panels genuinely read as glass).
+   Now that the whole canvas is dark, a bright hairline keeps the stage reading as a
+   distinct lit pane rather than dissolving into the page. */
 .hero-stage {
   background:
     radial-gradient(70% 60% at 75% 20%, hsl(38 70% 62% / 0.55), transparent 60%),
     radial-gradient(80% 80% at 20% 90%, hsl(186 46% 28% / 0.65), transparent 65%),
     linear-gradient(150deg, hsl(188 26% 20%), hsl(210 30% 14%) 55%, hsl(250 22% 16%));
+  border: 1px solid hsl(0 0% 100% / 0.10);
 }
 
 .shimmer {
@@ -187,4 +191,4 @@ body::before {
 }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: hsl(220 10% 80%); border-radius: 999px; }
+::-webkit-scrollbar-thumb { background: hsl(212 14% 28%); border-radius: 999px; }
