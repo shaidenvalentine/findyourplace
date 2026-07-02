@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
 import { LiveCounter } from "@/components/marketing/LiveCounter";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Camera, Home, Route, Globe2, Percent, Landmark, Plane, Star } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Camera, Home, Route, Globe2, Percent, Landmark, Plane, Star } from "lucide-react";
 
 export default function LandingPage() {
   return (
@@ -268,6 +268,7 @@ function HeroPreview() {
 
       {/* Current-fit satellite */}
       <div className="glass absolute right-3 top-16 w-36 rounded-2xl p-4 sm:right-6">
+        <ArrowUpRight className="absolute right-3 top-3 size-3.5 text-muted-foreground/50" />
         <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Current city</div>
         <div className="mt-1 flex items-end gap-1">
           <span className="text-3xl font-light tabular-nums">61</span>
@@ -280,6 +281,7 @@ function HeroPreview() {
 
       {/* Tax satellite */}
       <div className="glass absolute bottom-6 right-6 w-44 rounded-2xl p-4">
+        <ArrowUpRight className="absolute right-3 top-3 size-3.5 text-muted-foreground/50" />
         <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Tax saved</div>
         <div className="mt-1 text-2xl font-light tabular-nums text-[hsl(185_65%_30%)]">≈ $54k<span className="text-sm text-muted-foreground">/yr</span></div>
         <div className="mt-2 flex items-end gap-0.5">

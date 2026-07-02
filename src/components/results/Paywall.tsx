@@ -85,9 +85,12 @@ export function Paywall({
         already done the hard part — see where you actually belong.
       </p>
 
-      <div className="mb-4 flex items-baseline gap-2">
-        <span className="text-3xl font-extrabold">{PRICE_LABEL}</span>
-        <span className="text-lg text-muted-foreground line-through">{ANCHOR_LABEL}</span>
+      <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        One-time unlock
+      </div>
+      <div className="mb-4 flex items-baseline gap-2.5">
+        <span className="text-5xl font-light tabular-nums tracking-tight">{PRICE_LABEL}</span>
+        <span className="text-lg font-light text-muted-foreground line-through">{ANCHOR_LABEL}</span>
         <span className="rounded-full bg-success/15 px-2 py-0.5 text-xs font-semibold text-success">
           today only
         </span>
