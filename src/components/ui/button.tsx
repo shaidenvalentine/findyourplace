@@ -9,15 +9,16 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:brightness-110",
+          "bg-primary text-primary-foreground shadow-sm shadow-black/10 hover:brightness-125",
         secondary:
-          "bg-secondary text-secondary-foreground hover:brightness-110",
+          "bg-secondary text-secondary-foreground hover:brightness-125",
         outline:
           "border border-border bg-transparent text-foreground hover:bg-muted",
         ghost: "bg-transparent text-foreground hover:bg-muted",
         muted: "bg-muted text-foreground hover:bg-muted/70",
+        // The primary CTA: a refined near-black pill (SOMA-style), subtle vertical depth.
         gradient:
-          "text-primary-foreground shadow-lg shadow-primary/25 hover:brightness-110 bg-[linear-gradient(100deg,hsl(var(--primary)),hsl(var(--accent)))]",
+          "text-primary-foreground shadow-md shadow-black/15 hover:brightness-125 bg-[linear-gradient(180deg,hsl(220_14%_20%),hsl(220_16%_11%))]",
       },
       size: {
         sm: "h-9 px-4",

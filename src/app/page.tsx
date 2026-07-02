@@ -11,7 +11,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/70 backdrop-blur-md">
         <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-4">
           <Logo />
-          <Button asChild variant="ghost" size="sm">
+          <Button asChild variant="gradient" size="sm">
             <Link href="/start">Start</Link>
           </Button>
         </div>
@@ -21,12 +21,12 @@ export default function LandingPage() {
       <section className="bg-aurora relative overflow-hidden">
         <div className="mx-auto w-full max-w-5xl px-4 pb-20 pt-20 sm:pt-28">
           <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
-            <h1 className="animate-fade-up text-balance text-5xl font-extrabold leading-[0.95] tracking-[-0.04em] sm:text-7xl">
+            <h1 className="animate-fade-up text-balance text-5xl font-light leading-[0.98] tracking-[-0.035em] sm:text-[5.25rem]">
               The biggest decision
               <br />
-              you <span className="text-gradient">haven&apos;t made yet.</span>
+              you <span className="italic font-normal">haven&apos;t</span> made yet.
             </h1>
-            <p className="animate-fade-up mt-8 max-w-xl text-pretty text-lg text-muted-foreground sm:text-xl">
+            <p className="animate-fade-up mt-7 max-w-md text-pretty text-lg leading-relaxed text-muted-foreground">
               Where you live decides your money, your people, your health.{" "}
               We find the one place on Earth that actually fits you.
             </p>
@@ -46,7 +46,7 @@ export default function LandingPage() {
 
       {/* Stakes — three big claims, no walls of text */}
       <section className="mx-auto w-full max-w-5xl px-4 py-20">
-        <h2 className="mx-auto max-w-2xl text-balance text-center text-3xl font-bold leading-tight tracking-tight sm:text-5xl">
+        <h2 className="mx-auto max-w-2xl text-balance text-center text-3xl font-light leading-[1.05] tracking-[-0.03em] sm:text-5xl">
           You don&apos;t pick a city.
           <br />
           A city <span className="text-gradient">picks you.</span>
@@ -72,7 +72,7 @@ export default function LandingPage() {
 
       {/* How it works */}
       <section className="mx-auto w-full max-w-5xl px-4 py-20">
-        <h2 className="text-center text-3xl font-bold tracking-tight sm:text-5xl">
+        <h2 className="text-center text-3xl font-light tracking-[-0.03em] sm:text-5xl">
           One minute to your match.
         </h2>
         <div className="mt-14 grid gap-4 sm:grid-cols-3">
@@ -105,7 +105,7 @@ export default function LandingPage() {
           <p className="text-center text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Why this exists
           </p>
-          <blockquote className="mt-6 text-balance text-center text-2xl font-semibold leading-snug tracking-tight sm:text-3xl">
+          <blockquote className="mt-6 text-balance text-center text-2xl font-light leading-snug tracking-[-0.02em] sm:text-3xl">
             &ldquo;I spent two years and a small fortune figuring out that Bali fit me. You shouldn&apos;t
             have to guess, move, and hope. So I built the engine I wish I&apos;d had — and pointed it at
             250 of the best places on Earth.&rdquo;
@@ -125,7 +125,7 @@ export default function LandingPage() {
 
       {/* Social proof */}
       <section className="mx-auto w-full max-w-5xl px-4 py-20">
-        <h2 className="text-center text-3xl font-bold tracking-tight sm:text-4xl">
+        <h2 className="text-center text-3xl font-light tracking-[-0.03em] sm:text-4xl">
           People are finding theirs.
         </h2>
         <div className="mt-12 grid gap-4 sm:grid-cols-3">
@@ -149,7 +149,7 @@ export default function LandingPage() {
 
       {/* Rooted or nomadic */}
       <section className="mx-auto w-full max-w-5xl px-4 py-20">
-        <h2 className="text-center text-3xl font-bold tracking-tight sm:text-5xl">
+        <h2 className="text-center text-3xl font-light tracking-[-0.03em] sm:text-5xl">
           One home, or the whole world?
         </h2>
         <div className="mt-14 grid gap-4 sm:grid-cols-2">
@@ -171,7 +171,7 @@ export default function LandingPage() {
       {/* Final CTA */}
       <section className="bg-aurora relative">
         <div className="mx-auto w-full max-w-5xl px-4 py-24 text-center">
-          <h2 className="text-balance text-4xl font-extrabold leading-[0.95] tracking-[-0.03em] sm:text-6xl">
+          <h2 className="text-balance text-4xl font-light leading-[1.0] tracking-[-0.03em] sm:text-6xl">
             Your place is out there.
             <br />
             <span className="text-gradient">Let&apos;s find which one.</span>
@@ -208,7 +208,7 @@ export default function LandingPage() {
 function Stake({ stat, body }: { stat: string; body: string }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-8">
-      <div className="text-5xl font-extrabold tracking-[-0.03em] text-gradient sm:text-6xl">{stat}</div>
+      <div className="text-5xl font-normal tracking-[-0.03em] text-accent-lime sm:text-6xl">{stat}</div>
       <p className="mt-5 text-base leading-relaxed text-muted-foreground">{body}</p>
     </div>
   );
@@ -235,7 +235,7 @@ function Stat({ icon, value, label }: { icon: React.ReactNode; value: string; la
   return (
     <div className="flex flex-col items-center text-center">
       <div className="mb-3 grid size-10 place-items-center rounded-lg bg-primary/15 text-primary">{icon}</div>
-      <div className="text-3xl font-extrabold tracking-tight sm:text-4xl">{value}</div>
+      <div className="text-3xl font-normal tracking-tight sm:text-4xl">{value}</div>
       <p className="mt-1 text-sm font-medium text-muted-foreground">{label}</p>
     </div>
   );
@@ -279,8 +279,8 @@ function Compare({ label, value, muted = false }: { label: string; value: number
       <div
         className={
           muted
-            ? "text-5xl font-extrabold tabular-nums tracking-tight text-muted-foreground"
-            : "text-5xl font-extrabold tabular-nums tracking-tight text-gradient"
+            ? "text-5xl font-normal tabular-nums tracking-tight text-muted-foreground"
+            : "text-5xl font-normal tabular-nums tracking-tight text-accent-lime"
         }
       >
         {value}
