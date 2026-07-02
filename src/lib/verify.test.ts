@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { getCountryTaxRecord } from "@/lib/tax";
 import { LOCATIONS } from "@/data/locations";
 import { scoreLocations, scoreCurrentCity } from "@/lib/scoring";
+import { buildScoredRun } from "@/lib/buildRun";
 import type { OnboardingData } from "@/types/onboarding";
 
 /**
@@ -184,6 +185,36 @@ describe("scoring sanity — canonical user archetypes produce sensible #1s", ()
     });
     // San Diego shouldn't score in the floor for a SoCal-y profile.
     expect(fit.score).toBeGreaterThanOrEqual(60);
+  });
+
+  it("when the #1 match IS the current city, every surface shows one honest number", () => {
+    // A Bali resident who loves Bali: the loved-place boost ranks Bali #1, but the
+    // displayed numbers must not fork — no "+9 jump" over itself (live bug, Jul 2026).
+    const run = buildScoredRun({
+      runId: "test-home",
+      createdAt: 0,
+      inputs: {
+        currentCity: "Bali",
+        lovedPlaces: ["Bali"],
+        lifestyleMode: "nomadic",
+        beachMountain: "beach",
+        preferredClimate: "tropical",
+        workStyle: "remote",
+        communityVibes: ["digital-nomad"],
+        budgetRange: "mid-range",
+        wellnessImportance: "high",
+        mustHaves: ["beach", "nature"],
+      },
+      source: "quiz",
+    });
+    expect(run.ranking[0].name.toLowerCase()).toBe("bali");
+    expect(run.lifeChange.alreadyHome).toBe(true);
+    expect(run.lifeChange.overallDelta).toBe(0);
+    expect(run.lifeChange.bestScore).toBe(run.currentCityFit.score);
+    // The locked tease and the paid ranking's #1 show the same honest fit as the
+    // current-city card — one place, one number.
+    expect(run.topTease.score).toBe(run.currentCityFit.score);
+    expect(run.ranking[0].totalScore).toBe(run.currentCityFit.score);
   });
 
   it("current-city fit distinguishes a mediocre place from a terrible one", () => {

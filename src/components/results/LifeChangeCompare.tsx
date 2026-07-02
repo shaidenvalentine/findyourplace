@@ -10,6 +10,52 @@ import { TrendingUp, ArrowRight } from "lucide-react";
  */
 export function LifeChangeCompare({ city, lifeChange }: { city: string; lifeChange: LifeChange }) {
   const here = city?.trim() ? titleCase(city.trim()) : "where you live now";
+
+  // The #1 match IS their current city — that's a validation moment, not a "jump".
+  // Comparing a city to itself with directional trade-off notes reads as broken math.
+  if (lifeChange.alreadyHome) {
+    const runnerUp = lifeChange.runnerUpScore;
+    const heldTheTop = runnerUp === null || runnerUp <= lifeChange.currentScore;
+    return (
+      <Card className="overflow-hidden">
+        <CardHeader>
+          <Badge variant="accent" className="w-fit">
+            <TrendingUp className="size-3" /> Plot twist
+          </Badge>
+          <CardTitle className="text-lg">{lifeChange.headline}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4 rounded-xl border border-border bg-surface p-5 text-center">
+            <div className="text-4xl font-light tabular-nums tracking-tight">{lifeChange.currentScore}</div>
+            <div className="mt-1 text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
+              {here} — your fit today
+            </div>
+          </div>
+          <p className="text-center text-sm text-muted-foreground">
+            {heldTheTop ? (
+              <>
+                We scored all 250 places against you, and the top of the list looks{" "}
+                <span className="font-semibold text-foreground">very familiar</span>
+                {typeof runnerUp === "number" ? (
+                  <> — the closest challenger anywhere reached {runnerUp}.</>
+                ) : (
+                  <>.</>
+                )}
+              </>
+            ) : (
+              <>
+                One place matched your raw stats slightly harder ({runnerUp}) — but on the things
+                you said actually matter, the top of your ranking looks{" "}
+                <span className="font-semibold text-foreground">very familiar</span>.
+              </>
+            )}{" "}
+            Unlock to confirm your #1 — and see how the other 249 stack up.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="overflow-hidden">
       <CardHeader>

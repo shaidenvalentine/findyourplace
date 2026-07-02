@@ -118,6 +118,8 @@ export interface CurrentCityScore {
   resolvedName?: string;
   /** True when the score was synthesized from country/global data, not a curated place. */
   estimated?: boolean;
+  /** Curated location id the input resolved to (null when synthesized). */
+  resolvedId?: string | null;
 }
 
 export function scoreCurrentCity(
@@ -132,6 +134,7 @@ export function scoreCurrentCity(
     cityFound: r.cityFound,
     resolvedName: r.resolvedName,
     estimated: r.estimated,
+    resolvedId: r.resolvedId,
   };
 }
 

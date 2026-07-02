@@ -91,8 +91,10 @@ export function LockedTopMatch({
             , a <span className="font-semibold text-foreground">+{fitDelta}-point</span> jump over
             where you live now.
           </>
+        ) : fitDelta === 0 ? (
+          <> — matching where you live now, point for point.</>
         ) : (
-          <> — higher than your current city.</>
+          <>.</>
         )}{" "}
         Unlock to see which one it is.
       </p>

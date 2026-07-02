@@ -300,13 +300,21 @@ export function rankLocationsV2(locations: Location[], p: OnboardingData): Ranke
     let resonance = 0;
     if (hasLoved) {
       const v = vec(loc, locations);
-      resonance = Math.max(...loved.vecs.map((lv) => cosine(v, lv))); // 0..1, similarity to nearest loved place
+      const c = Math.max(...loved.vecs.map((lv) => cosine(v, lv))); // similarity to nearest loved place
+      // Cosines between all-positive city vectors cluster in ~[0.86, 1], so the raw value
+      // barely differentiates — rescale it so resonance separates candidates instead of
+      // uniformly inflating every score.
+      resonance = Math.max(0, Math.min(1, (c - 0.86) / 0.14));
     }
     // Blend fit with resonance; a place the user explicitly loves is pulled to the top.
     let blended = hasLoved ? base * 0.7 + resonance * 100 * 0.3 : base;
     if (loved.ids.has(loc.id)) blended = Math.max(blended, 96);
 
-    const display = spread(blended);
+    // The DISPLAYED score is always the honest fit — the exact formula the current-city
+    // card uses — so one place shows one number everywhere. Resonance and the loved pin
+    // shape RANK ORDER only; letting them into the display made a Bali resident who loves
+    // Bali see "90 fit" and "99 match" for the same city on the same page.
+    const display = spread(base);
     return { location: loc, totalScore: blended, displayScore: display, categoryScores: cats, rank: 0 };
   });
 
@@ -330,6 +338,9 @@ export interface CurrentCityFit {
   cityFound: boolean;
   resolvedName: string;
   estimated: boolean;
+  /** Curated location id the input resolved to (null when synthesized). Lets callers
+   *  detect "the #1 match IS the user's current city" and keep one number for one place. */
+  resolvedId: string | null;
 }
 
 export function scoreCurrentCityV2(input: string, locations: Location[], p: OnboardingData): CurrentCityFit {
@@ -348,5 +359,12 @@ export function scoreCurrentCityV2(input: string, locations: Location[], p: Onbo
     { label: "Safety & Stability", score: Math.round(get("safety")) },
     { label: "Career & Opportunity", score: Math.round(get("career") * 0.7 + get("travel") * 0.3) },
   ];
-  return { score, categoryScores: simplified, cityFound: r.matched !== null, resolvedName: r.resolvedName, estimated: r.estimated };
+  return {
+    score,
+    categoryScores: simplified,
+    cityFound: r.matched !== null,
+    resolvedName: r.resolvedName,
+    estimated: r.estimated,
+    resolvedId: r.matched?.id ?? null,
+  };
 }

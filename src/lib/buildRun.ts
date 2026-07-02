@@ -24,6 +24,14 @@ export function buildScoredRun(opts: {
   const matches = scoreLocations(LOCATIONS, inputs);
   const top = matches[0];
   const currentCityFit = scoreCurrentCity(currentCity || "unknown", LOCATIONS, inputs);
+
+  // One place, one number. When the #1 match IS the user's current city (the loved-place
+  // boost makes this common for people who love where they live), every surface must show
+  // the same honest fit — otherwise the free page compares the city to itself with two
+  // different scores ("your fit jumps +9" while every category reads X → X).
+  const alreadyHome = Boolean(currentCityFit.resolvedId && top.location.id === currentCityFit.resolvedId);
+  if (alreadyHome) top.displayScore = currentCityFit.score;
+
   const circuit = generateAnnualCircuit(LOCATIONS, inputs);
 
   const topSlice = matches.slice(0, 10);
@@ -45,7 +53,12 @@ export function buildScoredRun(opts: {
     // Comparison + tease use the HONEST displayScore (same formula as currentCityFit),
     // so the headline number is consistent with the bucket breakdown the user sees.
     // The internal ranking (top.totalScore) still uses the alignment bonus to pick #1.
-    lifeChange: computeLifeChange(currentCityFit, top.categoryScores, top.displayScore),
+    lifeChange: computeLifeChange(currentCityFit, top.categoryScores, top.displayScore, {
+      alreadyHome,
+      // In home mode, the story is "nowhere else beat where you are" — the closest
+      // challenger is the best-scoring OTHER place.
+      runnerUpScore: alreadyHome ? (matches[1]?.displayScore ?? null) : null,
+    }),
     confidence: computeConfidence(inputs, matches),
     taxComparison: computeTaxComparison(inputs, top.location),
     topTease: { score: top.displayScore, continent: top.location.continent, region: top.location.region },

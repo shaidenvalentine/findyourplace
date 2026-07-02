@@ -14,6 +14,10 @@ export interface LifeChange {
   overallDelta: number;
   categories: LifeChangeCategory[];
   headline: string;
+  /** True when the #1 match IS the user's current city — celebrate, don't fake a jump. */
+  alreadyHome: boolean;
+  /** In alreadyHome mode: the best score anywhere ELSE on Earth (the closest challenger). */
+  runnerUpScore: number | null;
 }
 
 /**
@@ -80,29 +84,45 @@ function bucketScore(categoryScores: CategoryScore[], parts: { category: string;
 export function computeLifeChange(
   currentCityFit: CurrentCityScore,
   topMatchCategoryScores: CategoryScore[],
-  bestTotalScore: number
+  bestTotalScore: number,
+  opts?: { alreadyHome?: boolean; runnerUpScore?: number | null }
 ): LifeChange {
+  const alreadyHome = Boolean(opts?.alreadyHome);
+  const runnerUpScore = opts?.runnerUpScore ?? null;
   const currentByLabel = new Map(currentCityFit.categoryScores.map((c) => [c.label, c.score]));
 
   const categories: LifeChangeCategory[] = BUCKETS.map((b) => {
     const current = currentByLabel.get(b.label) ?? 50;
     const best = bucketScore(topMatchCategoryScores, b.parts);
     const delta = best - current;
-    return { label: b.label, current, best, delta, note: b.note(delta) };
+    // A near-zero delta is a tie, not a trade — never spin a direction that isn't there.
+    const note = Math.abs(delta) <= 2 ? "dead even here" : b.note(delta);
+    return { label: b.label, current, best, delta, note };
   }).sort((a, b) => b.delta - a.delta); // biggest gains lead
 
   // Headline uses the real overall fit scores (same scale), not the bucket average.
   const currentScore = currentCityFit.score;
-  const bestScore = bestTotalScore;
+  // One place, one number: when the #1 match IS the current city, both sides of the
+  // comparison are the same city and must show the same honest score.
+  const bestScore = alreadyHome ? currentScore : bestTotalScore;
   const overallDelta = bestScore - currentScore;
 
   const topGain = categories[0];
-  const headline =
-    overallDelta >= 8
-      ? `Your fit jumps +${overallDelta} — biggest leap: ${topGain.label.toLowerCase()}.`
+  // Only name a "biggest leap" when a category actually leaps.
+  const hasLeap = topGain.delta >= 3;
+  const headline = alreadyHome
+    ? `You might already be living in your place.`
+    : overallDelta >= 8
+      ? hasLeap
+        ? `Your fit jumps +${overallDelta} — biggest leap: ${topGain.label.toLowerCase()}.`
+        : `Your fit jumps +${overallDelta} over where you are now.`
       : overallDelta > 0
-        ? `A real step up — especially ${topGain.label.toLowerCase()}.`
-        : `You're already in a strong-fit city — but there's an even better match.`;
+        ? hasLeap
+          ? `A real step up — especially ${topGain.label.toLowerCase()}.`
+          : `A real step up from where you are now.`
+        : overallDelta === 0
+          ? `A dead heat on fit — the difference is in the details.`
+          : `You're already in a strong-fit city — but there's an even better match.`;
 
-  return { currentScore, bestScore, overallDelta, categories, headline };
+  return { currentScore, bestScore, overallDelta, categories, headline, alreadyHome, runnerUpScore };
 }
