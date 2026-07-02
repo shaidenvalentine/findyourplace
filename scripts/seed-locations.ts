@@ -17,7 +17,25 @@ async function main() {
   }
   const supabase = createClient(url, key, { auth: { persistSession: false } });
 
-  const rows = locations as Record<string, unknown>[];
+  // Only send columns that exist in the `locations` table (migration 0001). The dataset
+  // JSON also carries depth-content fields (lowdown/scene/best_for/monthly_budget_usd/…)
+  // that the app renders straight from the JSON and are NOT DB columns — including them
+  // would make PostgREST reject the upsert on unknown columns.
+  const COLUMNS = [
+    "id", "name", "region", "country", "continent", "latitude", "longitude", "population",
+    "image_url", "description", "vibe_summary", "tags", "cost_of_living_score", "rent_score",
+    "safety_score", "healthcare_score", "climate_score", "avg_temp_summer", "avg_temp_winter",
+    "humidity_level", "sunshine_days", "beach_access_score", "mountain_access_score",
+    "outdoor_score", "nightlife_score", "wellness_score", "dating_scene_score",
+    "community_score", "english_friendliness_score", "visa_friendliness_score",
+    "tax_friendliness_score", "airport_connectivity_score", "internet_quality_score",
+    "walkability_score", "transit_score", "culture_openness_score", "startup_ecosystem_score",
+    "bureaucracy_score", "personal_income_tax_rate", "corporate_tax_rate",
+    "capital_gains_tax_rate", "tax_notes",
+  ];
+  const rows = (locations as Record<string, unknown>[]).map((row) =>
+    Object.fromEntries(COLUMNS.filter((c) => c in row).map((c) => [c, row[c]])),
+  );
   console.log(`Seeding ${rows.length} locations…`);
 
   const BATCH = 100;
