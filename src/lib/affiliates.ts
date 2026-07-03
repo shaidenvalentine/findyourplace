@@ -28,17 +28,30 @@ export interface AffiliatePartner {
   id: string;
   name: string;
   category: AffCategory;
+  /** One-line scannable hook, always visible on the card. */
   blurb: string;
   cta: string;
   baseUrl: string;
   /** Env var holding the full affiliate tracking URL; falls back to baseUrl if unset. */
   affEnv: string;
   recurring?: boolean;
+  /** Concierge guide: 2–3 sentences on why THIS mover needs the service. */
+  why: string;
+  /** One-line loss-aversion consequence; the card prefixes "If you skip it:". */
+  skipCost: string;
+  /** Renders an "Essential" badge and breaks priority ties. */
+  essential?: boolean;
+  /** Payout-weighted relevance 0–100; higher sorts first within a section. Source of truth: docs/AFFILIATES.md. */
+  priority?: number;
+  /** Internal program economics note (commission, network, cookie). NEVER render this. */
+  payoutNote?: string;
   conditions?: {
     lifestyle?: ("rooted" | "nomadic")[];
     usCitizenOnly?: boolean;
     investorOnly?: boolean;
     minIncomeMidpoint?: number;
+    /** Only for users who do NOT already work remotely (job/income platforms). */
+    needsRemoteIncome?: boolean;
   };
 }
 
@@ -52,6 +65,10 @@ export const PARTNERS: AffiliatePartner[] = [
     cta: "Talk to a US expat CPA",
     baseUrl: "https://brighttax.com",
     affEnv: "AFF_BRIGHTTAX",
+    why: "The US is one of only two countries that taxes its citizens wherever they live — moving abroad doesn't end your IRS filing, it complicates it. A specialist applies the Foreign Earned Income Exclusion (over $120k of income excluded) and foreign tax credits correctly, which is routinely the difference between owing thousands and owing nothing.",
+    skipCost: "missed foreign-account disclosures carry IRS penalties that start at $10,000 — and DIY filings miss them constantly.",
+    essential: true,
+    priority: 90,
     conditions: { usCitizenOnly: true },
   },
   {
@@ -62,6 +79,9 @@ export const PARTNERS: AffiliatePartner[] = [
     cta: "Get a tax plan",
     baseUrl: "https://www.taxesforexpats.com",
     affEnv: "AFF_TAXESFOREXPATS",
+    why: "Where you're tax-resident is the single biggest number in this move — often bigger than rent. An advisor structures the exit before you go (residency timing, treaty positions, what to close and when), while the good options are still open.",
+    skipCost: "get residency timing wrong and you can owe full tax in two countries for the same year.",
+    priority: 80,
   },
   // Insurance
   {
@@ -73,6 +93,10 @@ export const PARTNERS: AffiliatePartner[] = [
     baseUrl: "https://safetywing.com",
     affEnv: "AFF_SAFETYWING",
     recurring: true,
+    why: "Your health insurance almost certainly stops at the border, and credit-card travel cover isn't built for months abroad. SafetyWing works like a subscription: covers you in 180+ countries, lets you start it after you've already left, and pauses when you're home.",
+    skipCost: "one uninsured hospital visit abroad can cost more than your entire first year away.",
+    essential: true,
+    priority: 85,
     conditions: { lifestyle: ["nomadic"] },
   },
   {
@@ -84,6 +108,9 @@ export const PARTNERS: AffiliatePartner[] = [
     baseUrl: "https://genki.world",
     affEnv: "AFF_GENKI",
     recurring: true,
+    why: "If you're settling somewhere rather than hopping, you want real health insurance, not travel cover. Genki's long-term plans work like a local policy that follows you across borders — monthly, cancellable, and valid as proof of cover for residency applications that demand it.",
+    skipCost: "many visa and residency applications are rejected outright without qualifying health coverage.",
+    priority: 70,
   },
   // Banking
   {
@@ -94,6 +121,10 @@ export const PARTNERS: AffiliatePartner[] = [
     cta: "Open a Wise account",
     baseUrl: "https://wise.com",
     affEnv: "AFF_WISE",
+    why: "Your home bank quietly takes 3–6% of everything you move abroad in hidden exchange spread. Wise gives you local account details in USD, EUR, GBP and more, converts at the real mid-market rate, and is the account landlords, employers, and other movers abroad already expect.",
+    skipCost: "paying rent and getting paid through a regular US bank abroad burns hundreds of dollars a year in fees.",
+    essential: true,
+    priority: 85,
   },
   {
     id: "mercury",
@@ -103,6 +134,9 @@ export const PARTNERS: AffiliatePartner[] = [
     cta: "Set up business banking",
     baseUrl: "https://mercury.com",
     affEnv: "AFF_MERCURY",
+    why: "If you run a company or freelance through an LLC, you need US business banking that doesn't care where you're sitting. Mercury is fully online — no branch visits, no foreign-login lockouts, and international wires that just work.",
+    skipCost: "traditional business banks freeze accounts that suddenly log in from abroad — usually mid-move, when you can least afford it.",
+    priority: 60,
     conditions: { investorOnly: true },
   },
   // Visa / residency
@@ -114,6 +148,9 @@ export const PARTNERS: AffiliatePartner[] = [
     cta: "Check visa options",
     baseUrl: "https://www.ivisa.com",
     affEnv: "AFF_IVISA",
+    why: "Every country has its own entry rules, and digital-nomad visas each come with their own income proofs and timelines. iVisa checks exactly what your passport needs and handles the application — instead of you deciphering embassy PDFs the week before you fly.",
+    skipCost: "arriving on the wrong visa can mean denied boarding, or a stamp that caps your stay at 30 days.",
+    priority: 55,
   },
   // Flights
   {
@@ -124,6 +161,9 @@ export const PARTNERS: AffiliatePartner[] = [
     cta: "Find flights",
     baseUrl: "https://www.skyscanner.com",
     affEnv: "AFF_SKYSCANNER",
+    why: "Book a scouting trip before you commit — a week on the ground tells you more than a year of research. Skyscanner's whole-month view and price alerts find the cheap window to go see your match in person.",
+    skipCost: "booking blind on dates can double the cost of the exact same route.",
+    priority: 30,
   },
   // Stay
   {
@@ -134,6 +174,9 @@ export const PARTNERS: AffiliatePartner[] = [
     cta: "Book a stay",
     baseUrl: "https://www.booking.com",
     affEnv: "AFF_BOOKING",
+    why: "Book your first one to two weeks somewhere flexible while you hunt for a real apartment in person. Free-cancellation stays keep you mobile if the neighborhood turns out to be wrong — and the neighborhood is only ever obvious on foot.",
+    skipCost: "signing a long lease sight-unseen is the single most expensive regret movers report.",
+    priority: 50,
   },
   {
     id: "blueground",
@@ -143,6 +186,9 @@ export const PARTNERS: AffiliatePartner[] = [
     cta: "Browse furnished homes",
     baseUrl: "https://www.theblueground.com",
     affEnv: "AFF_BLUEGROUND",
+    why: "A furnished monthly apartment bridges the gap between hotel and lease: move in with a suitcase, extend month to month, and skip the deposit-and-furniture sprint in a city you don't know yet.",
+    skipCost: "unfurnished leases abroad often want 2–3 months' deposit plus a local guarantor you don't have yet.",
+    priority: 55,
   },
   // eSIM
   {
@@ -153,6 +199,9 @@ export const PARTNERS: AffiliatePartner[] = [
     cta: "Get an eSIM",
     baseUrl: "https://www.airalo.com",
     affEnv: "AFF_AIRALO",
+    why: "Data is how you order the taxi, load the map, and pass the WhatsApp verification the minute you land. Install the eSIM before you fly and your phone simply works at the gate — no airport SIM kiosk markup.",
+    skipCost: "roaming through your first week abroad can cost more than a year of local eSIM data.",
+    priority: 60,
   },
   // VPN
   {
@@ -164,6 +213,10 @@ export const PARTNERS: AffiliatePartner[] = [
     baseUrl: "https://nordvpn.com",
     affEnv: "AFF_NORDVPN",
     recurring: true,
+    why: "Banks, brokerages, and streaming services flag or lock accounts that suddenly appear from a new country. A VPN keeps your US logins looking like home and secures you on every hotel and café network you'll live on.",
+    skipCost: "one flagged login from abroad can freeze your bank account while you're mid-move.",
+    essential: true,
+    priority: 75,
   },
   // Moving
   {
@@ -174,6 +227,9 @@ export const PARTNERS: AffiliatePartner[] = [
     cta: "Compare movers",
     baseUrl: "https://www.sirelo.com",
     affEnv: "AFF_SIRELO",
+    why: "If you're shipping furniture rather than packing a suitcase, quotes vary wildly — the same container can differ by thousands between movers. Sirelo pulls competing quotes from vetted international movers so you see the real market price before you commit.",
+    skipCost: "taking the first mover quote typically overpays 30–50% for the same route.",
+    priority: 55,
     conditions: { lifestyle: ["rooted"] },
   },
   // Coworking
@@ -185,6 +241,9 @@ export const PARTNERS: AffiliatePartner[] = [
     cta: "Find coworking",
     baseUrl: "https://www.coworker.com",
     affEnv: "AFF_COWORKER",
+    why: "A desk gives your day structure and your social life a head start — the first friends in a new city are usually the ones at the next desk. Book before you land so week one already has a rhythm.",
+    skipCost: "working from your rental for months is the fastest route to the isolation that sends people home.",
+    priority: 35,
     conditions: { lifestyle: ["nomadic"] },
   },
   // Language
@@ -196,6 +255,9 @@ export const PARTNERS: AffiliatePartner[] = [
     cta: "Start learning",
     baseUrl: "https://www.italki.com",
     affEnv: "AFF_ITALKI",
+    why: "Even twenty lessons of the local language changes how a place treats you — prices, friendships, bureaucracy, all of it. italki is 1-on-1 with native tutors on your schedule, from around $10 a lesson, so you can start weeks before you move.",
+    skipCost: "staying inside the English bubble is the most common reason a move never turns into a life.",
+    priority: 40,
   },
 ];
 
@@ -208,6 +270,7 @@ function passesConditions(p: AffiliatePartner, run: FreeRun): boolean {
   if (!c) return true;
   const inp = run.inputs;
   if (c.lifestyle && (!inp.lifestyleMode || !c.lifestyle.includes(inp.lifestyleMode))) return false;
+  if (c.needsRemoteIncome && inp.workStyle === "remote") return false;
   if (c.usCitizenOnly && !inp.isUsCitizen) return false;
   if (c.investorOnly && !inp.hasInvestmentIncome) return false;
   if (c.minIncomeMidpoint) {
