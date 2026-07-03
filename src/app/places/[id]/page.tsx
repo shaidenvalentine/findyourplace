@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { PlacePhoto } from "@/components/places/PlacePhoto";
 import { PlaceProfile } from "@/components/places/PlaceProfile";
 import { AffiliateCard } from "@/components/affiliates/AffiliateCard";
-import { getPartner } from "@/lib/affiliates";
+import { recommendForPlace } from "@/lib/affiliates";
 import { getCountryTaxRecord } from "@/lib/tax";
 import { ArrowRight, Coins, Globe2 } from "lucide-react";
 
@@ -160,12 +160,9 @@ export default async function PlacePage({ params }: { params: Promise<{ id: stri
       {/* Make the move — contextual affiliate CTAs */}
       <h2 className="mt-8 text-lg font-bold tracking-tight">Make the move to {loc.name}</h2>
       <div className="mt-3 flex flex-col gap-2">
-        {["booking", "skyscanner", "safetywing", "airalo"].map((pid) => {
-          const partner = getPartner(pid);
-          return partner ? (
-            <AffiliateCard key={pid} partner={partner} runId="" placement={`place:${loc.id}`} />
-          ) : null;
-        })}
+        {recommendForPlace().map((partner) => (
+          <AffiliateCard key={partner.id} partner={partner} runId="" placement={`place:${loc.id}`} />
+        ))}
       </div>
       <p className="mt-2 text-[11px] text-muted-foreground">
         Some links are partner links — we may earn a commission at no cost to you.

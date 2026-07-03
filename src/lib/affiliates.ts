@@ -510,3 +510,14 @@ export function recommendToolkit(run: FreeRun): ToolkitSection[] {
 export function topTaxPartner(run: FreeRun): AffiliatePartner | undefined {
   return PARTNERS.filter((p) => p.category === "tax" && passesConditions(p, run)).sort(byPriority)[0];
 }
+
+/**
+ * Non-personalized picks for place detail pages: the top-priority partner per category.
+ * Only unconditional partners qualify — there's no run to check conditions against.
+ */
+export function recommendForPlace(): AffiliatePartner[] {
+  const cats: AffCategory[] = ["flights", "stay", "housing", "insurance", "esim"];
+  return cats
+    .map((c) => PARTNERS.filter((p) => p.category === c && !p.conditions).sort(byPriority)[0])
+    .filter((p): p is AffiliatePartner => Boolean(p));
+}
