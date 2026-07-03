@@ -36,7 +36,7 @@ ordering source of truth.
 | # | Partner | Category | Program / Network | Commission | Cookie | Recurring | Fit (1–5) | priority | Status |
 |---|---------|----------|-------------------|------------|--------|-----------|-----------|----------|--------|
 | 1 | Taxes for Expats | tax | In-house | $75 flat OR 15% cap $250/client ⚠️ | unknown | — | 5 | 90 | ☐ |
-| 2 | SafetyWing | insurance | In-house (Ambassador) | ~10% of premium ✅ | 364d ✅ | **Yes** ✅ | 5 | 90 | ☐ |
+| 2 | SafetyWing | insurance | In-house (Ambassador) | ~10% of premium ✅ | 364d ✅ | **Yes** ✅ | 5 | 90 | ✅ signed up |
 | 3 | Wise | banking | Partnerize | £10 personal / £50 business ✅ | no expiry ✅ | — | 5 | 85 | ☐ |
 | 4 | NordVPN | vpn | In-house | 40–100% new + 30% renewals ⚠️ | 30d ⚠️ | **Yes** | 4 | 80 | ☐ |
 | 5 | Deel | remote-jobs | PartnerStack | $500/SQL + $1,000/paying customer ✅ | 90d ✅ | — | 3 | 75 | ☐ |
@@ -199,7 +199,7 @@ No affiliate programs (verified 2026-07). Kept in-app for advice value. Re-check
 
 Week 1 — the five that matter (all free, self-serve):
 - [ ] TFX → approved → dashboard link → `AFF_TAXESFOREXPATS` in Vercel → click-test `/go/taxesforexpats`
-- [ ] SafetyWing → ambassador link → `AFF_SAFETYWING` → test `/go/safetywing`
+- [x] SafetyWing → ambassador link obtained (referenceID-style, no {CLICK_ID}) → set `AFF_SAFETYWING` in Vercel → test `/go/safetywing`
 - [ ] Wise → Partnerize approval → `https://wise.prf.hn/click/camref:XXXX/pubref:{CLICK_ID}` → `AFF_WISE` → test `/go/wise`
 - [ ] NordVPN → in-house link → `AFF_NORDVPN` → test `/go/nordvpn`
 - [ ] iVisa → in-house link → `AFF_IVISA` → test `/go/ivisa`
