@@ -12,12 +12,16 @@ import { incomeMidpoint } from "@/lib/tax";
  */
 
 export type AffCategory =
+  | "remote-jobs"
+  | "business"
   | "tax"
   | "insurance"
   | "banking"
   | "visa"
   | "flights"
   | "stay"
+  | "housing"
+  | "mail"
   | "esim"
   | "vpn"
   | "moving"
@@ -56,6 +60,47 @@ export interface AffiliatePartner {
 }
 
 export const PARTNERS: AffiliatePartner[] = [
+  // Income — remote work + business structure
+  {
+    id: "deel",
+    name: "Deel",
+    category: "remote-jobs",
+    blurb: "Get hired or paid compliantly from anywhere — the payroll platform remote companies already use.",
+    cta: "Set up compliant pay",
+    baseUrl: "https://www.deel.com",
+    affEnv: "AFF_DEEL",
+    why: "Working from another country isn't just a plane ticket — your employer needs a compliant way to pay you there, and clients need a clean way to send money. Deel handles contracts, payroll, and compliance in 150+ countries: share it with your company, or invoice through it as a contractor.",
+    skipCost: "informal \"just keep paying my US account\" arrangements collapse at tax time — or cost you the job when HR finds out.",
+    priority: 75,
+    payoutNote: "$500/sales-qualified lead + $1,000 when they become a paying customer (up to $1,500), PartnerStack, 90d cookie.",
+  },
+  {
+    id: "doola",
+    name: "doola",
+    category: "business",
+    blurb: "Form a US LLC with business banking from anywhere — freelance income, structured properly.",
+    cta: "Set up your LLC",
+    baseUrl: "https://www.doola.com",
+    affEnv: "AFF_DOOLA",
+    why: "If you freelance or run anything on the side, a US LLC keeps your invoicing, banking, and taxes clean while you're abroad — clients pay a US company, not a personal account in a country they've never heard of. doola forms it and handles the annual paperwork entirely remotely.",
+    skipCost: "mixing freelance income into a personal account abroad is an audit flag and a banking-freeze risk.",
+    priority: 70,
+    payoutNote: "15% base, tiered up to ~$1,000/referral (unverified — confirm in dashboard), in-house program.",
+  },
+  {
+    id: "flexjobs",
+    name: "FlexJobs",
+    category: "remote-jobs",
+    blurb: "Hand-screened remote jobs — the income that makes the move possible.",
+    cta: "Find a remote job",
+    baseUrl: "https://www.flexjobs.com",
+    affEnv: "AFF_FLEXJOBS",
+    why: "Your move only works if your income travels with you. FlexJobs vets every listing — no scams, no commission-only bait — which makes it the fastest way to swap your desk job for one that boards a plane.",
+    skipCost: "moving without location-independent income is the #1 reason people boomerang home within a year.",
+    priority: 55,
+    payoutNote: "~$12/subscription, Impact, 30d cookie.",
+    conditions: { needsRemoteIncome: true },
+  },
   // Tax
   {
     id: "brighttax",
@@ -68,7 +113,8 @@ export const PARTNERS: AffiliatePartner[] = [
     why: "The US is one of only two countries that taxes its citizens wherever they live — moving abroad doesn't end your IRS filing, it complicates it. A specialist applies the Foreign Earned Income Exclusion (over $120k of income excluded) and foreign tax credits correctly, which is routinely the difference between owing thousands and owing nothing.",
     skipCost: "missed foreign-account disclosures carry IRS penalties that start at $10,000 — and DIY filings miss them constantly.",
     essential: true,
-    priority: 90,
+    priority: 45,
+    payoutNote: "No cash affiliate program (client $50 credit referral only, verified 2026-07). Kept for advice value.",
     conditions: { usCitizenOnly: true },
   },
   {
@@ -81,7 +127,8 @@ export const PARTNERS: AffiliatePartner[] = [
     affEnv: "AFF_TAXESFOREXPATS",
     why: "Where you're tax-resident is the single biggest number in this move — often bigger than rent. An advisor structures the exit before you go (residency timing, treaty positions, what to close and when), while the good options are still open.",
     skipCost: "get residency timing wrong and you can owe full tax in two countries for the same year.",
-    priority: 80,
+    priority: 90,
+    payoutNote: "$75 flat OR 15% capped at $250 per paying client, in-house, monthly PayPal payout.",
   },
   // Insurance
   {
@@ -96,7 +143,8 @@ export const PARTNERS: AffiliatePartner[] = [
     why: "Your health insurance almost certainly stops at the border, and credit-card travel cover isn't built for months abroad. SafetyWing works like a subscription: covers you in 180+ countries, lets you start it after you've already left, and pauses when you're home.",
     skipCost: "one uninsured hospital visit abroad can cost more than your entire first year away.",
     essential: true,
-    priority: 85,
+    priority: 90,
+    payoutNote: "~10% of premium, RECURRING on renewals, in-house ambassador program, 364d cookie.",
     conditions: { lifestyle: ["nomadic"] },
   },
   {
@@ -110,7 +158,21 @@ export const PARTNERS: AffiliatePartner[] = [
     recurring: true,
     why: "If you're settling somewhere rather than hopping, you want real health insurance, not travel cover. Genki's long-term plans work like a local policy that follows you across borders — monthly, cancellable, and valid as proof of cover for residency applications that demand it.",
     skipCost: "many visa and residency applications are rejected outright without qualifying health coverage.",
-    priority: 70,
+    priority: 60,
+    payoutNote: "5% recurring for membership lifetime, GoAffPro, ~365d cookie (unverified), €50 min payout.",
+  },
+  {
+    id: "insurednomads",
+    name: "Insured Nomads",
+    category: "insurance",
+    blurb: "Global health insurance with real hospital networks and telehealth — built for people who left.",
+    cta: "Compare global plans",
+    baseUrl: "https://www.insurednomads.com",
+    affEnv: "AFF_INSUREDNOMADS",
+    why: "Between nomad travel cover and a full local policy sits Insured Nomads: global medical networks, telehealth, and plans that work whether you're trying a place for three months or staying two years.",
+    skipCost: "the underinsured middle ground — too settled for travel insurance, no local coverage yet — is where the five-figure bills happen.",
+    priority: 65,
+    payoutNote: "15% per policy (company-stated; one source claims up to $500 + renewals — verify), Tapfiliate, contact partners@insurednomads.com.",
   },
   // Banking
   {
@@ -125,6 +187,7 @@ export const PARTNERS: AffiliatePartner[] = [
     skipCost: "paying rent and getting paid through a regular US bank abroad burns hundreds of dollars a year in fees.",
     essential: true,
     priority: 85,
+    payoutNote: "£10/personal + £50/business per qualified signup, Partnerize, no-expiry cookie (first transfer).",
   },
   {
     id: "mercury",
@@ -137,6 +200,7 @@ export const PARTNERS: AffiliatePartner[] = [
     why: "If you run a company or freelance through an LLC, you need US business banking that doesn't care where you're sitting. Mercury is fully online — no branch visits, no foreign-login lockouts, and international wires that just work.",
     skipCost: "traditional business banks freeze accounts that suddenly log in from abroad — usually mid-move, when you can least afford it.",
     priority: 60,
+    payoutNote: "Negotiated only (no public rate); advisor tracks pay up to $1,000–1,500/funded client, in-house.",
     conditions: { investorOnly: true },
   },
   // Visa / residency
@@ -150,7 +214,8 @@ export const PARTNERS: AffiliatePartner[] = [
     affEnv: "AFF_IVISA",
     why: "Every country has its own entry rules, and digital-nomad visas each come with their own income proofs and timelines. iVisa checks exactly what your passport needs and handles the application — instead of you deciphering embassy PDFs the week before you fly.",
     skipCost: "arriving on the wrong visa can mean denied boarding, or a stamp that caps your stay at 30 days.",
-    priority: 55,
+    priority: 75,
+    payoutNote: "20% of service fees (35% on photos), 365d cookie, in-house, $50 min payout, monthly.",
   },
   // Flights
   {
@@ -163,7 +228,8 @@ export const PARTNERS: AffiliatePartner[] = [
     affEnv: "AFF_SKYSCANNER",
     why: "Book a scouting trip before you commit — a week on the ground tells you more than a year of research. Skyscanner's whole-month view and price alerts find the cheap window to go see your match in person.",
     skipCost: "booking blind on dates can double the cost of the exact same route.",
-    priority: 30,
+    priority: 25,
+    payoutNote: "~20% of Skyscanner's own referral revenue (cents per click-out), Impact or Travelpayouts, 30d cookie.",
   },
   // Stay
   {
@@ -176,19 +242,48 @@ export const PARTNERS: AffiliatePartner[] = [
     affEnv: "AFF_BOOKING",
     why: "Book your first one to two weeks somewhere flexible while you hunt for a real apartment in person. Free-cancellation stays keep you mobile if the neighborhood turns out to be wrong — and the neighborhood is only ever obvious on foot.",
     skipCost: "signing a long lease sight-unseen is the single most expensive regret movers report.",
-    priority: 50,
+    priority: 40,
+    payoutNote: "~4% of completed stays via Awin (US) — the in-house program shut for small partners May 2025; session cookie.",
   },
   {
     id: "blueground",
     name: "Blueground",
-    category: "stay",
+    category: "housing",
     blurb: "Move-in-ready furnished apartments by the month — perfect for a soft landing.",
     cta: "Browse furnished homes",
     baseUrl: "https://www.theblueground.com",
     affEnv: "AFF_BLUEGROUND",
     why: "A furnished monthly apartment bridges the gap between hotel and lease: move in with a suitcase, extend month to month, and skip the deposit-and-furniture sprint in a city you don't know yet.",
     skipCost: "unfurnished leases abroad often want 2–3 months' deposit plus a local guarantor you don't have yet.",
-    priority: 55,
+    priority: 65,
+    payoutNote: "Advertised up to ~$200/booking (unverified), via Sovrn/aggregators — apply at promos.theblueground.com/affiliate.",
+  },
+  {
+    id: "flatio",
+    name: "Flatio",
+    category: "housing",
+    blurb: "Monthly furnished rentals without tenant paperwork — built for stays of 1–12 months.",
+    cta: "Browse monthly rentals",
+    baseUrl: "https://www.flatio.com",
+    affEnv: "AFF_FLATIO",
+    why: "Flatio specializes in the exact stay a mover needs: one to twelve months, furnished, deposit-free on most listings, no local guarantor. It's how you rent like a local before you can prove you are one.",
+    skipCost: "local rental sites want payslips, a guarantor, and a year's commitment you can't give yet.",
+    priority: 60,
+    payoutNote: "Rev-share per booking + host signup (rate unpublished — confirm at signup), in-house, 60d cookie, €50 min.",
+  },
+  {
+    id: "trustedhousesitters",
+    name: "TrustedHousesitters",
+    category: "housing",
+    blurb: "Live rent-free by looking after homes and pets around the world.",
+    cta: "Find house sits",
+    baseUrl: "https://www.trustedhousesitters.com",
+    affEnv: "AFF_TRUSTEDHOUSESITTERS",
+    why: "One membership can erase your biggest cost. House sits run from a weekend to several months, come furnished with wifi and a pet, and let you live in neighborhoods you couldn't otherwise afford while you scout.",
+    skipCost: "rent is 30–50% of a nomad budget — this is the single biggest lever most people never pull.",
+    priority: 50,
+    payoutNote: "~$28–30 per membership sale (20–30%, unverified), Impact, 30d cookie.",
+    conditions: { lifestyle: ["nomadic"] },
   },
   // eSIM
   {
@@ -202,6 +297,7 @@ export const PARTNERS: AffiliatePartner[] = [
     why: "Data is how you order the taxi, load the map, and pass the WhatsApp verification the minute you land. Install the eSIM before you fly and your phone simply works at the gate — no airport SIM kiosk markup.",
     skipCost: "roaming through your first week abroad can cost more than a year of local eSIM data.",
     priority: 60,
+    payoutNote: "~10% per sale, Impact, 30d cookie. (Alternatives: Saily 15%, Holafly ~7% but 365d cookie + higher AOV.)",
   },
   // VPN
   {
@@ -216,7 +312,8 @@ export const PARTNERS: AffiliatePartner[] = [
     why: "Banks, brokerages, and streaming services flag or lock accounts that suddenly appear from a new country. A VPN keeps your US logins looking like home and secures you on every hotel and café network you'll live on.",
     skipCost: "one flagged login from abroad can freeze your bank account while you're mid-move.",
     essential: true,
-    priority: 75,
+    priority: 80,
+    payoutNote: "40–100% on new signups + 30% RECURRING on all renewals, in-house, 30d cookie.",
   },
   // Moving
   {
@@ -229,8 +326,23 @@ export const PARTNERS: AffiliatePartner[] = [
     affEnv: "AFF_SIRELO",
     why: "If you're shipping furniture rather than packing a suitcase, quotes vary wildly — the same container can differ by thousands between movers. Sirelo pulls competing quotes from vetted international movers so you see the real market price before you commit.",
     skipCost: "taking the first mover quote typically overpays 30–50% for the same route.",
-    priority: 55,
+    priority: 60,
+    payoutNote: "50% of Sirelo's revenue per accepted moving lead, in-house, invoice-based monthly.",
     conditions: { lifestyle: ["rooted"] },
+  },
+  // Mail
+  {
+    id: "anytimemailbox",
+    name: "Anytime Mailbox",
+    category: "mail",
+    blurb: "A permanent US mailing address — see and forward your mail from anywhere.",
+    cta: "Claim your US address",
+    baseUrl: "https://www.anytimemailbox.com",
+    affEnv: "AFF_ANYTIMEMAILBOX",
+    why: "Banks, the IRS, the DMV, and your brokerage all still want a US address after you leave. A virtual mailbox scans your mail the day it arrives and forwards what matters, so \"where do we send this?\" never becomes an emergency.",
+    skipCost: "using a friend's address works until a debit card, a jury summons, or a tax notice goes missing.",
+    priority: 55,
+    payoutNote: "~$25 per new renter, Everflow, 30d cookie, $300 min payout.",
   },
   // Coworking
   {
@@ -243,7 +355,8 @@ export const PARTNERS: AffiliatePartner[] = [
     affEnv: "AFF_COWORKER",
     why: "A desk gives your day structure and your social life a head start — the first friends in a new city are usually the ones at the next desk. Book before you land so week one already has a rhythm.",
     skipCost: "working from your rental for months is the fastest route to the isolation that sends people home.",
-    priority: 35,
+    priority: 20,
+    payoutNote: "No affiliate program (verified 2026-07). Kept for advice value.",
     conditions: { lifestyle: ["nomadic"] },
   },
   // Language
@@ -257,7 +370,21 @@ export const PARTNERS: AffiliatePartner[] = [
     affEnv: "AFF_ITALKI",
     why: "Even twenty lessons of the local language changes how a place treats you — prices, friendships, bureaucracy, all of it. italki is 1-on-1 with native tutors on your schedule, from around $10 a lesson, so you can start weeks before you move.",
     skipCost: "staying inside the English bubble is the most common reason a move never turns into a life.",
-    priority: 40,
+    priority: 45,
+    payoutNote: "$10+ per new student's first purchase, in-house, 30d cookie, monthly PayPal/Payoneer.",
+  },
+  {
+    id: "lingoda",
+    name: "Lingoda",
+    category: "language",
+    blurb: "Structured small-group classes that get you conversational fast.",
+    cta: "Join a class",
+    baseUrl: "https://www.lingoda.com",
+    affEnv: "AFF_LINGODA",
+    why: "If you want a plan rather than a playlist, Lingoda runs teacher-led classes on a real schedule with real progression — the difference between \"I use an app sometimes\" and ordering, arguing, and making friends in the language.",
+    skipCost: "apps alone stall at tourist phrases; conversation is what makes a place yours.",
+    priority: 50,
+    payoutNote: "~$50–75 per order (unverified — conflicting sources), Rakuten Advertising, 30–45d cookie.",
   },
 ];
 
@@ -318,6 +445,14 @@ export function recommendToolkit(run: FreeRun): ToolkitSection[] {
 
   const sections: ToolkitSection[] = [];
 
+  const income = pick(["remote-jobs", "business"]);
+  if (income.length)
+    sections.push({
+      title: "Secure your income",
+      subtitle: "Money that travels is the whole game — lock this in before you book anything.",
+      items: income,
+    });
+
   if (taxRelevant) {
     const tax = pick(["tax"]);
     if (tax.length)
@@ -344,15 +479,23 @@ export function recommendToolkit(run: FreeRun): ToolkitSection[] {
       items: cover,
     });
 
-  const getThere = pick(["visa", "flights", "moving"]);
+  const getThere = pick(["visa", "flights", "moving", "mail"]);
   if (getThere.length)
     sections.push({
       title: "Get there",
-      subtitle: "Visa, flights, and what you're bringing — most people do this in week one and regret waiting.",
+      subtitle: "Visa, flights, mail, and what you're bringing — sort this early, it has the longest lead times.",
       items: getThere,
     });
 
-  const settle = pick(["stay", "esim", "coworking", "language", "vpn"]);
+  const firstPlace = pick(["stay", "housing"]);
+  if (firstPlace.length)
+    sections.push({
+      title: "Find your first place",
+      subtitle: "Stay flexible for the first month — the right neighborhood is only ever obvious on foot.",
+      items: firstPlace,
+    });
+
+  const settle = pick(["esim", "vpn", "coworking", "language"]);
   if (settle.length)
     sections.push({
       title: "Land softly",
