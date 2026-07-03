@@ -1,4 +1,5 @@
 import type { CategoryScore, CurrentCityScore } from "@/lib/scoring";
+import { displayFit } from "@/lib/match/engine";
 
 export interface LifeChangeCategory {
   label: string;
@@ -31,54 +32,55 @@ export interface LifeChange {
  * city for a cheaper coastal town) — we frame those honestly rather than hiding them.
  */
 
-const BUCKETS: { label: string; parts: { category: string; weight: number }[]; note: (d: number) => string }[] = [
+// The same 6-bucket partition of the 10 scoring categories that scoreCurrentCity()
+// exposes — the two sides of every row MUST be computed identically or the comparison
+// is meaningless.
+const BUCKETS: { label: string; parts: string[]; note: (d: number) => string }[] = [
   {
     label: "Cost & Value",
-    parts: [{ category: "cost", weight: 1.0 }],
+    parts: ["cost"],
     note: (d) => (d > 0 ? "your money goes a lot further" : "you'd pay a bit more for what you get"),
   },
   {
     label: "Lifestyle Fit",
-    parts: [
-      { category: "lifestyle", weight: 0.5 },
-      { category: "wellness", weight: 0.5 },
-    ],
+    parts: ["lifestyle", "wellness"],
     note: (d) => (d > 0 ? "days that actually feel like you" : "a fair trade for the bigger picture"),
   },
   {
     label: "Community Fit",
-    parts: [
-      { category: "community", weight: 0.6 },
-      { category: "culture", weight: 0.4 },
-    ],
+    parts: ["community", "culture"],
     note: (d) => (d > 0 ? "you'll find your people faster" : "you'd trade a little of your current scene"),
   },
   {
     label: "Nature & Environment",
-    parts: [
-      { category: "nature", weight: 0.6 },
-      { category: "climate", weight: 0.4 },
-    ],
+    parts: ["nature", "climate"],
     note: (d) => (d > 0 ? "the outdoors at your door" : "a small trade for everything else"),
   },
   {
     label: "Safety & Stability",
-    parts: [{ category: "safety", weight: 1.0 }],
+    parts: ["safety"],
     note: (d) => (d > 0 ? "more peace of mind, day to day" : "a small dip in how secure things feel"),
   },
   {
     label: "Career & Opportunity",
-    parts: [
-      { category: "career", weight: 0.7 },
-      { category: "travel", weight: 0.3 },
-    ],
+    parts: ["career", "travel"],
     note: (d) => (d > 0 ? "a bigger stage for your work" : "a fair trade for fit and cost"),
   },
 ];
 
-function bucketScore(categoryScores: CategoryScore[], parts: { category: string; weight: number }[]): number {
-  const byCat = new Map(categoryScores.map((c) => [c.category, c.score]));
-  return Math.round(parts.reduce((sum, p) => sum + (byCat.get(p.category) ?? 50) * p.weight, 0));
+function bucketScore(categoryScores: CategoryScore[], parts: string[]): number {
+  const byCat = new Map(categoryScores.map((c) => [c.category, c]));
+  // Weight-normalized bucket average using the USER's weights (identical formula to
+  // scoreCurrentCity's tiles), then the shared display transform — so the "best" side of
+  // each row is on exactly the same scale as the "current" side and the headline scores.
+  let sum = 0;
+  let wsum = 0;
+  for (const name of parts) {
+    const c = byCat.get(name);
+    sum += (c?.score ?? 50) * (c?.weight ?? 0.15);
+    wsum += c?.weight ?? 0.15;
+  }
+  return displayFit(sum / (wsum || 1));
 }
 
 export function computeLifeChange(

@@ -250,6 +250,20 @@ function spread(v: number): number {
   return clamp(Math.round(22 + v * 0.95), 28, 99);
 }
 
+/**
+ * The ONE display transform, exported for every surface that shows a fit number.
+ *
+ * Composite scores (ranking displayScore, current-city ring) already pass through
+ * spread(). Category/dimension numbers shown next to them MUST use the same transform,
+ * or the math visibly breaks: spread() lifts the composite (~+22), so a "90" ring next
+ * to raw bars topping out at 82 reads as a weighted average exceeding its parts.
+ * Because spread is affine and category weights sum to 1, spread(weighted avg of raw)
+ * === weighted avg of spread(raw) (mod clamps/rounding) — so displaying every number
+ * through this function makes the composite provably sit inside the span of its parts.
+ * Internal math stays raw; this is presentation only and never affects rank order.
+ */
+export const displayFit = spread;
+
 // ── Revealed preference: cosine similarity of a candidate to the user's loved places. ────
 const SIM_FIELDS = [
   "climate_score", "beach_access_score", "mountain_access_score", "outdoor_score", "cost_of_living_score",
@@ -328,6 +342,18 @@ export function rankLocationsV2(locations: Location[], p: OnboardingData): Ranke
       num(b.location.safety_score, 0) - num(a.location.safety_score, 0),
   );
   scored.forEach((s, i) => (s.rank = i + 1));
+
+  // A ranked list must read monotonically. Rank comes from the blended score (fit +
+  // revealed-preference resonance), display from honest fit — so without this cap a
+  // user who loves Bali could see "#1 Bali 90" sitting above "#9 Dubai 95", which reads
+  // as broken math. Revealed preference PROMOTES what you love; it never inflates a
+  // number — so every place's displayed score is capped by the one ranked above it.
+  // For profiles with no loved places, blended === fit and this is a no-op.
+  let cap = 99;
+  for (const s of scored) {
+    s.displayScore = Math.min(s.displayScore, cap);
+    cap = s.displayScore;
+  }
   return scored;
 }
 
@@ -341,6 +367,9 @@ export interface CurrentCityFit {
   /** Curated location id the input resolved to (null when synthesized). Lets callers
    *  detect "the #1 match IS the user's current city" and keep one number for one place. */
   resolvedId: string | null;
+  /** True when a hard deal-breaker penalty pulled the composite below the dimension
+   *  average — the UI explains it so the lower ring doesn't read as broken math. */
+  constraintPenalty: boolean;
 }
 
 export function scoreCurrentCityV2(input: string, locations: Location[], p: OnboardingData): CurrentCityFit {
@@ -348,16 +377,37 @@ export function scoreCurrentCityV2(input: string, locations: Location[], p: Onbo
   const r = resolvePlace(input, locations);
   const loc = r.location; // always a real Location (dataset match or country-synthesized)
   const cats = fitCategories(loc, p, locations);
-  const score = spread(weightedFit(cats) * constraintMultiplier(loc, p, locations));
+  const m = constraintMultiplier(loc, p, locations);
+  const score = spread(weightedFit(cats) * m);
 
-  const get = (c: string) => cats.find((x) => x.category === c)?.score ?? NEUTRAL;
+  // Dimension tiles shown NEXT TO the composite ring. Two rules make the math read
+  // correctly to a skeptical eye:
+  //  1. Same display scale (spread) as the ring — raw tiles next to a spread ring made
+  //     "90 fit" float above tiles topping out at 82.
+  //  2. The six tiles are weight-normalized averages over a PARTITION of all 10
+  //     categories, using the user's own weights. That makes the ring EXACTLY the
+  //     weighted average of the tiles (spread is affine, so it commutes with convex
+  //     combinations): the composite provably sits inside [min tile, max tile] (±1
+  //     rounding), minus only the explicit deal-breaker penalty.
+  const bucket = (...names: string[]) => {
+    let sum = 0;
+    let wsum = 0;
+    for (const n of names) {
+      const c = cats.find((x) => x.category === n);
+      const score = c?.score ?? NEUTRAL;
+      const weight = c?.weight ?? 0.15;
+      sum += score * weight;
+      wsum += weight;
+    }
+    return spread(sum / (wsum || 1));
+  };
   const simplified = [
-    { label: "Cost & Value", score: Math.round(get("cost")) },
-    { label: "Lifestyle Fit", score: Math.round(get("lifestyle") * 0.5 + get("wellness") * 0.5) },
-    { label: "Community Fit", score: Math.round(get("community") * 0.6 + get("culture") * 0.4) },
-    { label: "Nature & Environment", score: Math.round(get("nature") * 0.6 + get("climate") * 0.4) },
-    { label: "Safety & Stability", score: Math.round(get("safety")) },
-    { label: "Career & Opportunity", score: Math.round(get("career") * 0.7 + get("travel") * 0.3) },
+    { label: "Cost & Value", score: bucket("cost") },
+    { label: "Lifestyle Fit", score: bucket("lifestyle", "wellness") },
+    { label: "Community Fit", score: bucket("community", "culture") },
+    { label: "Nature & Environment", score: bucket("nature", "climate") },
+    { label: "Safety & Stability", score: bucket("safety") },
+    { label: "Career & Opportunity", score: bucket("career", "travel") },
   ];
   return {
     score,
@@ -366,5 +416,6 @@ export function scoreCurrentCityV2(input: string, locations: Location[], p: Onbo
     resolvedName: r.resolvedName,
     estimated: r.estimated,
     resolvedId: r.matched?.id ?? null,
+    constraintPenalty: m < 1,
   };
 }

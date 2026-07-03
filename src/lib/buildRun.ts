@@ -6,6 +6,7 @@ import { computeLifeChange } from "@/lib/lifeChange";
 import { computeConfidence } from "@/lib/confidence";
 import { computeTaxComparison } from "@/lib/tax";
 import { toRankedPlace, type ScoredRun, type RunSource } from "@/lib/run";
+import { displayFit } from "@/lib/match/engine";
 import type { OnboardingData } from "@/types/onboarding";
 
 /**
@@ -36,9 +37,11 @@ export function buildScoredRun(opts: {
 
   const topSlice = matches.slice(0, 10);
   const labels = top.categoryScores.map((c) => c.label);
+  // Displayed next to spread() composites (rings, tease) — so they pass through the
+  // same display transform. Raw category math is untouched.
   const categoryAverages = labels.map((label, i) => ({
     label,
-    score: Math.round(topSlice.reduce((s, m) => s + (m.categoryScores[i]?.score ?? 0), 0) / topSlice.length),
+    score: displayFit(topSlice.reduce((s, m) => s + (m.categoryScores[i]?.score ?? 0), 0) / topSlice.length),
   }));
 
   return {

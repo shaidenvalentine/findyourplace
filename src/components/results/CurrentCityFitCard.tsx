@@ -34,6 +34,11 @@ export function CurrentCityFitCard({ city, fit }: { city: string; fit: CurrentCi
               </div>
             ))}
           </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            {fit.constraintPenalty
+              ? "The overall fit weighs your priorities more heavily — and includes a penalty where this place hits one of your deal-breakers."
+              : "The overall fit weighs the dimensions by how much you said each one matters."}
+          </p>
           {fit.estimated && (
             <p className="mt-2 text-xs text-muted-foreground">
               Estimated from regional data — we read {fit.resolvedName ? titleCase(fit.resolvedName) : "your area"} from

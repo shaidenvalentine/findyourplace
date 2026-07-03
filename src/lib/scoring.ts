@@ -120,6 +120,8 @@ export interface CurrentCityScore {
   estimated?: boolean;
   /** Curated location id the input resolved to (null when synthesized). */
   resolvedId?: string | null;
+  /** True when a hard deal-breaker penalty lowered the composite (UI explains it). */
+  constraintPenalty?: boolean;
 }
 
 export function scoreCurrentCity(
@@ -135,6 +137,7 @@ export function scoreCurrentCity(
     resolvedName: r.resolvedName,
     estimated: r.estimated,
     resolvedId: r.resolvedId,
+    constraintPenalty: r.constraintPenalty,
   };
 }
 

@@ -1,4 +1,5 @@
 import type { MatchResult, CurrentCityScore } from "@/lib/scoring";
+import { displayFit } from "@/lib/match/engine";
 import type { AnnualCircuit } from "@/lib/circuitGenerator";
 import type { LifeChange } from "@/lib/lifeChange";
 import type { TaxComparison } from "@/lib/tax";
@@ -85,7 +86,8 @@ export function toRankedPlace(r: MatchResult): RankedPlace {
     totalScore: r.displayScore,
     reasons: r.reasons,
     tradeoffs: r.tradeoffs,
-    categoryScores: r.categoryScores.map((c) => ({ category: c.category, label: c.label, score: Math.round(c.score) })),
+    // Display scale (same transform as every other user-visible fit number).
+    categoryScores: r.categoryScores.map((c) => ({ category: c.category, label: c.label, score: displayFit(c.score) })),
   };
 }
 
