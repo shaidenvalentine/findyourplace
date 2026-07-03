@@ -31,6 +31,7 @@ export function PlacePhoto({
   priority = false,
   scrim = false,
   rounded = "rounded-xl",
+  decorative = false,
 }: {
   location?: Pick<Location, "name" | "image_url"> | null;
   className?: string;
@@ -39,6 +40,8 @@ export function PlacePhoto({
   priority?: boolean;
   scrim?: boolean;
   rounded?: string;
+  /** Purely-visual usage (e.g. hero backdrop): empty alt, no letter fallback. */
+  decorative?: boolean;
 }) {
   const raw = location?.image_url ?? null;
   const src = raw ? sizedWikimedia(raw, w) : null;
@@ -50,13 +53,13 @@ export function PlacePhoto({
         <img
           src={src}
           srcSet={src2x ? `${src} 1x, ${src2x} 2x` : undefined}
-          alt={location?.name ? `${location.name}` : ""}
+          alt={decorative ? "" : location?.name ? `${location.name}` : ""}
           loading={priority ? "eager" : "lazy"}
           decoding="async"
           fetchPriority={priority ? "high" : "auto"}
           className="absolute inset-0 h-full w-full object-cover"
         />
-      ) : (
+      ) : decorative ? null : (
         <div className="absolute inset-0 grid place-items-center bg-[linear-gradient(135deg,hsl(var(--muted)),hsl(var(--surface)))]">
           <span className="text-2xl font-bold text-muted-foreground">{location?.name?.[0] ?? "?"}</span>
         </div>

@@ -1,8 +1,23 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
 import { LiveCounter } from "@/components/marketing/LiveCounter";
+import { PlacePhoto } from "@/components/places/PlacePhoto";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ArrowUpRight, Camera, Home, Route, Globe2, Percent, Landmark, Plane, Star } from "lucide-react";
+import { getLocationById, LOCATION_COUNT } from "@/data/locations";
+import { ArrowRight, ArrowUpRight, Camera, Home, Route, Globe2, Fingerprint, Landmark, Timer, Star } from "lucide-react";
+
+/**
+ * Real places shown on the landing page — recognizable, photogenic spread across
+ * continents. Photos come from the dataset (Wikimedia), same pipeline as /places.
+ */
+const SHOWCASE_IDS = [
+  "lisbon-portugal",
+  "bali-indonesia",
+  "mexico-city-mexico",
+  "cape-town-south-africa",
+  "da-nang-vietnam",
+  "tbilisi-georgia",
+];
 
 export default function LandingPage() {
   return (
@@ -30,8 +45,8 @@ export default function LandingPage() {
               <span className="italic font-normal">haven&apos;t</span> made yet.
             </h1>
             <p className="mt-6 max-w-md text-pretty text-lg leading-relaxed text-muted-foreground">
-              Where you live decides your money, your people, your health. We match you against 250 of
-              the best places on Earth — and reveal the one that fits.
+              Where you live decides your money, your people, your health. In 60 seconds we score you
+              against 250 of the best places on Earth — and show you the one that fits.
             </p>
             <div className="mt-9 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
               <Button asChild size="lg" variant="gradient" className="w-full sm:w-auto">
@@ -40,7 +55,7 @@ export default function LandingPage() {
                 </Link>
               </Button>
               <p className="text-sm text-muted-foreground">
-                60 seconds · free to start
+                Free to start · no signup
                 <LiveCounter />
               </p>
             </div>
@@ -65,14 +80,14 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Stats band */}
+      {/* Stats band — what YOU get, not trivia. Every number points into the quiz. */}
       <section className="border-y border-border bg-surface/40">
         <div className="mx-auto w-full max-w-5xl px-4 py-12">
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
-            <Stat icon={<Landmark className="size-5" />} value="15+" label="0% tax countries" />
-            <Stat icon={<Percent className="size-5" />} value="0–55%" label="global tax range" />
-            <Stat icon={<Plane className="size-5" />} value="50+" label="nomad visas" />
-            <Stat icon={<Globe2 className="size-5" />} value="250" label="best places on Earth" />
+            <Stat icon={<Globe2 className="size-5" />} value="250" label="places scored against you" />
+            <Stat icon={<Fingerprint className="size-5" />} value="10" label="dimensions of your life weighed" />
+            <Stat icon={<Landmark className="size-5" />} value="0%" label="income tax in 15+ of them" />
+            <Stat icon={<Timer className="size-5" />} value="60s" label="to your first score — free" />
           </div>
         </div>
       </section>
@@ -86,6 +101,54 @@ export default function LandingPage() {
           <Step n={1} title="Tell us who you are." body="A few quick answers — or paste a profile your own AI wrote about you." />
           <Step n={2} title="See your fit." body="Your current city, scored honestly. The gap to your real best place, free." />
           <Step n={3} title="Unlock your place." body="The name. The full ranking of all 250. The plan to actually get there." />
+        </div>
+      </section>
+
+      {/* Real places — the dataset is real, photogenic, and one of these could be theirs. */}
+      <section className="mx-auto w-full max-w-6xl px-4 pb-20">
+        <h2 className="text-balance text-center text-3xl font-light tracking-[-0.03em] sm:text-5xl">
+          Your place is already on this list.
+        </h2>
+        <p className="mx-auto mt-4 max-w-md text-center text-base leading-relaxed text-muted-foreground">
+          Zero-tax hubs, surf towns, alpine escapes, megacities — {LOCATION_COUNT} real places, each
+          scored against who you actually are.
+        </p>
+        <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          {SHOWCASE_IDS.map((id) => {
+            const l = getLocationById(id);
+            if (!l) return null;
+            return (
+              <Link
+                key={id}
+                href={`/places/${id}`}
+                className="group relative block overflow-hidden rounded-2xl border border-border"
+              >
+                <PlacePhoto
+                  location={l}
+                  w={320}
+                  scrim
+                  rounded="rounded-2xl"
+                  className="aspect-[3/4] transition-transform duration-500 group-hover:scale-[1.04]"
+                />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 p-3.5">
+                  <div className="text-sm font-medium text-white">{l.name}</div>
+                  <div className="text-[11px] text-white/65">{l.country}</div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+        <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Button asChild size="lg" variant="gradient">
+            <Link href="/start">
+              Score me against all {LOCATION_COUNT} <ArrowRight className="size-4" />
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="ghost">
+            <Link href="/places">
+              Browse every place <ArrowRight className="size-4" />
+            </Link>
+          </Button>
         </div>
       </section>
 
@@ -103,6 +166,13 @@ export default function LandingPage() {
           <p className="mt-6 text-center text-base text-muted-foreground">
             The gap is free. The <span className="font-semibold text-foreground">name</span> is the reveal.
           </p>
+          <div className="mt-6 flex justify-center">
+            <Button asChild variant="gradient">
+              <Link href="/start">
+                See my gap — free <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
 
@@ -113,12 +183,12 @@ export default function LandingPage() {
             Why this exists
           </p>
           <blockquote className="mt-6 text-balance text-center text-2xl font-light leading-snug tracking-[-0.02em] sm:text-3xl">
-            &ldquo;I spent two years and a small fortune figuring out that Bali fit me. You shouldn&apos;t
-            have to guess, move, and hope. So I built the engine I wish I&apos;d had — and pointed it at
-            250 of the best places on Earth.&rdquo;
+            &ldquo;After spending ten years travelling to over 80 countries, I finally found the place
+            that fits me perfectly — and it&apos;s changed everything for me. This quiz helps you find
+            that place in minutes.&rdquo;
           </blockquote>
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            — the founder, <a href="https://instagram.com/findyourplace.ai" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 hover:text-foreground">@findyourplace.ai</a>
+            — Shaiden Valentine, <a href="https://instagram.com/findyourplace.ai" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 hover:text-foreground">@findyourplace.ai</a>
           </p>
           <div className="mt-8 flex justify-center">
             <Button asChild size="lg" variant="gradient">
@@ -250,13 +320,23 @@ function HeroRing({ score, size = 132 }: { score: number; size?: number }) {
   );
 }
 
-/** The hero product preview: frosted-glass panels floating over the hero image/stage. */
+/**
+ * The hero product preview: frosted-glass result panels floating over a REAL place —
+ * the actual #1-match moment the product sells. The photo is the depth the glass
+ * refracts; the hero-stage gradient beneath is the graceful fallback if it ever fails.
+ */
 function HeroPreview() {
+  const lisbon = getLocationById("lisbon-portugal");
   return (
     <div className="animate-fade-up relative mx-auto aspect-[4/5] w-full max-w-md lg:max-w-none">
-      {/* Rich moody stage — the depth the frosted glass refracts. */}
+      {/* Stage: real photo of the match over the moody gradient fallback. */}
       <div className="hero-stage absolute inset-0 overflow-hidden rounded-[2rem] shadow-[0_30px_80px_hsl(210_40%_20%/0.25)]">
-        <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_30%_20%,hsl(0_0%_100%/0.12),transparent_60%)]" />
+        {lisbon && (
+          <PlacePhoto location={lisbon} w={640} priority decorative rounded="rounded-none" className="absolute inset-0 !bg-transparent" />
+        )}
+        {/* Scrims so the glass panels + type stay legible over any photo. */}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,hsl(210_30%_8%/0.55),hsl(210_30%_8%/0.15)_40%,hsl(210_30%_8%/0.62))]" />
+        <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_30%_20%,hsl(0_0%_100%/0.08),transparent_60%)]" />
       </div>
 
       {/* Main match card */}
@@ -287,6 +367,17 @@ function HeroPreview() {
         </div>
       </div>
 
+      {/* Ranking satellite — the locked list, exactly as the product shows it. */}
+      <div className="glass absolute bottom-[4.5rem] left-4 w-44 rounded-2xl p-4 sm:left-6">
+        <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Your ranking</div>
+        <div className="mt-2.5 flex flex-col gap-2">
+          <RankRow n={1} name="Lisbon" score={94} revealed />
+          <RankRow n={2} score={91} />
+          <RankRow n={3} score={89} />
+          <RankRow n={4} score={87} />
+        </div>
+      </div>
+
       {/* Tax satellite */}
       <div className="glass absolute bottom-6 right-6 w-44 rounded-2xl p-4">
         <ArrowUpRight className="absolute right-3 top-3 size-3.5 text-muted-foreground/50" />
@@ -298,6 +389,23 @@ function HeroPreview() {
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+/** One row of the hero's mini ranking — locked rows show a redacted name bar. */
+function RankRow({ n, name, score, revealed = false }: { n: number; name?: string; score: number; revealed?: boolean }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="w-3 text-[11px] tabular-nums text-muted-foreground">{n}</span>
+      {revealed ? (
+        <span className="flex-1 truncate text-xs font-medium">{name}</span>
+      ) : (
+        <span className="h-2 flex-1 rounded-full bg-white/20" />
+      )}
+      <span className={`text-xs font-medium tabular-nums ${revealed ? "text-[hsl(172_66%_60%)]" : "text-muted-foreground"}`}>
+        {score}
+      </span>
     </div>
   );
 }
