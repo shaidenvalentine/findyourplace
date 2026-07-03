@@ -290,9 +290,16 @@ export interface ToolkitSection {
  * Personalized "relocation toolkit" — sectioned, ordered by the user's situation so the
  * most relevant, highest-intent items lead. Only includes partners whose conditions match.
  */
+/** Payout-weighted relevance order: priority first, Essential breaks ties. */
+function byPriority(a: AffiliatePartner, b: AffiliatePartner): number {
+  return (b.priority ?? 0) - (a.priority ?? 0) || Number(b.essential ?? false) - Number(a.essential ?? false);
+}
+
 export function recommendToolkit(run: FreeRun): ToolkitSection[] {
   const pick = (cats: AffCategory[], extra?: (p: AffiliatePartner) => boolean) =>
-    PARTNERS.filter((p) => cats.includes(p.category) && passesConditions(p, run) && (!extra || extra(p)));
+    PARTNERS.filter((p) => cats.includes(p.category) && passesConditions(p, run) && (!extra || extra(p))).sort(
+      byPriority
+    );
 
   const taxRelevant =
     Boolean(run.taxComparison) ||
@@ -304,25 +311,50 @@ export function recommendToolkit(run: FreeRun): ToolkitSection[] {
 
   if (taxRelevant) {
     const tax = pick(["tax"]);
-    if (tax.length) sections.push({ title: "Sort your taxes", subtitle: "Get the move structured right from day one.", items: tax });
+    if (tax.length)
+      sections.push({
+        title: "Sort your taxes",
+        subtitle: "The biggest number in your move — structure it before you go, not after.",
+        items: tax,
+      });
   }
 
   const money = pick(["banking"]);
-  if (money.length) sections.push({ title: "Move your money", subtitle: "Multi-currency accounts that work everywhere.", items: money });
+  if (money.length)
+    sections.push({
+      title: "Move your money",
+      subtitle: "Set this up first — everything else abroad gets paid through it.",
+      items: money,
+    });
 
   const cover = pick(["insurance"]);
-  if (cover.length) sections.push({ title: "Get covered", subtitle: "Health + travel insurance for life abroad.", items: cover });
+  if (cover.length)
+    sections.push({
+      title: "Get covered",
+      subtitle: "Your health insurance stops at the border. Fix that before you book anything.",
+      items: cover,
+    });
 
   const getThere = pick(["visa", "flights", "moving"]);
-  if (getThere.length) sections.push({ title: "Get there", subtitle: "Visas, flights, and shipping your life over.", items: getThere });
+  if (getThere.length)
+    sections.push({
+      title: "Get there",
+      subtitle: "Visa, flights, and what you're bringing — most people do this in week one and regret waiting.",
+      items: getThere,
+    });
 
   const settle = pick(["stay", "esim", "coworking", "language", "vpn"]);
-  if (settle.length) sections.push({ title: "Land softly", subtitle: "Everything for a smooth first month.", items: settle });
+  if (settle.length)
+    sections.push({
+      title: "Land softly",
+      subtitle: "The difference between a rough first month and a good one is set up before you fly.",
+      items: settle,
+    });
 
   return sections;
 }
 
 /** A single highest-intent recommendation for a contextual spot (e.g. under the tax card). */
 export function topTaxPartner(run: FreeRun): AffiliatePartner | undefined {
-  return PARTNERS.filter((p) => p.category === "tax" && passesConditions(p, run))[0];
+  return PARTNERS.filter((p) => p.category === "tax" && passesConditions(p, run)).sort(byPriority)[0];
 }
