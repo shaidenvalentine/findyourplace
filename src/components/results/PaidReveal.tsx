@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ScoreRing } from "./ScoreRing";
 import type { RankedPlace } from "@/lib/run";
 import type { AnnualCircuit } from "@/lib/circuitGenerator";
 import { getMonthAbbrev } from "@/lib/circuitGenerator";
@@ -46,8 +45,11 @@ function TopMatchHero({ place }: { place: RankedPlace }) {
             {place.country}
           </p>
         </div>
-        <div className="absolute right-4 top-4 rounded-full bg-background/70 p-1 backdrop-blur">
-          <ScoreRing score={place.totalScore} size={84} label="match" />
+        <div className="glass-dark absolute right-4 top-4 rounded-2xl px-4 py-2.5 text-center">
+          <div className="text-3xl font-light tabular-nums leading-none tracking-tight text-white">
+            {place.totalScore}
+          </div>
+          <div className="mt-1 text-[9px] font-medium uppercase tracking-[0.2em] text-white/70">match</div>
         </div>
       </div>
 
@@ -150,7 +152,8 @@ function CircuitSection({ circuit }: { circuit: AnnualCircuit }) {
 }
 
 function FullRanking({ ranking }: { ranking: RankedPlace[] }) {
-  const [limit, setLimit] = useState(50);
+  // Start tight — the page above is already dense. Top 10 tells the story; the rest expands.
+  const [limit, setLimit] = useState(10);
   const shown = ranking.slice(0, limit);
   return (
     <Card>
@@ -182,10 +185,10 @@ function FullRanking({ ranking }: { ranking: RankedPlace[] }) {
         })}
         {limit < ranking.length && (
           <button
-            onClick={() => setLimit((l) => l + 100)}
+            onClick={() => setLimit((l) => (l === 10 ? 50 : l + 100))}
             className="mt-2 flex items-center justify-center gap-1 rounded-lg border border-border py-2 text-sm font-medium text-muted-foreground hover:bg-muted/40"
           >
-            Show more <ChevronDown className="size-4" />
+            Show {limit === 10 ? "top 50" : "more"} <ChevronDown className="size-4" />
           </button>
         )}
       </CardContent>
