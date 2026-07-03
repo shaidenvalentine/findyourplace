@@ -265,6 +265,15 @@ export function getPartner(id: string): AffiliatePartner | undefined {
   return PARTNERS.find((p) => p.id === id);
 }
 
+/**
+ * Replaces every {CLICK_ID} in an affiliate URL template with a sanitized subId, so
+ * network conversion reports can be reconciled per run/placement. Templates without
+ * the placeholder pass through untouched.
+ */
+export function buildOutboundUrl(template: string, subId: string): string {
+  return template.replaceAll("{CLICK_ID}", encodeURIComponent(subId));
+}
+
 function passesConditions(p: AffiliatePartner, run: FreeRun): boolean {
   const c = p.conditions;
   if (!c) return true;
