@@ -79,9 +79,11 @@ export function checkAdminPassword(input: string): boolean {
   // access to the business/payout portal. Local dev keeps the convenient default.
   if (!adminAuthReady()) return false;
   const expected = process.env.ADMIN_PASSWORD || "password";
-  // Constant-time-ish comparison
-  if (input.length !== expected.length) return false;
-  let diff = 0;
-  for (let i = 0; i < input.length; i++) diff |= input.charCodeAt(i) ^ expected.charCodeAt(i);
-  return diff === 0;
+  // Constant-time comparison that also doesn't leak the password length: hash both
+  // sides to a fixed 32 bytes first, then compare with timingSafeEqual.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const crypto = require("node:crypto") as typeof import("node:crypto");
+  const a = crypto.createHash("sha256").update(input).digest();
+  const b = crypto.createHash("sha256").update(expected).digest();
+  return crypto.timingSafeEqual(a, b);
 }

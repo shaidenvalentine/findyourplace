@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { sendEmail, resultsLinkHtml } from "@/lib/server/email";
+import { enforceRateLimit } from "@/lib/server/rateLimit";
 
 /**
  * Email gate capture — the nurture asset for the ~90% who don't buy on the spot.
@@ -16,6 +17,11 @@ import { sendEmail, resultsLinkHtml } from "@/lib/server/email";
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
+  // This sends a (Resend) email per call — cap it so it can't be turned into a mail
+  // cannon that burns quota and sender reputation.
+  const limited = enforceRateLimit(req, "capture-email", 15, 300);
+  if (limited) return limited;
+
   let body: { email?: string; runId?: string; stage?: string };
   try {
     body = await req.json();

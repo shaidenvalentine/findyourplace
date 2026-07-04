@@ -2,12 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCreatorStore } from "@/lib/creators/store";
 import { normalizeCode } from "@/lib/creators/attribution";
 import { setCreatorSession } from "@/lib/creators/session";
+import { enforceRateLimit } from "@/lib/server/rateLimit";
 
 /**
  * MVP login — code + email match. Lightweight until Supabase Auth (magic link) lands.
  * Privacy: no passwords. The code+email pair is the access token; both must match.
  */
 export async function POST(req: NextRequest) {
+  // Throttle guessing of the code+email access pair.
+  const limited = enforceRateLimit(req, "creator-login", 10, 300);
+  if (limited) return limited;
+
   let body: { code?: string; email?: string };
   try {
     body = await req.json();

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { enforceRateLimit } from "@/lib/server/rateLimit";
 import { buildScoredRun } from "@/lib/buildRun";
 import { toFreeRun } from "@/lib/run";
 import { getRun, putRun } from "@/lib/server/runStore";
@@ -11,6 +12,9 @@ import type { OnboardingData } from "@/types/onboarding";
  * gate. Unlock state lives in a separate ledger and is preserved across refinement.
  */
 export async function POST(req: NextRequest) {
+  const limited = enforceRateLimit(req, "refine", 60, 60);
+  if (limited) return limited;
+
   let body: { runId?: string; additionalInputs?: OnboardingData; inputs?: OnboardingData };
   try {
     body = await req.json();

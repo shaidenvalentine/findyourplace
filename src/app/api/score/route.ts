@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { enforceRateLimit } from "@/lib/server/rateLimit";
 import { LOCATIONS } from "@/data/locations";
 import { buildScoredRun } from "@/lib/buildRun";
 import { toFreeRun } from "@/lib/run";
@@ -18,6 +19,11 @@ const SOURCES: RunSource[] = ["quiz", "ai-profile", "words"];
  * never sent until a server-verified unlock.
  */
 export async function POST(req: NextRequest) {
+  // Generous — real users score a handful of times; bots inflating quiz_completions
+  // (which feeds the public live counter) and bloating the run store get stopped.
+  const limited = enforceRateLimit(req, "score", 40, 60);
+  if (limited) return limited;
+
   let body: { inputs?: OnboardingData; source?: RunSource };
   try {
     body = await req.json();

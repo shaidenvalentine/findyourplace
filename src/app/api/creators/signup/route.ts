@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCreatorStore } from "@/lib/creators/store";
 import { normalizeCode } from "@/lib/creators/attribution";
 import { setCreatorSession } from "@/lib/creators/session";
+import { enforceRateLimit } from "@/lib/server/rateLimit";
 import type { Creator } from "@/lib/creators/types";
 
 /**
@@ -21,6 +22,10 @@ export async function POST(req: NextRequest) {
     website?: string;
     payoutEmail?: string;
   };
+  // Stop bots from mass-creating accounts / squatting codes.
+  const limited = enforceRateLimit(req, "creator-signup", 5, 3600);
+  if (limited) return limited;
+
   try {
     body = await req.json();
   } catch {

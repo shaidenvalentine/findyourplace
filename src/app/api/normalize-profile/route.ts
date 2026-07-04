@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { normalizeProfileHeuristic, buildReadback, type NormalizedProfile } from "@/lib/profileNormalizer";
+import { enforceRateLimit } from "@/lib/server/rateLimit";
 import type { OnboardingData } from "@/types/onboarding";
 
 /**
@@ -56,6 +57,10 @@ async function normalizeWithLLM(text: string, currentCity: string): Promise<Norm
 }
 
 export async function POST(req: NextRequest) {
+  // The LLM parse costs real money per call. Keep it tight so a bot can't run up the bill.
+  const limited = enforceRateLimit(req, "normalize", 10, 60);
+  if (limited) return limited;
+
   let body: { profileText?: string; currentCity?: string };
   try {
     body = await req.json();
