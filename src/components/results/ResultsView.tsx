@@ -16,10 +16,20 @@ import { TaxProfile } from "./TaxProfile";
 import { LockedTopMatch } from "./LockedTopMatch";
 import { DeepenMatch } from "./DeepenMatch";
 import { Paywall } from "./Paywall";
-import { PaidReveal } from "./PaidReveal";
+import dynamic from "next/dynamic";
+import { Loader2, ArrowLeft } from "lucide-react";
+
+// The paid tree (full ranking, move plan, tax deep-dive, circuit) is only rendered for
+// unlocked runs — load it on demand so the ~90% who haven't bought don't download it.
+const PaidReveal = dynamic(() => import("./PaidReveal").then((m) => m.PaidReveal), {
+  loading: () => (
+    <div className="grid place-items-center py-10">
+      <Loader2 className="size-5 animate-spin text-primary" />
+    </div>
+  ),
+});
 import { ShareSlides } from "./ShareSlides";
 import { RelocationToolkit } from "@/components/affiliates/RelocationToolkit";
-import { Loader2, ArrowLeft } from "lucide-react";
 
 type Locked = { ranking: RankedPlace[]; circuit: AnnualCircuit | null };
 
@@ -133,7 +143,7 @@ export function ResultsView({ runId }: { runId: string }) {
   return (
     <main className="mx-auto w-full max-w-xl px-4 pb-20">
       <header className="flex h-14 items-center justify-between">
-        <Link href="/">
+        <Link href="/" aria-label="Find Your Place — home">
           <Logo withWordmark={false} />
         </Link>
         <Button asChild variant="ghost" size="sm">

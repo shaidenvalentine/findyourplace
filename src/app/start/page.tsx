@@ -49,7 +49,7 @@ export default function StartPage() {
   return (
     <main className="bg-aurora flex min-h-dvh flex-col">
       <header className="mx-auto flex h-14 w-full max-w-xl items-center justify-between px-4">
-        <Link href="/">
+        <Link href="/" aria-label="Find Your Place — home">
           <Logo />
         </Link>
       </header>

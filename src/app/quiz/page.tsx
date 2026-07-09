@@ -94,7 +94,7 @@ export default function QuizPage() {
   return (
     <main className="flex min-h-dvh flex-col">
       <header className="mx-auto flex h-14 w-full max-w-xl items-center gap-3 px-4">
-        <Link href="/">
+        <Link href="/" aria-label="Find Your Place — home">
           <Logo withWordmark={false} />
         </Link>
         <Progress value={progress} className="flex-1" label={`Question ${idx + 1} of ${QUIZ.length}`} />

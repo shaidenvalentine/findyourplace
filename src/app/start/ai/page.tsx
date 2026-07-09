@@ -27,11 +27,16 @@ export default function AiProfilePage() {
   const promptRef = useRef<HTMLTextAreaElement>(null);
 
   async function copyPrompt() {
-    // Select the on-screen text first: makes the execCommand fallback reliable and
-    // leaves the prompt highlighted so the user can copy manually if the API is blocked.
-    promptRef.current?.focus();
-    promptRef.current?.select();
-    const ok = await copyText(AI_PROFILE_PROMPT);
+    // Try the clipboard API without touching focus first — focusing a small-font
+    // textarea makes iOS Safari zoom the viewport on every tap of "Copy".
+    let ok = await copyText(AI_PROFILE_PROMPT);
+    if (!ok) {
+      // Fallback: select the on-screen text (reliable for execCommand, and leaves the
+      // prompt highlighted so the user can copy manually if the API is blocked).
+      promptRef.current?.focus();
+      promptRef.current?.select();
+      ok = await copyText(AI_PROFILE_PROMPT);
+    }
     setCopied(ok);
     setCopyFailed(!ok);
     if (ok) setTimeout(() => setCopied(false), 2200);
@@ -62,7 +67,7 @@ export default function AiProfilePage() {
   return (
     <main className="flex min-h-dvh flex-col">
       <header className="mx-auto flex h-14 w-full max-w-xl items-center justify-between px-4">
-        <Link href="/start">
+        <Link href="/start" aria-label="Find Your Place">
           <Logo withWordmark={false} />
         </Link>
         <Badge variant="primary">

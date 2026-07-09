@@ -175,7 +175,7 @@ export function EditableReadback({
                   value={val}
                   onChange={(e) => setField(f.key, e.target.value)}
                   placeholder={f.placeholder}
-                  className="min-w-0 flex-1 bg-transparent text-right text-sm font-semibold text-foreground placeholder:font-normal placeholder:text-muted-foreground/60 focus:outline-none"
+                  className="min-w-0 flex-1 bg-transparent text-right text-base font-semibold text-foreground placeholder:font-normal placeholder:text-muted-foreground/60 focus:outline-none sm:text-sm"
                 />
               </label>
             </div>

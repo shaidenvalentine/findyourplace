@@ -24,10 +24,10 @@ export default function LandingPage() {
     <main className="flex flex-col">
       {/* Nav */}
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/70 backdrop-blur-md">
-        <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-4">
+        <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4">
           <Logo />
           <Button asChild variant="gradient" size="sm">
-            <Link href="/start">Start</Link>
+            <Link href="/start">Find my place</Link>
           </Button>
         </div>
       </header>
@@ -303,7 +303,7 @@ function HeroRing({ score, size = 132 }: { score: number; size?: number }) {
           cy={size / 2}
           r={r}
           fill="none"
-          stroke="hsl(172 66% 58%)"
+          stroke="hsl(var(--accent))"
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={c}
@@ -343,7 +343,7 @@ function HeroPreview() {
       <div className="glass absolute left-4 top-6 w-52 rounded-3xl p-5 sm:left-6">
         <div className="flex items-center justify-between">
           <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Your #1 match</span>
-          <span className="size-2 rounded-full bg-[hsl(178_62%_44%)]" />
+          <span className="size-2 rounded-full bg-accent" />
         </div>
         <div className="mt-3 grid place-items-center">
           <HeroRing score={94} />
@@ -382,7 +382,7 @@ function HeroPreview() {
       <div className="glass absolute bottom-6 right-6 w-44 rounded-2xl p-4">
         <ArrowUpRight className="absolute right-3 top-3 size-3.5 text-muted-foreground/50" />
         <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Tax saved</div>
-        <div className="mt-1 text-2xl font-light tabular-nums text-[hsl(172_66%_60%)]">≈ $54k<span className="text-sm text-muted-foreground">/yr</span></div>
+        <div className="mt-1 text-2xl font-light tabular-nums text-accent">≈ $54k<span className="text-sm text-muted-foreground">/yr</span></div>
         <div className="mt-2 flex items-end gap-0.5">
           {[30, 44, 38, 60, 52, 74, 68, 88].map((h, i) => (
             <span key={i} className="w-1.5 rounded-full bg-foreground/25" style={{ height: h * 0.35 }} />
@@ -403,7 +403,7 @@ function RankRow({ n, name, score, revealed = false }: { n: number; name?: strin
       ) : (
         <span className="h-2 flex-1 rounded-full bg-white/20" />
       )}
-      <span className={`text-xs font-medium tabular-nums ${revealed ? "text-[hsl(172_66%_60%)]" : "text-muted-foreground"}`}>
+      <span className={`text-xs font-medium tabular-nums ${revealed ? "text-accent" : "text-muted-foreground"}`}>
         {score}
       </span>
     </div>

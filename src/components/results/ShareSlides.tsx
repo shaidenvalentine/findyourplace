@@ -80,7 +80,8 @@ export function ShareSlides({ free, variant }: { free: FreeRun; variant: "teaser
             key={id}
             src={`/api/share/${runId}?slide=${id}`}
             alt={`slide ${i + 1}`}
-            loading={i < 2 ? "eager" : "lazy"}
+            loading="lazy"
+            decoding="async"
             className="aspect-[9/16] w-32 shrink-0 snap-center rounded-lg border border-border object-cover"
           />
         ))}

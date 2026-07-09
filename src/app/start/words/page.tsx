@@ -57,7 +57,7 @@ export default function WordsPage() {
   return (
     <main className="flex min-h-dvh flex-col">
       <header className="mx-auto flex h-14 w-full max-w-xl items-center justify-between px-4">
-        <Link href="/start">
+        <Link href="/start" aria-label="Find Your Place">
           <Logo withWordmark={false} />
         </Link>
         <Badge variant="primary">
