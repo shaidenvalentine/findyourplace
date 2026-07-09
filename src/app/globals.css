@@ -26,7 +26,11 @@
   --primary-foreground: 213 28% 10%;
   --secondary: 213 14% 74%;
   --secondary-foreground: 213 28% 10%;
-  --accent: 172 62% 52%;
+  /* One teal accent, tuned to read as a vivid data-pop on the dark stage. This is the
+     single source of truth every component references (text-accent / bg-accent); the
+     previously hand-typed teals scattered across ScoreRing / LockedTopMatch / the hero
+     now all resolve here. */
+  --accent: 172 70% 56%;
   --accent-foreground: 214 30% 10%;
 
   --success: 150 55% 55%;
@@ -162,9 +166,10 @@ body::before {
   color: transparent;
 }
 
-/* The one true pop: teal accent text, used sparingly. */
+/* The one true pop: teal accent text, used sparingly. Driven by the --accent token so
+   the brand teal has ONE source of truth (was a hand-typed hsl that drifted from --accent). */
 .text-accent {
-  color: hsl(172 68% 60%);
+  color: hsl(var(--accent));
 }
 
 /* Hero stage — a rich, moody surface the glass panels float over (fallback behind the
@@ -192,3 +197,17 @@ body::before {
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: hsl(212 14% 28%); border-radius: 999px; }
+
+/* Respect the OS "reduce motion" setting site-wide. Only ScoreRing did this in JS;
+   the CSS keyframes (fade-up/fade-in and the infinite shimmer/float) ignored it. This
+   near-zeroes animation + transition + scroll motion for users who ask for less. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

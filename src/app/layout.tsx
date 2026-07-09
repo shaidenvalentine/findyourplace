@@ -40,6 +40,9 @@ export const viewport: Viewport = {
   themeColor: "#10161d",
   width: "device-width",
   initialScale: 1,
+  // Extend under the notch/home-indicator so env(safe-area-inset-*) resolves to real
+  // values — the quiz's fixed footer CTA uses it to clear the iPhone home indicator.
+  viewportFit: "cover",
   // No maximumScale — users must be able to pinch-zoom (WCAG 1.4.4).
 };
 

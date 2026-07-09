@@ -21,6 +21,7 @@ export function OptionButton({
       aria-pressed={selected}
       className={cn(
         "group relative flex w-full items-center gap-3 rounded-xl border p-4 text-left transition-all active:scale-[0.99]",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         selected
           ? "border-primary bg-primary/10 ring-1 ring-primary"
           : "glass hover:border-primary/40",
