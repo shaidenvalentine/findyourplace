@@ -71,20 +71,20 @@ export const CHANNEL_MIX: ChannelSlice[] = [
   {
     key: "creators",
     label: "Creator / affiliate reels",
-    sharePct: 55,
-    note: "~50 active creators posting the format, each averaging a handful of sales/week. The built payout engine is the flywheel.",
+    sharePct: 45,
+    note: "~40–50 active creators posting the format, each averaging a handful of sales/week. The built payout engine is the flywheel.",
   },
   {
     key: "founder",
     label: "Founder organic + share loop",
-    sharePct: 20,
-    note: "Your reel channel plus every result card that gets shared back to a friend. Near-zero CAC — this is the moat.",
+    sharePct: 35,
+    note: "Your reel channel plus every result card shared back to a friend. Virality-first: once k > 1 this is the engine, not a nice-to-have. Near-zero CAC — the real moat.",
   },
   {
     key: "ads",
     label: "Meta ads",
-    sharePct: 25,
-    note: "The paid amplifier — only scaled once the pixel is trained and CAC sits comfortably under the ~$27 net per sale.",
+    sharePct: 20,
+    note: "The amplifier and the points farm — deliberately NOT load-bearing. If the share loop works, paid is optional; run it at breakeven for volume + points.",
   },
 ];
 
@@ -174,22 +174,22 @@ export const PLAN: PlanMonth[] = [
       { id: "m1-funnel", title: "Watch a real cold run", detail: "Take the quiz on a phone as a stranger would. Time landing→paywall. If it drags anywhere, cut it." },
       { id: "m1-creators5", title: "Hand-pick 5 creators", detail: "DM small relocation/nomad accounts. Give them a ref link and the reel template. Warm, personal, not a mass blast." },
       { id: "m1-pixel", title: "Confirm the pixel fires", detail: "landing_view, quiz_complete, purchase in Meta Events Manager with CAPI dedup — before you ever spend on ads." },
-      { id: "m1-price", title: "Lock the $29 test", detail: "Keep the $39→$29 anchor live. Don't discount yet — you need clean conversion signal at the real price." },
+      { id: "m1-share", title: "Design the result to be shared", detail: "From day one the free result is a status object — a card worth posting, with a curiosity gap that pulls friends in ('I matched Lisbon — what's yours?'). Your cheapest acquisition is the share, not the ad." },
     ],
   },
   {
     month: 2,
     phaseKey: "prove",
-    theme: "Tighten conversion",
+    theme: "Price test + make it shareable",
     revenueTargetCents: REVENUE_LADDER_CENTS[1],
-    milestone: "Complete→purchase rate at or above 8% on real traffic.",
-    lever: "Funnel iteration",
+    milestone: "A live price test running and a measured k-factor (viral coefficient).",
+    lever: "Pricing + virality",
     steps: [
-      { id: "m2-teardown", title: "Read 20 real runs", detail: "Where do people drop — the AI paste step, the readback, the paywall? Fix the single biggest leak first." },
+      { id: "m2-price", title: "Test the price early — don't wait", detail: "A/B $29 vs $39–49 now, not in month 10. A life decision is underpriced at $29; every extra dollar of margin widens your CAC ceiling and funds the points. (Naval: price the decision, not the quiz.)" },
+      { id: "m2-kfactor", title: "Measure your k-factor", detail: "Track shares-per-result and signups-per-share. k > 1 means the loop grows itself and ads become optional. This is the number to obsess over. (Nikita: measure k, not just CAC.)" },
+      { id: "m2-share-object", title: "Make the free result a status object", detail: "Share must happen BEFORE the wallet. Maximize how many people get a broadcast-worthy result — non-payers are your distribution, not failures. Tune paywall placement so it never strangles the loop." },
+      { id: "m2-teardown", title: "Read 20 real runs", detail: "Where do people drop — the AI paste step, the readback, the paywall? Delete the single biggest leak. (Elon: question every step, then remove it.)" },
       { id: "m2-locked", title: "Sharpen the locked #1", detail: "The blurred #1 is the peak before the gate. Make the score ring + continent tease irresistible; never leak the name." },
-      { id: "m2-creators10", title: "Grow to 10 creators", detail: "Double down on whoever drove the most clicks. Ask them what copy/hook worked and template it." },
-      { id: "m2-share", title: "Instrument the share loop", detail: "Confirm result cards render their own OG image and count shares. This is your free acquisition channel." },
-      { id: "m2-testimonial", title: "Capture 3 'it gets me' reactions", detail: "Screenshot genuine reactions to the readback. This social proof powers every later ad and creator pitch." },
     ],
   },
   {
@@ -622,3 +622,99 @@ export const POINTS_GOAL_NOTES: PlaybookItem[] = [
     detail: "Breakeven must include payment fees, and the card must be paid in full every month. Points earned on a carried balance (or a real loss) are travel bought at full price — the opposite of the win.",
   },
 ];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The value ladder — the revenue structure Naval would insist on. The $29 unlock
+// isn't the business; it's one rung. Own the audience, add recurring + high-ticket.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface LadderRung {
+  step: number;
+  name: string;
+  price: string;
+  role: string;
+  detail: string;
+}
+
+export const VALUE_LADDER: LadderRung[] = [
+  {
+    step: 1,
+    name: "Free shareable result",
+    price: "$0",
+    role: "Distribution",
+    detail: "Everyone gets the personality read + a broadcast-worthy card. This is not a loss — the non-buyers ARE your ad budget. Optimize it to be shared before the paywall ever appears.",
+  },
+  {
+    step: 2,
+    name: "The unlock",
+    price: "$39",
+    role: "Impulse buy",
+    detail: "The #1 match, full 193 ranking, tax + circuit — bought on a viral moment. Test $29 vs $39–49 early; a life decision is underpriced at $29.",
+  },
+  {
+    step: 3,
+    name: "Cohort / community",
+    price: "$99–299",
+    role: "Recurring-ish",
+    detail: "'Moving to Lisbon' groups — people who matched the same place, moving together. High margin, near-zero delivery cost, and it deepens the share loop. Belonging is the product.",
+  },
+  {
+    step: 4,
+    name: "Concierge relocation",
+    price: "$1–5k",
+    role: "High-ticket",
+    detail: "Done-with-you: visas, housing, taxes, the actual move. A handful a month rivals hundreds of unlocks. Advisor-led, and it uses the ranking + inputs you already have.",
+  },
+  {
+    step: 5,
+    name: "Annual re-check",
+    price: "$19–39/yr",
+    role: "Subscription",
+    detail: "Life changes; re-run your fit. Turns a one-time transaction into a recurring reason to come back — and compounding revenue instead of a treadmill.",
+  },
+];
+
+export const VALUE_LADDER_NOTE =
+  "The $29 unlock is rung 2 of 5. Most of the money — and all of the durability — is in the rungs above and below it: free distribution at the bottom, recurring + high-ticket at the top. Build down (virality) before you build up (upsells).";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Founder advisors — three permanent lenses to gut-check every decision against.
+// Not real endorsements; a synthesis of each operator's public frameworks.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface AdvisorLens {
+  name: string;
+  tagline: string;
+  principle: string;
+  gutCheck: string;
+}
+
+export const ADVISOR_LENSES: AdvisorLens[] = [
+  {
+    name: "Elon",
+    tagline: "First principles — delete, then optimize",
+    principle:
+      "The engine + dataset is the moat, not the quiz. Question every step; the best step is a deleted one. Make the product 10× better before chasing hacks.",
+    gutCheck:
+      "Can I delete a step instead of adding one? Is the product undeniable — or am I optimizing a credit-card hack while the funnel leaks?",
+  },
+  {
+    name: "Naval",
+    tagline: "Leverage + the long game",
+    principle:
+      "Code × media leverage, permissionless and infinite. Own the audience, not the transaction. Price the life decision. Build the ladder; add recurring.",
+    gutCheck:
+      "Am I building an asset that compounds — audience, brand, data — or renting growth I'll have to re-buy next month? (Managing 50 creators is rented leverage.)",
+  },
+  {
+    name: "Nikita",
+    tagline: "The app is the ad",
+    principle:
+      "Growth is the free result, not the ad spend. Design the result as a status object; measure k-factor. Sharing must happen before the wallet.",
+    gutCheck:
+      "Why would someone share their result with a friend? What's the identity payload + curiosity gap? If I'm leaning on paid ads, the loop isn't good enough yet.",
+  },
+];
+
+export const ADVISOR_CONSENSUS =
+  "All three converge on the same discomfort: you're over-indexed on the two lowest-leverage layers — paid ads and the points hack — and under-indexed on the two that compound: a viral free result, and a value ladder with recurring + high-ticket. The points are a reward you collect once the machine works, not the machine.";

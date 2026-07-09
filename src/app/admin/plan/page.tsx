@@ -26,6 +26,10 @@ import {
   POINTS_STACK_TOTAL,
   POINTS_LADDER,
   POINTS_GOAL_NOTES,
+  VALUE_LADDER,
+  VALUE_LADDER_NOTE,
+  ADVISOR_LENSES,
+  ADVISOR_CONSENSUS,
 } from "@/lib/admin/growthPlan";
 import {
   Target,
@@ -39,6 +43,8 @@ import {
   Check,
   Ban,
   Plane,
+  Layers,
+  Compass,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -160,6 +166,42 @@ export default async function PlanPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Value ladder */}
+        <div className="mt-10">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Layers className="size-4 text-accent" />
+            Revenue structure
+          </div>
+          <h2 className="mt-1 text-xl font-bold tracking-tight">The value ladder</h2>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{VALUE_LADDER_NOTE}</p>
+        </div>
+        <Card className="mt-4">
+          <CardContent className="p-2 sm:p-3">
+            {VALUE_LADDER.map((rung) => (
+              <div
+                key={rung.step}
+                className="grid grid-cols-12 items-start gap-3 border-b border-border p-3 last:border-0"
+              >
+                <div className="col-span-12 flex items-center gap-3 sm:col-span-4">
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary tabular-nums">
+                    {rung.step}
+                  </div>
+                  <div>
+                    <div className="font-semibold">{rung.name}</div>
+                    <Badge variant="outline" className="mt-1">
+                      {rung.role}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="col-span-4 text-lg font-extrabold tabular-nums text-gradient sm:col-span-2 sm:text-xl">
+                  {rung.price}
+                </div>
+                <p className="col-span-12 text-xs leading-relaxed text-muted-foreground sm:col-span-6">{rung.detail}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
 
         {/* Phases + monthly roadmap */}
         <div className="mt-10">
@@ -441,6 +483,43 @@ export default async function PlanPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* ── Founder advisors — the standing gut-check ───────────────────── */}
+        <div className="mt-12">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Compass className="size-4 text-accent" />
+            The gut-check
+          </div>
+          <h2 className="mt-1 text-xl font-bold tracking-tight">Founder advisors</h2>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+            Three lenses to run every decision through before you build it. Not endorsements — a synthesis of how
+            each operator actually thinks.
+          </p>
+        </div>
+        <div className="mt-4 grid gap-4 lg:grid-cols-3">
+          {ADVISOR_LENSES.map((a) => (
+            <Card key={a.name} className="flex flex-col">
+              <CardHeader>
+                <CardTitle className="text-lg">{a.name}</CardTitle>
+                <p className="text-xs font-medium uppercase tracking-wide text-accent">{a.tagline}</p>
+              </CardHeader>
+              <CardContent className="flex flex-1 flex-col gap-3">
+                <p className="text-sm leading-relaxed text-muted-foreground">{a.principle}</p>
+                <div className="mt-auto rounded-xl bg-accent/5 p-3">
+                  <div className="text-[11px] font-semibold uppercase tracking-wide text-accent">Ask yourself</div>
+                  <p className="mt-1 text-sm leading-relaxed">{a.gutCheck}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="mt-4 flex items-start gap-2 rounded-2xl glass p-4 text-sm leading-relaxed">
+          <Compass className="mt-0.5 size-4 shrink-0 text-accent" />
+          <span>
+            <span className="font-semibold">The consensus: </span>
+            <span className="text-muted-foreground">{ADVISOR_CONSENSUS}</span>
+          </span>
+        </div>
       </div>
     </AdminShell>
   );
