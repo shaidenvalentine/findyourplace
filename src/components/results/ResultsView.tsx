@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
-import { track } from "@/lib/analytics";
+import { track, logEvent } from "@/lib/analytics";
 import { PRICE_CENTS, CURRENCY } from "@/lib/pricing";
 import { loadRunLocal, type FreeRun, type RankedPlace } from "@/lib/run";
 import type { AnnualCircuit } from "@/lib/circuitGenerator";
@@ -30,6 +30,14 @@ export function ResultsView({ runId }: { runId: string }) {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const purchaseFired = useRef(false);
+  const viewFired = useRef(false);
+
+  // First-party "results viewed" — the step between quiz_complete and paywall_view.
+  useEffect(() => {
+    if (viewFired.current) return;
+    viewFired.current = true;
+    logEvent("results_view", { runId });
+  }, [runId]);
 
   // Fire the Purchase conversion exactly once, only on the post-checkout redirect
   // (?unlocked=1). The deterministic event_id dedups with the webhook's server CAPI copy.
@@ -42,6 +50,7 @@ export function ResultsView({ runId }: { runId: string }) {
       value: PRICE_CENTS / 100,
       currency: CURRENCY.toUpperCase(),
       eventId: `purchase_${runId}`,
+      runId,
     });
   }, [unlocked, runId]);
 

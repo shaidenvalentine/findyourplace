@@ -9,6 +9,7 @@ import { OptionButton } from "@/components/entry/OptionButton";
 import { QUIZ } from "@/lib/quiz";
 import { loadDraft, loadQuizProgress, saveQuizProgress, clearQuizProgress } from "@/lib/draft";
 import { useScoreSubmit } from "@/lib/useScoreSubmit";
+import { trackStep } from "@/lib/analytics";
 import type { OnboardingData } from "@/types/onboarding";
 import { ArrowLeft, ArrowRight, Loader2, Sparkles } from "lucide-react";
 
@@ -41,6 +42,14 @@ export default function QuizPage() {
   }, [idx, answers]);
 
   const q = QUIZ[idx];
+
+  // Per-question drop-off: log reaching each step once it's shown (after rehydrate, so a
+  // restored quiz doesn't re-log every step the user already passed on this device).
+  useEffect(() => {
+    if (!hydrated.current) return;
+    trackStep(idx, QUIZ[idx].key as string);
+  }, [idx]);
+
   const current = answers[q.key as string];
   const isMulti = q.type === "multi";
   const selectedArr = Array.isArray(current) ? current : current ? [current] : [];

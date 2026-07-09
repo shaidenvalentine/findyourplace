@@ -43,7 +43,7 @@ export function useScoreSubmit() {
       /* ignore quota / private mode */
     }
     try {
-      track("quiz_complete"); // Meta "Lead" — the key pre-purchase optimization event
+      track("quiz_complete", { runId }); // Meta "Lead" — the key pre-purchase optimization event
     } catch {
       /* analytics must never block navigation */
     }
