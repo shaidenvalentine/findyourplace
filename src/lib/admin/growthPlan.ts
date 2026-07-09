@@ -538,3 +538,87 @@ export const CARD_STRATEGY_RULES: PlaybookItem[] = [
 
 export const CARD_DISCLAIMER =
   "Not financial advice. Card rates, fees, caps, and bonus categories change often — verify current terms with the issuer before applying, and confirm ad platforms bill as an eligible 'advertising' merchant category for your card.";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The points goal — 200k transferable points/month to fund business-class travel.
+// Because the 4× rate caps at $150k/yr ($12.5k/mo) per card, this only works as a
+// multi-card stack riding on a scaled ad budget. Kept honest, not hyped.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The dream: 200k transferable points every month → business class for two. */
+export const POINTS_GOAL_MONTHLY = 200_000;
+
+export interface PointsStackRow {
+  card: string;
+  player: string;
+  monthlySpendCents: number;
+  multiplier: string;
+  monthlyPoints: number;
+}
+
+/** The card stack that produces 200k points/month — the only way past the per-card caps. */
+export const POINTS_STACK: PointsStackRow[] = [
+  { card: "Amex Business Gold", player: "You", monthlySpendCents: 1_250_000, multiplier: "4×", monthlyPoints: 50_000 },
+  { card: "Amex Business Gold", player: "Partner (P2)", monthlySpendCents: 1_250_000, multiplier: "4×", monthlyPoints: 50_000 },
+  { card: "Chase Ink Preferred", player: "You", monthlySpendCents: 1_250_000, multiplier: "3×", monthlyPoints: 37_500 },
+  { card: "Chase Ink Preferred", player: "Partner (P2)", monthlySpendCents: 1_250_000, multiplier: "3×", monthlyPoints: 37_500 },
+  { card: "Flat 2× overflow", player: "Either", monthlySpendCents: 1_250_000, multiplier: "2×", monthlyPoints: 25_000 },
+];
+
+export const POINTS_STACK_SPEND_CENTS = POINTS_STACK.reduce((s, r) => s + r.monthlySpendCents, 0);
+export const POINTS_STACK_TOTAL = POINTS_STACK.reduce((s, r) => s + r.monthlyPoints, 0);
+
+/** Ad-spend → points ladder, so you can see where each business stage lands. */
+export interface PointsRung {
+  label: string;
+  monthlyAdSpendCents: number;
+  monthlyPoints: number;
+  buys: string;
+}
+
+export const POINTS_LADDER: PointsRung[] = [
+  {
+    label: "Early (proving the funnel)",
+    monthlyAdSpendCents: 100_000,
+    monthlyPoints: 4_000,
+    buys: "A domestic economy hop. You're testing, not farming yet.",
+  },
+  {
+    label: "At the $30k/mo goal",
+    monthlyAdSpendCents: 1_000_000,
+    monthlyPoints: 40_000,
+    buys: "~One international business one-way every couple months.",
+  },
+  {
+    label: "Scaling up (~$25k/mo ads)",
+    monthlyAdSpendCents: 2_500_000,
+    monthlyPoints: 90_000,
+    buys: "Two one-way business seats most months.",
+  },
+  {
+    label: "The 200k dream",
+    monthlyAdSpendCents: POINTS_STACK_SPEND_CENTS,
+    monthlyPoints: POINTS_STACK_TOTAL,
+    buys: "A business-class trip for two every 4–8 weeks.",
+  },
+];
+
+/** The honest framing so the dream doesn't get mistaken for a month-12 deliverable. */
+export const POINTS_GOAL_NOTES: PlaybookItem[] = [
+  {
+    title: "200k/mo is a scaled-business goal, not a month-12 one",
+    detail: "At breakeven, ~$62.5k/mo of ad spend means ~$62.5k/mo of ad revenue — more than double the $30k goal by itself. Full stack running = roughly a $90–100k/mo business. Same machine, turned up.",
+  },
+  {
+    title: "One card can't do it — the 4× caps at $12.5k/mo",
+    detail: "The $150k/yr cap forces a stack. Two Amex Golds + two Chase Inks (you + partner) + a flat-2× overflow card is the recipe. Plan the applications; don't expect one card to carry it.",
+  },
+  {
+    title: "Player 2 doubles everything",
+    detail: "Your partner opening her own business cards doubles the bonus-category caps AND stacks a second set of welcome bonuses — often the single biggest chunk of points you'll earn all year.",
+  },
+  {
+    title: "Only counts if it's true breakeven, paid in full",
+    detail: "Breakeven must include payment fees, and the card must be paid in full every month. Points earned on a carried balance (or a real loss) are travel bought at full price — the opposite of the win.",
+  },
+];

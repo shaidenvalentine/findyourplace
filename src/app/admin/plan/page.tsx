@@ -20,6 +20,12 @@ import {
   AD_SPEND_CARDS,
   CARD_STRATEGY_RULES,
   CARD_DISCLAIMER,
+  POINTS_GOAL_MONTHLY,
+  POINTS_STACK,
+  POINTS_STACK_SPEND_CENTS,
+  POINTS_STACK_TOTAL,
+  POINTS_LADDER,
+  POINTS_GOAL_NOTES,
 } from "@/lib/admin/growthPlan";
 import {
   Target,
@@ -32,6 +38,7 @@ import {
   CreditCard,
   Check,
   Ban,
+  Plane,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -342,6 +349,96 @@ export default async function PlanPage() {
             </div>
 
             <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">{CARD_DISCLAIMER}</p>
+          </CardContent>
+        </Card>
+
+        {/* Points goal — 200k/mo → business class for two */}
+        <Card className="mt-5 border-accent/40">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Plane className="size-4 text-accent" /> Points goal — {POINTS_GOAL_MONTHLY.toLocaleString()}/month
+            </CardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Business class for two, every month. Here&apos;s the honest recipe — and where each stage of the
+              business actually lands.
+            </p>
+          </CardHeader>
+          <CardContent>
+            {/* The stack */}
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[560px] text-left text-sm">
+                <thead>
+                  <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
+                    <th className="py-2 pr-3 font-medium">Card</th>
+                    <th className="py-2 pr-3 font-medium">Player</th>
+                    <th className="py-2 pr-3 font-medium">Ad spend/mo</th>
+                    <th className="py-2 pr-3 font-medium">Rate</th>
+                    <th className="py-2 text-right font-medium">Points/mo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {POINTS_STACK.map((r, i) => (
+                    <tr key={i} className="border-b border-border last:border-0">
+                      <td className="py-2.5 pr-3 font-medium">{r.card}</td>
+                      <td className="py-2.5 pr-3 text-muted-foreground">{r.player}</td>
+                      <td className="py-2.5 pr-3 tabular-nums text-muted-foreground">{money(r.monthlySpendCents)}</td>
+                      <td className="py-2.5 pr-3 tabular-nums">{r.multiplier}</td>
+                      <td className="py-2.5 text-right font-semibold tabular-nums text-success">
+                        {r.monthlyPoints.toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                  <tr className="border-t-2 border-border font-bold">
+                    <td className="py-2.5 pr-3" colSpan={2}>
+                      Total
+                    </td>
+                    <td className="py-2.5 pr-3 tabular-nums">{money(POINTS_STACK_SPEND_CENTS)}</td>
+                    <td className="py-2.5 pr-3" />
+                    <td className="py-2.5 text-right tabular-nums text-gradient">
+                      {POINTS_STACK_TOTAL.toLocaleString()}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Ladder — where stages land */}
+            <div className="mt-5 grid gap-2 sm:grid-cols-2">
+              {POINTS_LADDER.map((rung) => {
+                const isGoal = rung.monthlyPoints === POINTS_STACK_TOTAL;
+                return (
+                  <div
+                    key={rung.label}
+                    className={
+                      isGoal
+                        ? "rounded-xl border border-accent/50 bg-accent/5 p-3"
+                        : "rounded-xl border border-border bg-surface/30 p-3"
+                    }
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-semibold">{rung.label}</span>
+                      <span className="text-sm font-bold tabular-nums text-success">
+                        {rung.monthlyPoints.toLocaleString()} pts
+                      </span>
+                    </div>
+                    <div className="mt-0.5 text-xs text-muted-foreground tabular-nums">
+                      {money(rung.monthlyAdSpendCents)}/mo ad spend
+                    </div>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{rung.buys}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Honest framing */}
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {POINTS_GOAL_NOTES.map((n) => (
+                <div key={n.title} className="rounded-xl border border-border bg-surface/30 p-3">
+                  <div className="text-sm font-semibold">{n.title}</div>
+                  <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{n.detail}</p>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>
