@@ -86,7 +86,7 @@ export default function StartPage() {
               <button
                 type="button"
                 onClick={commitCity}
-                className="text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
+                className="inline-flex min-h-11 items-center justify-center text-center text-sm text-muted-foreground underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none"
               >
                 I&apos;d rather not say
               </button>
@@ -124,7 +124,7 @@ export default function StartPage() {
               <button
                 type="button"
                 onClick={() => setStep("path")}
-                className="text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
+                className="inline-flex min-h-11 items-center justify-center text-center text-sm text-muted-foreground underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none"
               >
                 Skip — I&apos;m not sure
               </button>
@@ -143,7 +143,7 @@ export default function StartPage() {
             <div className="mt-6 flex flex-col gap-4">
               <button
                 onClick={() => choose("ai")}
-                className="group rounded-2xl border border-primary/40 bg-card p-5 text-left transition-all hover:border-primary active:scale-[0.99]"
+                className="group rounded-2xl border border-primary/40 bg-card p-5 text-left transition-all hover:border-primary active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 <div className="mb-3 flex items-center gap-2">
                   <span className="grid size-9 place-items-center rounded-lg bg-primary/15 text-primary">
@@ -163,7 +163,7 @@ export default function StartPage() {
 
               <button
                 onClick={() => choose("words")}
-                className="group rounded-2xl glass p-5 text-left transition-all hover:border-accent/60 active:scale-[0.99]"
+                className="group rounded-2xl glass p-5 text-left transition-all hover:border-accent/60 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 <div className="mb-3 flex items-center gap-2">
                   <span className="grid size-9 place-items-center rounded-lg bg-accent/15 text-accent">
@@ -182,7 +182,7 @@ export default function StartPage() {
 
               <button
                 onClick={() => choose("quiz")}
-                className="group rounded-2xl glass p-5 text-left transition-all hover:border-secondary/60 active:scale-[0.99]"
+                className="group rounded-2xl glass p-5 text-left transition-all hover:border-secondary/60 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 <div className="mb-3 flex items-center gap-2">
                   <span className="grid size-9 place-items-center rounded-lg bg-secondary/15 text-secondary">
@@ -201,7 +201,7 @@ export default function StartPage() {
 
             <button
               onClick={() => setStep("loved")}
-              className="mt-6 text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
+              className="mt-6 inline-flex min-h-11 items-center justify-center text-center text-sm text-muted-foreground underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none"
             >
               ← Back
             </button>
