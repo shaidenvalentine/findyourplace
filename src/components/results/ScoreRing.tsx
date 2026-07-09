@@ -44,7 +44,7 @@ export function ScoreRing({
 
   return (
     <div className={cn("relative inline-grid place-items-center", blurred && "blur-[6px]")} style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90">
+      <svg width={size} height={size} className="-rotate-90" aria-hidden="true" focusable="false">
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -68,8 +68,10 @@ export function ScoreRing({
         <defs>
           {tone === "dark" ? (
             <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="hsl(178 64% 46%)" />
-              <stop offset="100%" stopColor="hsl(172 76% 64%)" />
+              {/* Tokenized teal arc (was two hand-typed teals). ring→accent gives a subtle
+                  gradient while keeping the brand teal to a single source of truth. */}
+              <stop offset="0%" stopColor="hsl(var(--ring))" />
+              <stop offset="100%" stopColor="hsl(var(--accent))" />
             </linearGradient>
           ) : (
             <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">

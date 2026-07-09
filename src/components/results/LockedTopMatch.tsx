@@ -30,14 +30,14 @@ export function LockedTopMatch({
   const hasTax = typeof annualTaxSavings === "number" && annualTaxSavings > 0;
 
   return (
-    <div className="hero-stage relative overflow-hidden rounded-2xl p-6 text-center text-white shadow-[0_24px_64px_hsl(210_40%_16%/0.28)]">
+    <div className="hero-stage animate-fade-up relative overflow-hidden rounded-2xl p-6 text-center text-white shadow-[0_24px_64px_hsl(210_40%_16%/0.28)]">
       {/* soft top highlight so the dark surface reads as lit glass, not a flat fill */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_50%_at_30%_0%,hsl(0_0%_100%/0.10),transparent_60%)]" />
 
       <div className="relative">
         <div className="mb-5 flex items-center justify-center gap-3">
           <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur-sm">
-            <span className="size-1.5 rounded-full bg-[hsl(172_76%_60%)]" /> Your #1 match
+            <span className="size-1.5 rounded-full bg-accent" /> Your #1 match
           </span>
           {typeof confidence === "number" && (
             <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-white/50">
@@ -65,7 +65,7 @@ export function LockedTopMatch({
             </div>
           </div>
           <div className="pointer-events-none absolute inset-0 grid place-items-center">
-            <span className="grid size-10 place-items-center rounded-full bg-white text-[hsl(220_16%_13%)] shadow-lg">
+            <span className="grid size-10 place-items-center rounded-full bg-white text-background shadow-lg">
               <Lock className="size-5" />
             </span>
           </div>
@@ -75,7 +75,7 @@ export function LockedTopMatch({
         {(hasFitGain || hasTax) && (
           <div className="mx-auto mt-5 flex max-w-xs flex-wrap items-center justify-center gap-2">
             {hasFitGain && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-sm font-medium text-[hsl(172_76%_66%)] backdrop-blur-sm">
+              <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-sm font-medium text-accent backdrop-blur-sm">
                 <TrendingUp className="size-3.5" /> +{fitDelta} fit vs your {currentScore}
               </span>
             )}

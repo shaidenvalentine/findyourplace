@@ -52,6 +52,15 @@ export function ResultsView({ runId }: { runId: string }) {
       eventId: `purchase_${runId}`,
       runId,
     });
+    // Drop ?unlocked=1 so a manual refresh can't re-enter this branch (Meta's event_id
+    // dedups anyway, but this keeps our own analytics clean and the URL shareable).
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("unlocked");
+      window.history.replaceState({}, "", url.toString());
+    } catch {
+      /* ignore */
+    }
   }, [unlocked, runId]);
 
   const refresh = useCallback(async () => {

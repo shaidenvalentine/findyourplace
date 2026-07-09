@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ANCHOR_LABEL, PRICE_LABEL } from "@/lib/pricing";
@@ -25,6 +26,7 @@ export function Paywall({
   onUnlocked: () => void;
 }) {
   const [email, setEmail] = useState("");
+  const [touched, setTouched] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
@@ -80,9 +82,13 @@ export function Paywall({
   }
 
   return (
-    <div className="rounded-2xl border border-primary/30 bg-card p-6">
+    <div className="animate-fade-up relative overflow-hidden rounded-2xl border border-accent/25 bg-card p-6 shadow-[0_20px_60px_hsl(210_40%_6%/0.45)]">
+      {/* Accent halo — this is the storefront; give it a designed glow so it reads as the
+          peak of the page, not a plain card sitting under the locked #1. */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-[radial-gradient(60%_100%_at_50%_0%,hsl(var(--accent)/0.16),transparent_70%)]" />
+
       {/* Cost of inaction — the status quo has a price too. */}
-      <p className="mb-4 text-sm text-muted-foreground">
+      <p className="relative mb-4 text-sm text-muted-foreground">
         Every month you stay put is another month in a place that doesn&apos;t fit. You&apos;ve
         already done the hard part — see where you actually belong.
       </p>
@@ -94,7 +100,7 @@ export function Paywall({
         <span className="text-5xl font-light tabular-nums tracking-tight">{PRICE_LABEL}</span>
         <span className="text-lg font-light text-muted-foreground line-through">{ANCHOR_LABEL}</span>
         <span className="rounded-full bg-success/15 px-2 py-0.5 text-xs font-semibold text-success">
-          today only
+          launch price
         </span>
       </div>
 
@@ -127,9 +133,16 @@ export function Paywall({
         placeholder="you@email.com — where we send your results"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
+        onBlur={() => setTouched(true)}
         aria-label="Email address"
-        className="mb-3"
+        aria-invalid={touched && email.length > 0 && !emailValid}
+        className="relative mb-1"
       />
+      <p className="mb-3 min-h-4 text-xs text-muted-foreground">
+        {touched && email.length > 0 && !emailValid
+          ? "Enter a valid email so we can send your results."
+          : "We email your results here so you can always get back to them."}
+      </p>
 
       <Button
         className="w-full"
@@ -156,13 +169,13 @@ export function Paywall({
         Apple Pay &amp; cards · one-time · instant access · no subscription
         <br />
         By unlocking you agree to the{" "}
-        <a href="/terms" className="underline underline-offset-2 hover:text-foreground">
+        <Link href="/terms" className="underline underline-offset-2 hover:text-foreground">
           Terms
-        </a>{" "}
+        </Link>{" "}
         ·{" "}
-        <a href="/privacy" className="underline underline-offset-2 hover:text-foreground">
+        <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground">
           Privacy
-        </a>
+        </Link>
       </p>
     </div>
   );
