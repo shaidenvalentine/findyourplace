@@ -17,10 +17,12 @@ import {
   UserCheck,
   Mail,
   Settings2,
+  Target,
 } from "lucide-react";
 
 const NAV = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
+  { href: "/admin/plan", label: "Growth Plan", icon: Target },
   { href: "/admin/analytics", label: "Analytics", icon: Activity },
   { href: "/admin/content", label: "Content Studio", icon: Sparkles },
   { href: "/admin/customers", label: "Customers", icon: UserCheck },
