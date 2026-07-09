@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { OptionButton } from "@/components/entry/OptionButton";
 import { QUIZ } from "@/lib/quiz";
-import { loadDraft, loadQuizProgress, saveQuizProgress, clearQuizProgress } from "@/lib/draft";
+import { loadDraft, loadQuizProgress, saveQuizProgress } from "@/lib/draft";
 import { useScoreSubmit } from "@/lib/useScoreSubmit";
 import { trackStep } from "@/lib/analytics";
 import type { OnboardingData } from "@/types/onboarding";
@@ -86,7 +86,8 @@ export default function QuizPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (inputs as any)[question.key] = v;
     }
-    clearQuizProgress(); // consumed — a fresh quiz should start clean
+    // Progress is cleared inside submit() ONLY on a successful score, so a failed attempt
+    // keeps the answers and the user can retry instead of starting the quiz over.
     submit(inputs, "quiz");
   }
 
@@ -96,7 +97,7 @@ export default function QuizPage() {
         <Link href="/">
           <Logo withWordmark={false} />
         </Link>
-        <Progress value={progress} className="flex-1" />
+        <Progress value={progress} className="flex-1" label={`Question ${idx + 1} of ${QUIZ.length}`} />
         <span className="text-xs tabular-nums text-muted-foreground">
           {idx + 1}/{QUIZ.length}
         </span>
@@ -129,7 +130,7 @@ export default function QuizPage() {
       </div>
 
       {/* Sticky footer nav */}
-      <div className="fixed inset-x-0 bottom-0 border-t border-border bg-background/85 backdrop-blur-md">
+      <div className="fixed inset-x-0 bottom-0 border-t border-border bg-background/85 backdrop-blur-md pb-[env(safe-area-inset-bottom)]">
         <div className="mx-auto flex w-full max-w-xl items-center gap-3 px-4 py-3">
           <Button
             variant="ghost"
@@ -149,7 +150,7 @@ export default function QuizPage() {
           >
             {submitting ? (
               <>
-                <Loader2 className="size-4 animate-spin" /> Scoring the best places on Earth…
+                <Loader2 className="size-4 animate-spin" /> Scoring your matches…
               </>
             ) : idx === QUIZ.length - 1 ? (
               <>Reveal my matches <ArrowRight className="size-4" /></>

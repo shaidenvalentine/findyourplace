@@ -78,9 +78,14 @@ export function ResultsView({ runId }: { runId: string }) {
         return;
       }
       const data = await res.json();
-      setFree(data.free);
-      setUnlocked(Boolean(data.unlocked));
-      setLocked(data.locked ?? null);
+      // Guard: never let a malformed 200 (missing `free`) wipe a good cached view.
+      if (data?.free) setFree(data.free);
+      setUnlocked(Boolean(data?.unlocked));
+      setLocked(data?.locked ?? null);
+    } catch {
+      // Transient network/500 on the money page: keep whatever we already showed. Only
+      // surface the not-found screen if we have nothing at all to render.
+      if (!loadRunLocal(runId)) setNotFound(true);
     } finally {
       setLoading(false);
     }

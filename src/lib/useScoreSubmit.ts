@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { saveRunLocal, type FreeRun } from "@/lib/run";
+import { clearQuizProgress } from "@/lib/draft";
 import { track } from "@/lib/analytics";
 import type { OnboardingData } from "@/types/onboarding";
 import type { RunSource } from "@/lib/run";
@@ -46,6 +47,16 @@ export function useScoreSubmit() {
       track("quiz_complete", { runId }); // Meta "Lead" — the key pre-purchase optimization event
     } catch {
       /* analytics must never block navigation */
+    }
+
+    // Only NOW is it safe to drop saved quiz progress — a failed score above returns
+    // early and keeps the answers so a reload can retry instead of restarting the quiz.
+    if (source === "quiz") {
+      try {
+        clearQuizProgress();
+      } catch {
+        /* ignore */
+      }
     }
 
     router.push(`/results/${runId}`);

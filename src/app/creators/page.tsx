@@ -71,7 +71,7 @@ export default function CreatorsLanding() {
           <DealCard
             icon={<Wallet className="size-5" />}
             title="50% of every sale"
-            body="$9.50 to you, paid monthly via Wise. Full transparency — see every conversion in real time."
+            body={`$${(PRICE_CENTS / 200).toFixed(2)} to you, paid monthly via Wise. Full transparency — see every conversion in real time.`}
           />
           <DealCard
             icon={<BarChart3 className="size-5" />}
