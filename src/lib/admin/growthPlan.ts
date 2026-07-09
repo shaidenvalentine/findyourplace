@@ -357,3 +357,184 @@ export function planProgress(last30Cents: number): PlanProgress {
     salesToGoal,
   };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Paid acquisition playbook — where to run this product, how to run Meta in 2026,
+// and how to turn ad spend into card points. Reference material for the plan above.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type PlatformRole = "Primary" | "Primary paid" | "Secondary" | "Compounding" | "Organic";
+
+export interface AdPlatform {
+  rank: number;
+  name: string;
+  role: PlatformRole;
+  why: string;
+}
+
+/**
+ * Where to advertise THIS product — a $29–49, visual, aspirational, impulse life-change
+ * unlock sold to a mobile, travel-curious audience. Ranked for that specific shape.
+ */
+export const AD_PLATFORMS: AdPlatform[] = [
+  {
+    rank: 1,
+    name: "Instagram Reels",
+    role: "Primary",
+    why: "Your GTM already lives here. Aspirational relocation video is native to the feed, and the founder reel is the whole top of funnel. The warmest audience for a 'where should I live' impulse buy.",
+  },
+  {
+    rank: 2,
+    name: "TikTok",
+    role: "Primary",
+    why: "Cheapest short-video reach and a nomad/'move abroad' curious crowd. The exact same reels repurpose 1:1 — hook in 2s, quiz as the CTA. Run organic first, then whitelist winners as ads.",
+  },
+  {
+    rank: 3,
+    name: "Meta ads (IG/FB, Advantage+)",
+    role: "Primary paid",
+    why: "Best paid rail: your organic reels become the creative, lookalikes off actual buyers, and the server-side CAPI you've already wired. Optimize for purchase — this is where scale comes from once the funnel proves out.",
+  },
+  {
+    rank: 4,
+    name: "YouTube (Shorts + 'why I moved to X')",
+    role: "Compounding",
+    why: "Slower but compounds for free. Shorts for reach; long-form captures high-intent searchers actively deciding where to live. Cheap CPMs and it feeds your SEO play.",
+  },
+  {
+    rank: 5,
+    name: "Pinterest",
+    role: "Secondary",
+    why: "Underrated for relocation/travel planning — high-intent, cheap, a planner mindset. Aspirational city boards map straight onto your result cards.",
+  },
+  {
+    rank: 6,
+    name: "Reddit + expat/nomad communities",
+    role: "Organic",
+    why: "r/digitalnomad, r/expats, r/IWantOut, r/SameGrassButGreener — the highest-intent audiences anywhere, but they punish anything that smells like an ad. Show up as a person, not a brand.",
+  },
+];
+
+/** Channels to skip for this product — wrong context or wrong economics. */
+export const AD_PLATFORMS_SKIP =
+  "Skip LinkedIn (wrong headspace, brutal CPMs), broad display/banner networks (junk traffic), and Google Search as a paid channel early — search intent for this is better captured free via the 193 SEO location pages.";
+
+export interface PlaybookItem {
+  title: string;
+  detail: string;
+}
+
+/** Current Meta best practice (2026), tuned for a bootstrapped single-offer funnel. */
+export const META_PLAYBOOK: PlaybookItem[] = [
+  {
+    title: "Creative is the lever now, not targeting",
+    detail: "Meta's 2026 algorithm wants volume: launch 8–15 genuinely different creatives (not tweaks) and add 3–5 fresh ones weekly to fight fatigue. You win or lose on creative, not audience tinkering.",
+  },
+  {
+    title: "Your best organic reels ARE your best ads",
+    detail: "Feed proven reels straight into the account. Native, vertical, captions on, hook in the first 2 seconds. Ads that look like ads lose to content that happens to sell.",
+  },
+  {
+    title: "Go broad, let the AI target",
+    detail: "Advantage+ Sales campaigns, optimized for purchase, minimal audience restriction. First-party signal (your pixel + CAPI + email list) now beats hand-stacked interests.",
+  },
+  {
+    title: "Start small — don't cargo-cult the big test budget",
+    detail: "The '$3–5k/mo, 50 conversions/week' advice is for scaled ecom catalogs. Bootstrap with a purchase-optimized sales campaign at $20–50/day, prove complete→purchase, THEN scale.",
+  },
+  {
+    title: "Scale slowly",
+    detail: "Once a set is profitable, raise budget 15–20% every 3–4 days and watch CPA for 48h after each bump. Big jumps reset the learning phase and torch your CAC.",
+  },
+  {
+    title: "CAPI is your cheapest CAC win",
+    detail: "The server-side conversions API is already wired here. Clean, deduped events = better signal = cheaper conversions as you scale. This is worth more than any targeting trick.",
+  },
+  {
+    title: "Retarget the non-buyers",
+    detail: "One set retargeting paywall_view non-buyers with the $39→$29 anchor + a real testimonial. The cheapest sales you'll ever buy.",
+  },
+  {
+    title: "Judge everything against margin",
+    detail: "The only number that matters: CAC vs net-per-sale (~$27 minus creator cut). Kill any set above it; scale only what sits under it. At $29 the headroom is thin — which is why price and creative matter so much.",
+  },
+];
+
+export interface AdSpendCard {
+  name: string;
+  rate: string;
+  effectiveReturn: string;
+  cap: string;
+  bestFor: string;
+  note: string;
+}
+
+/**
+ * Best cards for routing ad spend, as of mid-2026. Points effectively rebate a few
+ * percent off your single biggest cost. Terms change constantly — verify before applying.
+ */
+export const AD_SPEND_CARDS: AdSpendCard[] = [
+  {
+    name: "Amex Business Gold",
+    rate: "4× points on advertising",
+    effectiveReturn: "~6–8% in travel value",
+    cap: "$150k/yr (top 2 categories)",
+    bestFor: "Your default while ad spend is under $150k/yr",
+    note: "Must bill direct from US media providers (Meta, Google, etc.). ~$375 annual fee. Highest return of any card while under the cap.",
+  },
+  {
+    name: "Chase Ink Business Preferred",
+    rate: "3× points on ads/social",
+    effectiveReturn: "~5–6% via transfer partners",
+    cap: "$150k/yr (combined categories)",
+    bestFor: "Lower fee + flexible, transferable Chase points",
+    note: "$95 annual fee and a routinely strong welcome bonus. Great second card to pair with the Gold.",
+  },
+  {
+    name: "Capital One Spark Cash Plus",
+    rate: "2% cash back, flat",
+    effectiveReturn: "2% cash (no valuation games)",
+    cap: "No cap",
+    bestFor: "Overflow once you blow past the $150k bonus caps",
+    note: "Dead-simple cash, nothing to manage. Annual fee is waived at high spend. This is your 'past the cap' card.",
+  },
+  {
+    name: "Ramp / Brex (corporate)",
+    rate: "~1.5–2% + spend controls",
+    effectiveReturn: "~1.5–2%",
+    cap: "Varies",
+    bestFor: "Easy approval, no personal guarantee, clean bookkeeping",
+    note: "Lower rewards, but virtual cards per campaign, real-time controls, and automatic expense tracking. Good operational backbone even if not your rewards card.",
+  },
+];
+
+/** The rules that make card-points-on-ads a rebate and not a trap. */
+export const CARD_STRATEGY_RULES: PlaybookItem[] = [
+  {
+    title: "The float is the hidden win",
+    detail: "Ad spend on a card buys you 30–45 days before the bill — free working capital to reinvest while sales revenue lands. As real as the points.",
+  },
+  {
+    title: "Never, ever carry a balance",
+    detail: "Card APR (~25%+) dwarfs any reward. Pay in full every month, always. If you can't, this whole play is a wealth-destroyer — points only count when you're debt-free on the card.",
+  },
+  {
+    title: "Welcome bonuses beat multipliers",
+    detail: "A new business card's sign-up bonus (often $750–1,500+ in value) is worth more than a year of category points — and ad spend hits the minimum-spend requirement fast. Time new cards to spend ramps.",
+  },
+  {
+    title: "Stack two cards, don't scatter",
+    detail: "Run ads on the 4×/3× card up to its $150k cap, then overflow onto the flat-2% card. Two cards cover essentially any spend level with no wasted earning.",
+  },
+  {
+    title: "Keep it on business cards",
+    detail: "Business cards keep ad spend off your personal credit report and utilization, and most don't report to personal bureaus. Cleaner credit, cleaner books.",
+  },
+  {
+    title: "It's a rebate, not a strategy",
+    detail: "Points shave 2–8% off CAC — real money at scale, but they never make an unprofitable ad profitable. Fix the funnel and the price first; treat this as the cherry on top.",
+  },
+];
+
+export const CARD_DISCLAIMER =
+  "Not financial advice. Card rates, fees, caps, and bonus categories change often — verify current terms with the issuer before applying, and confirm ad platforms bill as an eligible 'advertising' merchant category for your card.";

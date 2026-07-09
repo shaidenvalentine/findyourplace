@@ -14,8 +14,25 @@ import {
   FUNNEL,
   unitEconomics,
   planProgress,
+  AD_PLATFORMS,
+  AD_PLATFORMS_SKIP,
+  META_PLAYBOOK,
+  AD_SPEND_CARDS,
+  CARD_STRATEGY_RULES,
+  CARD_DISCLAIMER,
 } from "@/lib/admin/growthPlan";
-import { Target, TrendingUp, Users, Megaphone, Share2, Flag } from "lucide-react";
+import {
+  Target,
+  TrendingUp,
+  Users,
+  Megaphone,
+  Share2,
+  Flag,
+  MapPin,
+  CreditCard,
+  Check,
+  Ban,
+} from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -205,6 +222,128 @@ export default async function PlanPage() {
             </section>
           );
         })}
+
+        {/* ── Paid acquisition playbook ──────────────────────────────────── */}
+        <div className="mt-12">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Megaphone className="size-4 text-accent" />
+            Paid acquisition playbook
+          </div>
+          <h2 className="mt-1 text-xl font-bold tracking-tight">Where to spend, how to run it, and how to earn on it</h2>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+            The three levers behind the ~25% paid slice: the right platforms for this product, the current
+            Meta playbook, and turning ad spend into card points that rebate your biggest cost.
+          </p>
+        </div>
+
+        {/* Where to advertise */}
+        <Card className="mt-5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <MapPin className="size-4 text-accent" /> Where to advertise this product
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col">
+              {AD_PLATFORMS.map((p) => (
+                <div
+                  key={p.rank}
+                  className="grid grid-cols-12 items-start gap-3 border-b border-border py-3 last:border-0"
+                >
+                  <span className="col-span-1 text-sm font-bold text-muted-foreground tabular-nums">#{p.rank}</span>
+                  <div className="col-span-11 sm:col-span-4">
+                    <div className="font-semibold">{p.name}</div>
+                    <Badge variant={p.role.startsWith("Primary") ? "accent" : "outline"} className="mt-1">
+                      {p.role}
+                    </Badge>
+                  </div>
+                  <p className="col-span-12 text-xs leading-relaxed text-muted-foreground sm:col-span-7">{p.why}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 flex items-start gap-2 rounded-xl bg-muted/30 p-3 text-xs leading-relaxed text-muted-foreground">
+              <Ban className="mt-0.5 size-4 shrink-0 text-destructive" />
+              <span>{AD_PLATFORMS_SKIP}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Meta playbook */}
+        <Card className="mt-5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Megaphone className="size-4 text-accent" /> The Meta playbook — 2026
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {META_PLAYBOOK.map((item) => (
+                <div key={item.title} className="rounded-xl border border-border bg-surface/30 p-3">
+                  <div className="flex items-start gap-2">
+                    <Check className="mt-0.5 size-4 shrink-0 text-success" strokeWidth={3} />
+                    <div>
+                      <div className="text-sm font-semibold">{item.title}</div>
+                      <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{item.detail}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card points */}
+        <Card className="mt-5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <CreditCard className="size-4 text-accent" /> Ad spend → credit card points
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              At scale, ad spend is your biggest line item. The right card rebates 2–8% of it. Best options as of
+              mid-2026:
+            </p>
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full min-w-[640px] text-left text-sm">
+                <thead>
+                  <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
+                    <th className="py-2 pr-3 font-medium">Card</th>
+                    <th className="py-2 pr-3 font-medium">Rate on ads</th>
+                    <th className="py-2 pr-3 font-medium">Effective return</th>
+                    <th className="py-2 pr-3 font-medium">Cap</th>
+                    <th className="py-2 font-medium">Best for</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {AD_SPEND_CARDS.map((c) => (
+                    <tr key={c.name} className="border-b border-border align-top last:border-0">
+                      <td className="py-3 pr-3">
+                        <div className="font-semibold">{c.name}</div>
+                        <div className="mt-0.5 text-xs text-muted-foreground">{c.note}</div>
+                      </td>
+                      <td className="py-3 pr-3 font-medium">{c.rate}</td>
+                      <td className="py-3 pr-3 font-bold tabular-nums text-success">{c.effectiveReturn}</td>
+                      <td className="py-3 pr-3 text-muted-foreground">{c.cap}</td>
+                      <td className="py-3 text-muted-foreground">{c.bestFor}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {CARD_STRATEGY_RULES.map((r) => (
+                <div key={r.title} className="rounded-xl border border-border bg-surface/30 p-3">
+                  <div className="text-sm font-semibold">{r.title}</div>
+                  <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{r.detail}</p>
+                </div>
+              ))}
+            </div>
+
+            <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">{CARD_DISCLAIMER}</p>
+          </CardContent>
+        </Card>
       </div>
     </AdminShell>
   );
