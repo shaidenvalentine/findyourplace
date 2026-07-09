@@ -2,11 +2,13 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { isAdmin } from "@/lib/admin/session";
 import { getCreatorStore } from "@/lib/creators/store";
+import { revenueSummary, activityFeed } from "@/lib/admin/insights";
+import { integrationStatuses } from "@/lib/admin/config";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DollarSign, Users, TrendingUp, Wallet, ArrowRight } from "lucide-react";
+import { DollarSign, Users, TrendingUp, Wallet, ArrowRight, AlertTriangle, ShoppingBag, Mail, Compass } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +19,8 @@ function money(cents: number): string {
 export default async function AdminOverview() {
   if (!(await isAdmin())) redirect("/admin/login");
   const store = getCreatorStore();
+  const [rev, feed, statuses] = await Promise.all([revenueSummary(), activityFeed(12), Promise.resolve(integrationStatuses())]);
+  const criticalMissing = statuses.filter((s) => s.critical && !s.configured);
   const stats = await store.getGlobalStats();
   const pending = await store.listPendingByCreator();
   const recent = await store.listAllConversions(15);
@@ -39,20 +43,50 @@ export default async function AdminOverview() {
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Overview</h1>
         <p className="mt-1 text-sm text-muted-foreground">Business at a glance.</p>
 
-        {/* Top metrics */}
+        {/* Config alarm — surfaces the "charged but can't unlock" class of problem instantly. */}
+        {criticalMissing.length > 0 && (
+          <Link
+            href="/admin/system"
+            className="mt-5 flex items-center gap-2 rounded-xl border border-destructive/40 bg-destructive/10 p-3.5 text-sm font-medium text-destructive hover:bg-destructive/15"
+          >
+            <AlertTriangle className="size-4 shrink-0" />
+            {criticalMissing.map((s) => s.name).join(" · ")} not configured — the funnel can lose
+            paying customers. Fix in System →
+          </Link>
+        )}
+
+        {/* Top metrics — business-wide revenue from the unlock ledger (ALL sales, not just
+            creator-attributed), so this is the real top line. */}
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Metric
             icon={<DollarSign className="size-4" />}
             label="Total revenue"
-            value={money(stats.totalRevenueCents)}
+            value={money(rev.totalCents)}
+            sub={`${rev.unlocksTotal} unlocks · ${money(rev.aovCents)} avg`}
             accent
           />
           <Metric
             icon={<TrendingUp className="size-4" />}
             label="Last 30 days"
-            value={money(stats.last30RevenueCents)}
-            sub={`${stats.last30Conversions} sales`}
+            value={money(rev.d30Cents)}
+            sub={`${rev.unlocks30} sales · ${money(rev.todayCents)} today`}
           />
+          <Metric
+            icon={<ShoppingBag className="size-4" />}
+            label="Runs → buys (30d)"
+            value={`${rev.buyRate30}%`}
+            sub={`${rev.runs30.toLocaleString()} runs`}
+          />
+          <Metric
+            icon={<Mail className="size-4" />}
+            label="Leads"
+            value={rev.leadsTotal.toLocaleString()}
+            sub="emails captured"
+          />
+        </div>
+
+        {/* Creator program strip */}
+        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Metric
             icon={<Wallet className="size-4" />}
             label="Pending payouts"
@@ -64,6 +98,18 @@ export default async function AdminOverview() {
             label="Creators"
             value={stats.creatorCount.toLocaleString()}
             sub={`${stats.activeCreatorCount} active`}
+          />
+          <Metric
+            icon={<TrendingUp className="size-4" />}
+            label="Creator revenue"
+            value={money(stats.totalRevenueCents)}
+            sub="attributed to creators"
+          />
+          <Metric
+            icon={<Compass className="size-4" />}
+            label="Total runs"
+            value={rev.runsTotal.toLocaleString()}
+            sub="all time"
           />
         </div>
 
@@ -166,6 +212,41 @@ export default async function AdminOverview() {
                     </span>
                     <span className="col-span-2 text-right text-sm font-bold tabular-nums text-success">
                       +{money(c.creatorCutCents)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Live activity — the pulse: runs, leads, purchases interleaved, newest first. */}
+        <Card className="mt-5">
+          <CardHeader>
+            <CardTitle className="text-base">Live activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {feed.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Nothing yet — activity appears here the moment someone runs the quiz.
+              </p>
+            ) : (
+              <div className="flex flex-col">
+                {feed.map((a, i) => (
+                  <div key={i} className="flex items-center gap-3 border-b border-border py-2.5 text-sm last:border-0">
+                    <span
+                      className={
+                        a.kind === "purchase"
+                          ? "size-2 shrink-0 rounded-full bg-success"
+                          : a.kind === "lead"
+                            ? "size-2 shrink-0 rounded-full bg-accent"
+                            : "size-2 shrink-0 rounded-full bg-muted-foreground/50"
+                      }
+                    />
+                    <span className="w-28 shrink-0 font-medium">{a.label}</span>
+                    <span className="min-w-0 flex-1 truncate text-muted-foreground">{a.detail}</span>
+                    <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                      {new Date(a.at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </span>
                   </div>
                 ))}

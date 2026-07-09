@@ -4,15 +4,32 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "@/components/brand/Logo";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, BarChart3, Wallet, LogOut, ShieldCheck, Activity, ListChecks } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  BarChart3,
+  Wallet,
+  LogOut,
+  ShieldCheck,
+  Activity,
+  ListChecks,
+  Sparkles,
+  UserCheck,
+  Mail,
+  Settings2,
+} from "lucide-react";
 
 const NAV = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/admin/analytics", label: "Analytics", icon: Activity },
+  { href: "/admin/content", label: "Content Studio", icon: Sparkles },
+  { href: "/admin/customers", label: "Customers", icon: UserCheck },
+  { href: "/admin/leads", label: "Leads", icon: Mail },
   { href: "/admin/runs", label: "Runs", icon: ListChecks },
   { href: "/admin/creators", label: "Creators", icon: Users },
   { href: "/admin/conversions", label: "Conversions", icon: BarChart3 },
   { href: "/admin/payouts", label: "Payouts", icon: Wallet },
+  { href: "/admin/system", label: "System", icon: Settings2 },
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
