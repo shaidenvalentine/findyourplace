@@ -23,7 +23,7 @@ export default async function RunsPage() {
       <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-10">
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Runs</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          The latest scored runs — entry path, current city, top match, and whether they unlocked.
+          The latest scored runs — entry path, dream breed, top match, and whether they unlocked.
         </p>
 
         <div className="mt-4 flex gap-4 text-sm">
@@ -48,7 +48,7 @@ export default async function RunsPage() {
                     <tr className="border-b border-border text-left text-xs text-muted-foreground">
                       <th className="px-4 py-3 font-medium">When</th>
                       <th className="px-4 py-3 font-medium">Path</th>
-                      <th className="px-4 py-3 font-medium">Current city</th>
+                      <th className="px-4 py-3 font-medium">Dream breed</th>
                       <th className="px-4 py-3 font-medium">Top match</th>
                       <th className="px-4 py-3 text-right font-medium">Score</th>
                       <th className="px-4 py-3 text-right font-medium">Unlocked</th>

@@ -6,21 +6,21 @@ import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { track, logEvent } from "@/lib/analytics";
 import { PRICE_CENTS, CURRENCY } from "@/lib/pricing";
-import { loadRunLocal, type FreeRun, type RankedPlace } from "@/lib/run";
-import type { AnnualCircuit } from "@/lib/circuitGenerator";
+import { loadRunLocal, type FreeRun, type RankedBreed } from "@/lib/run";
+import type { AdoptionPlan } from "@/lib/adoptionPlan";
 import { PersonalityProfile } from "./PersonalityProfile";
 import { CategoryBars } from "./CategoryBars";
-import { CurrentCityFitCard } from "./CurrentCityFitCard";
+import { DreamBreedFitCard } from "./DreamBreedFitCard";
 import { LifeChangeCompare } from "./LifeChangeCompare";
-import { TaxProfile } from "./TaxProfile";
+import { CostProfile } from "./CostProfile";
 import { LockedTopMatch } from "./LockedTopMatch";
 import { DeepenMatch } from "./DeepenMatch";
 import { Paywall } from "./Paywall";
 import dynamic from "next/dynamic";
 import { Loader2, ArrowLeft } from "lucide-react";
 
-// The paid tree (full ranking, move plan, tax deep-dive, circuit) is only rendered for
-// unlocked runs — load it on demand so the ~90% who haven't bought don't download it.
+// The paid tree (full ranking, first-30-days plan, cost deep-dive, adoption plan) is only
+// rendered for unlocked runs — load it on demand so the ~90% who haven't bought don't download it.
 const PaidReveal = dynamic(() => import("./PaidReveal").then((m) => m.PaidReveal), {
   loading: () => (
     <div className="grid place-items-center py-10">
@@ -29,9 +29,9 @@ const PaidReveal = dynamic(() => import("./PaidReveal").then((m) => m.PaidReveal
   ),
 });
 import { ShareSlides } from "./ShareSlides";
-import { RelocationToolkit } from "@/components/affiliates/RelocationToolkit";
+import { DogToolkit } from "@/components/affiliates/DogToolkit";
 
-type Locked = { ranking: RankedPlace[]; circuit: AnnualCircuit | null };
+type Locked = { ranking: RankedBreed[]; adoptionPlan: AdoptionPlan | null };
 
 export function ResultsView({ runId }: { runId: string }) {
   const [free, setFree] = useState<FreeRun | null>(null);
@@ -133,7 +133,7 @@ export function ResultsView({ runId }: { runId: string }) {
             The link may be incomplete or from another device. It only takes a minute to get a fresh match.
           </p>
           <Button asChild variant="gradient" className="mt-4">
-            <Link href="/start">Find my place</Link>
+            <Link href="/start">Find my dog</Link>
           </Button>
         </div>
       </div>
@@ -143,7 +143,7 @@ export function ResultsView({ runId }: { runId: string }) {
   return (
     <main className="mx-auto w-full max-w-xl px-4 pb-20">
       <header className="flex h-14 items-center justify-between">
-        <Link href="/" aria-label="Find Your Place — home">
+        <Link href="/" aria-label="Find Your Dog — home">
           <Logo withWordmark={false} />
         </Link>
         <Button asChild variant="ghost" size="sm">
@@ -157,22 +157,22 @@ export function ResultsView({ runId }: { runId: string }) {
         Your results are in.
       </h1>
       <p className="text-sm text-muted-foreground">
-        Here&apos;s what the engine read — and the place that fits you best.
+        Here&apos;s what the engine read — and the dog that fits you best.
       </p>
 
       <div className="mt-5 flex flex-col gap-5">
         <PersonalityProfile read={free.personality} />
-        <CategoryBars items={free.categoryAverages} title="Your category fit (top matches)" />
-        <CurrentCityFitCard city={free.currentCity} fit={free.currentCityFit} />
-        <LifeChangeCompare city={free.currentCity} lifeChange={free.lifeChange} />
-        <TaxProfile free={free} onRefined={setFree} />
+        <CategoryBars items={free.categoryAverages} title="Your category fit (top breeds)" />
+        <DreamBreedFitCard breed={free.dreamBreed} fit={free.dreamBreedFit} />
+        <LifeChangeCompare dreamBreed={free.dreamBreed} lifeChange={free.lifeChange} topCount={free.topCount} />
+        <CostProfile free={free} onRefined={setFree} />
 
         {unlocked && locked ? (
           <>
-            <PaidReveal ranking={locked.ranking} circuit={locked.circuit} />
-            <RelocationToolkit run={free} />
+            <PaidReveal ranking={locked.ranking} adoptionPlan={locked.adoptionPlan} />
+            <DogToolkit run={free} />
             <div className="rounded-2xl glass p-5">
-              <p className="mb-3 text-center text-sm font-medium">Show the world where you belong.</p>
+              <p className="mb-3 text-center text-sm font-medium">Show the world your dog.</p>
               <ShareSlides free={free} variant="reveal" />
             </div>
           </>
@@ -183,19 +183,19 @@ export function ResultsView({ runId }: { runId: string }) {
             {/* The peak — uninterrupted, then straight to the gate. Nothing between. */}
             <LockedTopMatch
               score={free.topTease.score}
-              continent={free.topTease.continent}
-              region={free.topTease.region}
+              group={free.topTease.group}
+              size={free.topTease.size}
               confidence={free.confidence}
-              currentScore={free.lifeChange.currentScore}
+              dreamScore={free.lifeChange.currentScore}
               fitDelta={free.lifeChange.overallDelta}
-              annualTaxSavings={free.taxComparison?.annualSavings ?? null}
+              adoptionSavings={free.costComparison?.adoptionSavings ?? null}
             />
             <Paywall runId={runId} onUnlocked={refresh} />
             {/* Share lives AFTER the offer decision — never between tension and gate. */}
             <div className="rounded-2xl glass p-5">
               <p className="mb-1 text-center text-sm font-medium">Pull your friends in</p>
               <p className="mb-3 text-center text-xs text-muted-foreground">
-                Share your slides — your archetype, your gap, and the mystery of where you belong.
+                Share your slides — your archetype, your gap, and the mystery of which dog is yours.
               </p>
               <ShareSlides free={free} variant="teaser" />
             </div>

@@ -7,17 +7,17 @@ import { Share2, Check, Loader2, Download } from "lucide-react";
 
 /**
  * "Wrapped"-style share set — a swipeable deck of stunning 9:16 slides (identity, the
- * 61→94 gap, the tax flex, the place, a CTA). Sharing the SET (not one card) is what pulls
+ * dream-breed gap, the breed, a CTA). Sharing the SET (not one card) is what pulls
  * friends in. Uses the Web Share API with all images; falls back to downloading them.
  */
 export function ShareSlides({ free, variant }: { free: FreeRun; variant: "teaser" | "reveal" }) {
   const runId = free.runId;
-  // Decks designed for what people ACTUALLY share. The flagship is the Place DNA card:
+  // Decks designed for what people ACTUALLY share. The flagship is the Dog DNA card:
   // an identity flex (radar fingerprint + archetype) PLUS a game for the viewer (the
-  // redacted coordinates of the #1 place) — a share that starts conversations.
-  // Post-unlock swaps in the place reveal; a soft CTA closes the deck.
+  // redacted name + group/size of the #1 breed) — a share that starts conversations.
+  // Post-unlock swaps in the breed reveal; a soft CTA closes the deck.
   const slides = useMemo(() => {
-    return variant === "reveal" ? ["dna", "place", "cta"] : ["dna", "place"];
+    return variant === "reveal" ? ["dna", "breed", "cta"] : ["dna", "breed"];
   }, [variant]);
 
   const [busy, setBusy] = useState(false);
@@ -25,8 +25,8 @@ export function ShareSlides({ free, variant }: { free: FreeRun; variant: "teaser
 
   const text =
     variant === "reveal"
-      ? `I'm ${free.personality.archetype} — and I just found my place. Where's yours?`
-      : `I'm ${free.personality.archetype}. My #1 place on Earth scored ${free.topTease.score}/100 — guess where it is.`;
+      ? `I'm ${free.personality.archetype} — and I just found my dog. What's yours?`
+      : `I'm ${free.personality.archetype}. My #1 dog breed scored ${free.topTease.score}/100 — guess which one it is.`;
   const resultUrl = typeof window !== "undefined" ? `${window.location.origin}/results/${runId}` : "";
 
   async function fetchFiles(): Promise<File[]> {
@@ -34,7 +34,7 @@ export function ShareSlides({ free, variant }: { free: FreeRun; variant: "teaser
     for (const id of slides) {
       const res = await fetch(`/api/share/${runId}?slide=${id}`);
       const blob = await res.blob();
-      files.push(new File([blob], `find-your-place-${id}.png`, { type: "image/png" }));
+      files.push(new File([blob], `find-your-dog-${id}.png`, { type: "image/png" }));
     }
     return files;
   }

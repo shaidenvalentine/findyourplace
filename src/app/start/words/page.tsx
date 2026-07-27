@@ -13,10 +13,10 @@ import type { OnboardingData } from "@/types/onboarding";
 import { ArrowRight, Loader2, PenLine } from "lucide-react";
 
 const PROMPTS = [
-  "Where you live now and how you really feel about it",
-  "The climate and pace of life you're drawn to",
-  "Your work, your budget, and what \"living well\" costs you",
-  "Your top non-negotiables — and your hard deal-breakers",
+  "Your home: apartment or house, yard or not, and who lives there",
+  "Your honest energy — marathon Sundays or home-office homebody",
+  "The daily reality: hours the dog would be alone, kids, other pets, allergies",
+  "Your top non-negotiables — and your hard deal-breakers (shedding, barking, drool…)",
 ];
 
 /**
@@ -57,7 +57,7 @@ export default function WordsPage() {
   return (
     <main className="flex min-h-dvh flex-col">
       <header className="mx-auto flex h-14 w-full max-w-xl items-center justify-between px-4">
-        <Link href="/start" aria-label="Find Your Place">
+        <Link href="/start" aria-label="Find Your Dog">
           <Logo withWordmark={false} />
         </Link>
         <Badge variant="primary">
@@ -86,7 +86,7 @@ export default function WordsPage() {
               rows={9}
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="I'm in Chicago and the winters are wearing me down. I work remotely in tech, I'd love to be near the ocean and somewhere warm, I want my money to stretch further, and safety matters a lot…"
+              placeholder="I'm in a thin-wall apartment with a home office, so I'm around most of the day but need a quiet dog. Weekends I hike. Two kids, 4 and 7, and a cat who runs the house. My partner sneezes around heavy shedders…"
             />
             <p className="mt-2 text-xs text-muted-foreground">
               Processed privately on our server to read your preferences. We never store or log the
@@ -131,11 +131,11 @@ export default function WordsPage() {
               <Button size="lg" variant="gradient" disabled={submitting} onClick={() => submit(inputs, "words")}>
                 {submitting ? (
                   <>
-                    <Loader2 className="size-4 animate-spin" /> Scoring the best places on Earth…
+                    <Loader2 className="size-4 animate-spin" /> Scoring all 170 breeds against you…
                   </>
                 ) : (
                   <>
-                    Looks right — find my place <ArrowRight className="size-4" />
+                    Looks right — find my dog <ArrowRight className="size-4" />
                   </>
                 )}
               </Button>

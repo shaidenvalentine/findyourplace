@@ -67,7 +67,7 @@ export default function AiProfilePage() {
   return (
     <main className="flex min-h-dvh flex-col">
       <header className="mx-auto flex h-14 w-full max-w-xl items-center justify-between px-4">
-        <Link href="/start" aria-label="Find Your Place">
+        <Link href="/start" aria-label="Find Your Dog">
           <Logo withWordmark={false} />
         </Link>
         <Badge variant="primary">
@@ -207,11 +207,11 @@ function ConfirmStep({
         <Button size="lg" variant="gradient" disabled={submitting} onClick={onConfirm}>
           {submitting ? (
             <>
-              <Loader2 className="size-4 animate-spin" /> Scoring the best places on Earth…
+              <Loader2 className="size-4 animate-spin" /> Scoring all 170 breeds against you…
             </>
           ) : (
             <>
-              Looks right — find my place <ArrowRight className="size-4" />
+              Looks right — find my dog <ArrowRight className="size-4" />
             </>
           )}
         </Button>

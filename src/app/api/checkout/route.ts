@@ -3,7 +3,7 @@ import { getRun, putRun } from "@/lib/server/runStore";
 import { buildScoredRun } from "@/lib/buildRun";
 import { PRICE_CENTS, CURRENCY, activePaymentProvider } from "@/lib/pricing";
 import { createLemonCheckout } from "@/lib/server/lemonsqueezy";
-import { LOCATION_COUNT } from "@/data/locations";
+import { BREED_COUNT } from "@/data/breeds";
 import type { OnboardingData } from "@/types/onboarding";
 
 /**
@@ -71,8 +71,8 @@ export async function POST(req: NextRequest) {
             currency: CURRENCY,
             unit_amount: PRICE_CENTS,
             product_data: {
-              name: "Find Your Place — full results unlock",
-              description: `Your #1 match, full ${LOCATION_COUNT}-place ranking, tax deep-dive, and annual circuit.`,
+              name: "Find Your Dog — full results unlock",
+              description: `Your #1 breed, full ${BREED_COUNT}-breed ranking, cost-of-ownership deep-dive, and adopt-near-you plan.`,
             },
           },
         },

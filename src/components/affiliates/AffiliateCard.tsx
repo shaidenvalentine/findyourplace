@@ -1,31 +1,21 @@
 import type { AffiliatePartner, AffCategory } from "@/lib/affiliates";
 import {
-  Coins,
   ShieldCheck,
-  Wallet,
-  FileCheck,
-  Plane,
-  Home,
-  Smartphone,
-  Lock,
-  Truck,
-  Briefcase,
-  Languages,
+  Bone,
+  GraduationCap,
+  ShoppingBag,
+  HeartHandshake,
+  Stethoscope,
   ArrowUpRight,
 } from "lucide-react";
 
 const ICONS: Record<AffCategory, React.ComponentType<{ className?: string }>> = {
-  tax: Coins,
   insurance: ShieldCheck,
-  banking: Wallet,
-  visa: FileCheck,
-  flights: Plane,
-  stay: Home,
-  esim: Smartphone,
-  vpn: Lock,
-  moving: Truck,
-  coworking: Briefcase,
-  language: Languages,
+  food: Bone,
+  training: GraduationCap,
+  gear: ShoppingBag,
+  care: HeartHandshake,
+  health: Stethoscope,
 };
 
 export function AffiliateCard({

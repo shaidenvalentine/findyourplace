@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { LOCATIONS } from "@/data/locations";
+import { BREEDS } from "@/data/breeds";
 import { buildScoredRun } from "@/lib/buildRun";
 import { toFreeRun } from "@/lib/run";
 import { putRun } from "@/lib/server/runStore";
@@ -25,8 +25,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  if (LOCATIONS.length === 0) {
-    return NextResponse.json({ error: "No locations to score" }, { status: 500 });
+  if (BREEDS.length === 0) {
+    return NextResponse.json({ error: "No breeds to score" }, { status: 500 });
   }
 
   const run = buildScoredRun({

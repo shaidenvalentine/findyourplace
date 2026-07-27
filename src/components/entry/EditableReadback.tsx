@@ -11,8 +11,9 @@ import type { OnboardingData } from "@/types/onboarding";
  * scoring. This is what stops a confident mismatch from landing at the paywall, and the
  * act of correcting it deepens the "it really gets me" effect (BUILD_PLAN Phase 2).
  *
- * Option values mirror the normalizer's extraction enums so edits and the engine speak
- * the same language.
+ * Rows mirror profileNormalizer's buildReadback (homeType → adoptPreference, plus the
+ * openers) so edits and the engine speak the same language. hasKids/allergies are
+ * booleans on OnboardingData, so those rows coerce "true"/"false" chips ↔ boolean.
  */
 
 type Opt = { v: string; l: string };
@@ -20,70 +21,100 @@ type Opt = { v: string; l: string };
 type Field =
   | { kind: "text"; key: keyof OnboardingData; label: string; placeholder: string }
   | { kind: "single"; key: keyof OnboardingData; label: string; options: Opt[] }
+  | { kind: "bool"; key: keyof OnboardingData; label: string; options: [Opt, Opt] }
   | { kind: "multi"; key: keyof OnboardingData; label: string; options: Opt[]; max?: number };
 
 const FIELDS: Field[] = [
   { kind: "text", key: "currentCity", label: "Lives in", placeholder: "Your city" },
+  { kind: "text", key: "dreamBreed", label: "Breed you want", placeholder: "e.g. golden, lab…" },
   {
     kind: "single",
-    key: "lifestyleMode",
-    label: "Lifestyle",
+    key: "homeType",
+    label: "Home",
     options: [
-      { v: "rooted", l: "Rooted" },
-      { v: "nomadic", l: "Nomadic" },
+      { v: "apartment", l: "Apartment" },
+      { v: "house-small-yard", l: "House, small yard" },
+      { v: "house-big-yard", l: "House, big yard" },
+      { v: "rural", l: "Rural / acreage" },
     ],
   },
   {
     kind: "single",
-    key: "preferredClimate",
-    label: "Climate",
+    key: "activityLevel",
+    label: "Activity",
     options: [
-      { v: "tropical", l: "Tropical" },
-      { v: "mediterranean", l: "Mediterranean" },
-      { v: "temperate", l: "Temperate" },
-      { v: "cold", l: "Cold" },
+      { v: "relaxed", l: "Walks & couch" },
+      { v: "moderate", l: "Moderately active" },
+      { v: "active", l: "Runs & hikes" },
+      { v: "athlete", l: "Training partner" },
     ],
   },
   {
     kind: "single",
-    key: "beachMountain",
-    label: "Drawn to",
+    key: "hoursAlone",
+    label: "Dog alone",
     options: [
-      { v: "beach", l: "Beach" },
-      { v: "mountains", l: "Mountains" },
-      { v: "either", l: "Either" },
+      { v: "rarely", l: "Rarely" },
+      { v: "half-day", l: "A few hours" },
+      { v: "full-day", l: "Full workday" },
     ],
   },
   {
     kind: "single",
-    key: "noiseTolerance",
-    label: "Daily rhythm",
+    key: "experienceLevel",
+    label: "Experience",
     options: [
-      { v: "low", l: "Quiet & calm" },
-      { v: "medium", l: "Walkable buzz" },
-      { v: "high", l: "Energy & nightlife" },
+      { v: "first-time", l: "First dog" },
+      { v: "had-dogs", l: "Had dogs before" },
+      { v: "experienced", l: "Very experienced" },
     ],
   },
   {
-    kind: "single",
-    key: "workStyle",
-    label: "Work",
+    kind: "bool",
+    key: "hasKids",
+    label: "Kids",
     options: [
-      { v: "remote", l: "Remote" },
-      { v: "hybrid", l: "Hybrid" },
-      { v: "onsite", l: "On-site" },
+      { v: "true", l: "Yes" },
+      { v: "false", l: "No" },
     ],
   },
   {
     kind: "multi",
-    key: "communityVibes",
-    label: "People",
-    max: 3,
+    key: "otherPets",
+    label: "Other pets",
     options: [
-      { v: "digital-nomad", l: "Digital nomads" },
-      { v: "startup", l: "Startup scene" },
-      { v: "expat", l: "Expats" },
-      { v: "local", l: "Locals" },
+      { v: "dog", l: "Another dog" },
+      { v: "cat", l: "Cat(s)" },
+      { v: "small-pets", l: "Small pets" },
+    ],
+  },
+  {
+    kind: "bool",
+    key: "allergies",
+    label: "Allergies",
+    options: [
+      { v: "true", l: "Yes — low-allergen" },
+      { v: "false", l: "None" },
+    ],
+  },
+  {
+    kind: "single",
+    key: "affectionStyle",
+    label: "Wants",
+    options: [
+      { v: "velcro", l: "A velcro dog" },
+      { v: "balanced", l: "Affectionate but chill" },
+      { v: "independent", l: "An independent dog" },
+    ],
+  },
+  {
+    kind: "single",
+    key: "guardingImportance",
+    label: "Protection",
+    options: [
+      { v: "top-priority", l: "Wants a guardian" },
+      { v: "nice-to-have", l: "Watchdog is a plus" },
+      { v: "not-needed", l: "Companion only" },
     ],
   },
   {
@@ -91,39 +122,19 @@ const FIELDS: Field[] = [
     key: "budgetRange",
     label: "Budget",
     options: [
-      { v: "budget", l: "Budget" },
-      { v: "mid-range", l: "Mid-range" },
-      { v: "luxury", l: "Luxury" },
+      { v: "budget", l: "Lean (~$100/mo)" },
+      { v: "mid-range", l: "Comfortable" },
+      { v: "no-ceiling", l: "No ceiling" },
     ],
   },
   {
     kind: "single",
-    key: "taxSensitivity",
-    label: "Taxes matter",
+    key: "adoptPreference",
+    label: "Source",
     options: [
-      { v: "very-sensitive", l: "Very" },
-      { v: "somewhat", l: "Somewhat" },
-      { v: "not-sensitive", l: "Not really" },
-    ],
-  },
-  {
-    kind: "single",
-    key: "safetyPriority",
-    label: "Safety",
-    options: [
-      { v: "top-priority", l: "Top priority" },
-      { v: "important", l: "Important" },
-      { v: "flexible", l: "Flexible" },
-    ],
-  },
-  {
-    kind: "single",
-    key: "wellnessImportance",
-    label: "Wellness",
-    options: [
-      { v: "high", l: "High" },
-      { v: "medium", l: "Medium" },
-      { v: "low", l: "Low" },
+      { v: "adopt", l: "Adopt / rescue" },
+      { v: "breeder", l: "Breeder" },
+      { v: "either", l: "Open to either" },
     ],
   },
   {
@@ -132,11 +143,27 @@ const FIELDS: Field[] = [
     label: "Non-negotiables",
     max: 3,
     options: [
-      { v: "affordable", l: "Affordable" },
-      { v: "safety", l: "Safety" },
-      { v: "nature", l: "Nature" },
-      { v: "nightlife", l: "Nightlife" },
-      { v: "beach", l: "Beach" },
+      { v: "good-with-kids", l: "Great with kids" },
+      { v: "apartment-ok", l: "Apartment-friendly" },
+      { v: "hypoallergenic", l: "Hypoallergenic" },
+      { v: "low-shedding", l: "Low shedding" },
+      { v: "quiet", l: "Quiet" },
+      { v: "easy-training", l: "Easy to train" },
+      { v: "jogging-partner", l: "Running partner" },
+      { v: "protective", l: "Protective" },
+    ],
+  },
+  {
+    kind: "multi",
+    key: "dealBreakers",
+    label: "Deal-breakers",
+    options: [
+      { v: "heavy-shedding", l: "Heavy shedding" },
+      { v: "drooling", l: "Drooling" },
+      { v: "constant-barking", l: "Constant barking" },
+      { v: "high-energy", l: "Hyper energy" },
+      { v: "stubborn", l: "Stubborn to train" },
+      { v: "fragile-health", l: "Fragile health" },
     ],
   },
 ];
@@ -183,14 +210,20 @@ export function EditableReadback({
         }
 
         const isOpen = open === String(f.key);
+        // Selected values, normalized to strings ("bool" rows read the boolean field).
+        const raw = value[f.key];
         const selected =
           f.kind === "multi"
-            ? Array.isArray(value[f.key])
-              ? (value[f.key] as string[])
+            ? Array.isArray(raw)
+              ? (raw as string[])
               : []
-            : typeof value[f.key] === "string"
-              ? [value[f.key] as string]
-              : [];
+            : f.kind === "bool"
+              ? typeof raw === "boolean"
+                ? [String(raw)]
+                : []
+              : typeof raw === "string"
+                ? [raw as string]
+                : [];
         const display =
           selected.length === 0
             ? f.kind === "multi"
@@ -233,7 +266,9 @@ export function EditableReadback({
                           toggleMulti(f.key, o.v, f.max);
                         } else {
                           // Tap the active option to clear it; otherwise set + collapse.
-                          setField(f.key, on ? undefined : o.v);
+                          // "bool" rows write real booleans back onto OnboardingData.
+                          const next = on ? undefined : f.kind === "bool" ? o.v === "true" : o.v;
+                          setField(f.key, next);
                           if (!on) setOpen(null);
                         }
                       }}

@@ -6,7 +6,7 @@ import type { OnboardingData } from "@/types/onboarding";
 
 /**
  * Returns a run's FREE surface always, and the LOCKED payload (full ranking +
- * annual circuit + the named #1) ONLY when the server confirms the run is unlocked.
+ * adoption plan + the named #1) ONLY when the server confirms the run is unlocked.
  *
  * Serverless robustness: the in-memory runStore is per-lambda-instance, so a cold
  * lambda may not have the run. Both GET and POST work — POST lets the client send its
@@ -37,7 +37,7 @@ async function handleResult(runId: string, fallbackInputs?: OnboardingData) {
   return NextResponse.json({
     free,
     unlocked: true,
-    locked: { ranking: run.ranking, circuit: run.circuit },
+    locked: { ranking: run.ranking, adoptionPlan: run.adoptionPlan },
   });
 }
 

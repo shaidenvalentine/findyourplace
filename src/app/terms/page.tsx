@@ -5,7 +5,7 @@ import { PRICE_LABEL } from "@/lib/pricing";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
-  description: "The terms for using Find Your Place, including our refund policy.",
+  description: "The terms for using Find Your Dog, including our refund policy.",
   alternates: { canonical: "/terms" },
 };
 
@@ -23,26 +23,27 @@ export default function TermsPage() {
       </header>
 
       <h1 className="mt-8 text-3xl font-light tracking-[-0.02em] sm:text-4xl">Terms of Service</h1>
-      <p className="mt-2 text-sm text-muted-foreground">Effective July 2, 2026 · findyourplace.app</p>
+      <p className="mt-2 text-sm text-muted-foreground">Effective July 2, 2026 · findyourdog.app</p>
 
       <div className="mt-8 flex flex-col gap-6 text-sm leading-relaxed text-muted-foreground [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-foreground">
         <section>
-          <h2>What Find Your Place is</h2>
+          <h2>What Find Your Dog is</h2>
           <p className="mt-2">
-            Find Your Place scores curated locations against the preferences you provide and shows you
-            how well each fits. The free experience includes your personality read and current-city fit;
-            a one-time purchase ({PRICE_LABEL}) unlocks your #1 match, the full ranking, and the
-            supporting deep-dives.
+            Find Your Dog scores curated dog breeds against the preferences you provide and shows you
+            how well each fits your life. The free experience includes your lifestyle read and an honest
+            score for the breed you think you want; a one-time purchase ({PRICE_LABEL}) unlocks your #1
+            match, the full ranking, and links to adoptable dogs near you.
           </p>
         </section>
 
         <section>
           <h2>Not professional advice</h2>
           <p className="mt-2">
-            Our scores, tax figures, cost estimates, and visa notes are directional, general-purpose
-            information — not financial, tax, legal, or immigration advice. Rates and rules change and
-            individual situations vary enormously. Before relocating or making financial decisions,
-            consult qualified professionals for your specific case.
+            Our scores, breed traits, cost estimates, and care notes are directional, general-purpose
+            information — not veterinary, behavioral, or legal advice. Every individual dog is its own
+            animal (rescues especially), and breed tendencies are averages, not guarantees. Before
+            adopting or making health and training decisions, consult the shelter, a vet, or a qualified
+            trainer for your specific case.
           </p>
         </section>
 
@@ -90,8 +91,8 @@ export default function TermsPage() {
         <section>
           <h2>Contact</h2>
           <p className="mt-2">
-            <a className="text-foreground underline underline-offset-4" href="mailto:hello@findyourplace.app">
-              hello@findyourplace.app
+            <a className="text-foreground underline underline-offset-4" href="mailto:hello@findyourdog.app">
+              hello@findyourdog.app
             </a>
           </p>
         </section>
@@ -103,7 +104,7 @@ export default function TermsPage() {
         </Link>
         {" · "}
         <Link className="underline underline-offset-4 hover:text-foreground" href="/">
-          findyourplace.app
+          findyourdog.app
         </Link>
       </p>
     </main>

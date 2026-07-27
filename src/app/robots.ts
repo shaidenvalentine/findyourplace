@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://findyourplace.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://findyourdog.app";
 
 /**
  * Let crawlers index the marketing + SEO surface, but keep private/user-specific and

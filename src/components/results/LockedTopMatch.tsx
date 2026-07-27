@@ -1,33 +1,33 @@
 import { ScoreRing } from "./ScoreRing";
-import { formatMoney } from "@/lib/tax";
-import { Lock, Globe2, TrendingUp } from "lucide-react";
+import { formatMoney } from "@/lib/cost";
+import { Lock, PawPrint, TrendingUp } from "lucide-react";
 
 /**
- * The peak moment before the gate: we prove the #1 match EXISTS — its score, its
- * continent, the shape of the answer — but never its name. Rendered as the dark
+ * The peak moment before the gate: we prove the #1 match EXISTS — its score, its breed
+ * group, its size, the shape of the answer — but never its name. Rendered as the dark
  * "stage" card (the same rich surface as the landing hero) so the reveal reads as
- * the dramatic high right before the paywall, with the gap dollarized to make the
- * unnamed answer feel concrete and costly to walk away from.
+ * the dramatic high right before the paywall, with the gap dollarized (what adopting
+ * saves) to make the unnamed answer feel concrete and costly to walk away from.
  */
 export function LockedTopMatch({
   score,
-  continent,
-  region,
+  group,
+  size,
   confidence,
-  currentScore,
+  dreamScore,
   fitDelta,
-  annualTaxSavings,
+  adoptionSavings,
 }: {
   score: number;
-  continent: string;
-  region: string | null;
+  group: string;
+  size: string;
   confidence?: number;
-  currentScore?: number;
+  dreamScore?: number;
   fitDelta?: number;
-  annualTaxSavings?: number | null;
+  adoptionSavings?: number | null;
 }) {
   const hasFitGain = typeof fitDelta === "number" && fitDelta > 0;
-  const hasTax = typeof annualTaxSavings === "number" && annualTaxSavings > 0;
+  const hasSavings = typeof adoptionSavings === "number" && adoptionSavings > 0;
 
   return (
     <div className="hero-stage animate-fade-up relative overflow-hidden rounded-2xl p-6 text-center text-white shadow-[0_24px_64px_hsl(210_40%_16%/0.28)]">
@@ -50,17 +50,19 @@ export function LockedTopMatch({
           <ScoreRing score={score} size={150} label="match" tone="dark" />
         </div>
 
-        {/* Blurred name plate */}
+        {/* Blurred name plate — silhouetted dog, group + size, never the name */}
         <div className="relative mx-auto mt-6 max-w-xs">
           <div className="rounded-xl border border-white/15 bg-white/10 px-5 py-4 backdrop-blur-md">
+            <div className="select-none text-3xl blur-md grayscale" aria-hidden>
+              🐕
+            </div>
             <div className="select-none text-2xl font-light tracking-tight blur-md" aria-hidden>
               ███████
             </div>
             <div className="mt-1 flex items-center justify-center gap-1.5 text-sm text-white/70">
-              <Globe2 className="size-4" />
+              <PawPrint className="size-4" />
               <span>
-                {continent}
-                {region ? ` · ${region}` : ""}
+                {group} group · {size}
               </span>
             </div>
           </div>
@@ -72,31 +74,31 @@ export function LockedTopMatch({
         </div>
 
         {/* Dollarized / quantified gap — the cost of NOT knowing */}
-        {(hasFitGain || hasTax) && (
+        {(hasFitGain || hasSavings) && (
           <div className="mx-auto mt-5 flex max-w-xs flex-wrap items-center justify-center gap-2">
             {hasFitGain && (
               <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-sm font-medium text-accent backdrop-blur-sm">
-                <TrendingUp className="size-3.5" /> +{fitDelta} fit vs your {currentScore}
+                <TrendingUp className="size-3.5" /> +{fitDelta} fit vs your pick&apos;s {dreamScore}
               </span>
             )}
-            {hasTax && (
+            {hasSavings && (
               <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-sm font-medium text-white/85 backdrop-blur-sm">
-                ≈ {formatMoney(annualTaxSavings!)}/yr in tax alone
+                ≈ {formatMoney(adoptionSavings!)} saved adopting
               </span>
             )}
           </div>
         )}
 
         <p className="mx-auto mt-5 max-w-sm text-sm text-white/65">
-          We found the place that fits you best — it scored{" "}
+          We found the dog that fits your actual life — it scored{" "}
           <span className="font-semibold text-white">{score}/100</span>
           {hasFitGain ? (
             <>
               , a <span className="font-semibold text-white">+{fitDelta}-point</span> jump over
-              where you live now.
+              the breed you had in mind.
             </>
           ) : fitDelta === 0 ? (
-            <> — matching where you live now, point for point.</>
+            <> — matching the breed you had in mind, point for point.</>
           ) : (
             <>.</>
           )}{" "}

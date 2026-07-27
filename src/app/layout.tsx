@@ -12,13 +12,13 @@ const sans = Space_Grotesk({
 });
 
 const SITE = {
-  name: "Find Your Place",
-  tagline: "Find the place that actually fits you.",
+  name: "Find Your Dog",
+  tagline: "the breed you're actually meant to have",
   description:
-    "Where you live shapes your income, your relationships, your health — who you become. Most people choose it by accident. We match you against 250 of the best places on Earth and show you the one that fits you best.",
+    "The wrong dog is a 12-year mismatch. Most people pick a breed by looks. We score you against 170 dog breeds across 10 dimensions of your real life — then point you to that dog in shelters near you.",
 };
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://findyourplace.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://findyourdog.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

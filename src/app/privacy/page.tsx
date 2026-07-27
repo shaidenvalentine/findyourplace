@@ -4,7 +4,7 @@ import { Logo } from "@/components/brand/Logo";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "How Find Your Place handles your data.",
+  description: "How Find Your Dog handles your data.",
   alternates: { canonical: "/privacy" },
 };
 
@@ -23,15 +23,16 @@ export default function PrivacyPage() {
       </header>
 
       <h1 className="mt-8 text-3xl font-light tracking-[-0.02em] sm:text-4xl">Privacy Policy</h1>
-      <p className="mt-2 text-sm text-muted-foreground">Effective July 2, 2026 · findyourplace.app</p>
+      <p className="mt-2 text-sm text-muted-foreground">Effective July 2, 2026 · findyourdog.app</p>
 
       <div className="mt-8 flex flex-col gap-6 text-sm leading-relaxed text-muted-foreground [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-foreground">
         <section>
           <h2>What we collect</h2>
           <p className="mt-2">
-            <span className="font-medium text-foreground">Quiz answers.</span> Your responses (climate,
-            budget, lifestyle preferences, and similar) are used to compute your match and are stored
-            with your results so your link keeps working.
+            <span className="font-medium text-foreground">Quiz answers.</span> Your responses (home
+            setup, activity level, household, budget, and similar) — plus the city you give us so we
+            can surface adoptable dogs near you — are used to compute your match and are stored with
+            your results so your link keeps working.
           </p>
           <p className="mt-2">
             <span className="font-medium text-foreground">Pasted profile text (optional).</span> If you
@@ -84,8 +85,8 @@ export default function PrivacyPage() {
           <h2>Contact</h2>
           <p className="mt-2">
             Questions or requests:{" "}
-            <a className="text-foreground underline underline-offset-4" href="mailto:hello@findyourplace.app">
-              hello@findyourplace.app
+            <a className="text-foreground underline underline-offset-4" href="mailto:hello@findyourdog.app">
+              hello@findyourdog.app
             </a>
             . We may update this policy as the product evolves; the effective date above always reflects
             the current version.
@@ -99,7 +100,7 @@ export default function PrivacyPage() {
         </Link>
         {" · "}
         <Link className="underline underline-offset-4 hover:text-foreground" href="/">
-          findyourplace.app
+          findyourdog.app
         </Link>
       </p>
     </main>

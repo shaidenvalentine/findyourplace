@@ -106,7 +106,7 @@ export function ContentStudio() {
             onChange={(e) => setTopic(e.target.value)}
             placeholder={
               kind === "carousel"
-                ? "Topic or angle — e.g. 'best places for surfers on a budget'…"
+                ? "Topic or angle — e.g. 'best breeds for apartment runners'…"
                 : "Ad emphasis — e.g. 'cost of living', 'founder story', 'tax savings'…"
             }
             className="sm:max-w-md"
@@ -313,7 +313,7 @@ function SlideCard({ slide, index, total }: { slide: Slide; index: number; total
 
       {/* footer brand strip */}
       <div className="relative flex items-center justify-between">
-        <span className="text-[10px] font-semibold tracking-tight text-white/80">findyourplace.app</span>
+        <span className="text-[10px] font-semibold tracking-tight text-white/80">findyourdog.app</span>
         <span className="flex items-center gap-1">
           {Array.from({ length: total }).map((_, d) => (
             <span key={d} className={cn("size-1 rounded-full", d === index ? "bg-accent" : "bg-white/25")} />

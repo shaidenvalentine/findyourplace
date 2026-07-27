@@ -1,13 +1,13 @@
 import { recommendToolkit } from "@/lib/affiliates";
 import type { FreeRun } from "@/lib/run";
 import { AffiliateCard } from "./AffiliateCard";
-import { Briefcase } from "lucide-react";
+import { PawPrint } from "lucide-react";
 
 /**
- * The hero affiliate surface (paid reveal): a personalized relocation toolkit, ordered by
+ * The hero affiliate surface (paid reveal): a personalized new-dog toolkit, ordered by
  * the user's situation so it reads as concierge advice. Every link is tracked + disclosed.
  */
-export function RelocationToolkit({ run }: { run: FreeRun }) {
+export function DogToolkit({ run }: { run: FreeRun }) {
   const sections = recommendToolkit(run);
   if (sections.length === 0) return null;
 
@@ -15,12 +15,12 @@ export function RelocationToolkit({ run }: { run: FreeRun }) {
     <div className="rounded-2xl glass p-5">
       <div className="mb-1 flex items-center gap-2">
         <span className="grid size-8 place-items-center rounded-lg bg-accent/15 text-accent">
-          <Briefcase className="size-4" />
+          <PawPrint className="size-4" />
         </span>
-        <h2 className="text-lg font-bold tracking-tight">Your relocation toolkit</h2>
+        <h2 className="text-lg font-bold tracking-tight">Your new-dog toolkit</h2>
       </div>
       <p className="mb-4 text-sm text-muted-foreground">
-        The exact services to actually make this move — hand-picked for your situation.
+        The exact services to set your dog up right — hand-picked for your situation.
       </p>
 
       <div className="flex flex-col gap-5">
@@ -39,7 +39,7 @@ export function RelocationToolkit({ run }: { run: FreeRun }) {
 
       <p className="mt-4 text-[11px] text-muted-foreground">
         Some links are partner links — if you sign up, we may earn a commission at no cost to you. We only list
-        services we&apos;d use ourselves.
+        services we&apos;d use with our own dogs.
       </p>
     </div>
   );

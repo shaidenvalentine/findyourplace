@@ -6,15 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ANCHOR_LABEL, PRICE_LABEL } from "@/lib/pricing";
 import { loadRunLocal } from "@/lib/run";
-import { LOCATION_COUNT } from "@/data/locations";
+import { BREED_COUNT } from "@/data/breeds";
 import { track } from "@/lib/analytics";
 import { Check, Loader2, Lock, ShieldCheck, Star } from "lucide-react";
 
 const INCLUDES = [
-  "The name of your #1 place, revealed",
-  "Your move plan — the steps to actually get there",
-  `The full ranking of all ${LOCATION_COUNT} places`,
-  "Per-place tax deep-dive + annual circuit",
+  "The name of your #1 breed, revealed",
+  "The adopt-near-you plan — we'll show you where your dog is waiting",
+  `The full ranking of all ${BREED_COUNT} breeds`,
+  "Cost-of-ownership deep-dive + your first-30-days plan",
   "Your shareable result card",
 ];
 
@@ -89,8 +89,8 @@ export function Paywall({
 
       {/* Cost of inaction — the status quo has a price too. */}
       <p className="relative mb-4 text-sm text-muted-foreground">
-        Every month you stay put is another month in a place that doesn&apos;t fit. You&apos;ve
-        already done the hard part — see where you actually belong.
+        Somewhere near you, a dog that fits your actual life is waiting in a shelter. You&apos;ve
+        already done the hard part — find out which one to look for.
       </p>
 
       <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
@@ -121,10 +121,10 @@ export function Paywall({
           ))}
         </div>
         <blockquote className="text-sm text-foreground">
-          &ldquo;It named a city I&apos;d never have picked — and it was so obviously right I booked a
-          scouting trip that week.&rdquo;
+          &ldquo;It named a breed I&apos;d never have picked — and it was so obviously right I was at
+          my local shelter that weekend.&rdquo;
         </blockquote>
-        <figcaption className="mt-1 text-xs text-muted-foreground">— Maya R., now in Lisbon</figcaption>
+        <figcaption className="mt-1 text-xs text-muted-foreground">— Maya R., now home with Biscuit</figcaption>
       </figure>
 
       <Input

@@ -9,13 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { saveDraft, loadDraft } from "@/lib/draft";
 import { track } from "@/lib/analytics";
-import { ArrowRight, Sparkles, Compass, MapPin, PenLine } from "lucide-react";
+import { ArrowRight, Sparkles, Compass, MapPin, PawPrint, Heart, PenLine } from "lucide-react";
 
 export default function StartPage() {
   const router = useRouter();
   const [city, setCity] = useState("");
+  const [dream, setDream] = useState("");
   const [loved, setLoved] = useState("");
-  const [step, setStep] = useState<"city" | "loved" | "path">("city");
+  const [step, setStep] = useState<"city" | "dream" | "loved" | "path">("city");
 
   // Meta "ViewContent" — funnel entry. This is the page ads point to, so it marks the
   // top of the measured quiz funnel for optimization + cost-per-result reporting.
@@ -25,23 +26,29 @@ export default function StartPage() {
 
   function commitCity() {
     saveDraft({ currentCity: city.trim() });
+    setStep("dream");
+  }
+
+  function commitDream() {
+    saveDraft({ dreamBreed: dream.trim() });
     setStep("loved");
   }
 
   function commitLoved() {
-    const places = loved
+    const breeds = loved
       .split(/[,\n]/)
       .map((s) => s.trim())
       .filter(Boolean)
       .slice(0, 5);
-    saveDraft({ lovedPlaces: places });
+    saveDraft({ lovedBreeds: breeds });
     setStep("path");
   }
 
   function choose(path: "ai" | "words" | "quiz") {
-    // ensure city persisted even if user edited then jumped
+    // ensure openers persisted even if user edited then jumped
     if (city.trim()) saveDraft({ currentCity: city.trim() });
     else if (!loadDraft().currentCity) saveDraft({ currentCity: "" });
+    if (dream.trim()) saveDraft({ dreamBreed: dream.trim() });
     const route = path === "ai" ? "/start/ai" : path === "words" ? "/start/words" : "/quiz";
     router.push(route);
   }
@@ -49,7 +56,7 @@ export default function StartPage() {
   return (
     <main className="bg-aurora flex min-h-dvh flex-col">
       <header className="mx-auto flex h-14 w-full max-w-xl items-center justify-between px-4">
-        <Link href="/" aria-label="Find Your Place — home">
+        <Link href="/" aria-label="Find Your Dog — home">
           <Logo />
         </Link>
       </header>
@@ -61,10 +68,11 @@ export default function StartPage() {
               <MapPin className="size-3" /> Step 1
             </Badge>
             <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
-              Where do you live right now?
+              Where do you live?
             </h1>
             <p className="mt-2 text-muted-foreground">
-              We&apos;ll score how well your current city already fits you — your honest baseline.
+              So once we find your breed, we can find that dog in shelters near you — real,
+              adoptable, waiting.
             </p>
             <form
               className="mt-6 flex flex-col gap-3"
@@ -77,8 +85,8 @@ export default function StartPage() {
                 autoFocus
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                placeholder="e.g. Austin, Lisbon, Bali…"
-                aria-label="Current city"
+                placeholder="e.g. Austin, Chicago, Denver…"
+                aria-label="Where you live"
               />
               <Button type="submit" size="lg" variant="gradient" disabled={!city.trim()}>
                 Continue <ArrowRight className="size-4" />
@@ -92,17 +100,56 @@ export default function StartPage() {
               </button>
             </form>
           </div>
+        ) : step === "dream" ? (
+          <div className="animate-fade-up">
+            <Badge variant="primary" className="mb-4">
+              <PawPrint className="size-3" /> Step 2
+            </Badge>
+            <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
+              What breed do you think you want?
+            </h1>
+            <p className="mt-2 text-muted-foreground">
+              Your gut answer — &ldquo;lab&rdquo;, &ldquo;gsd&rdquo;, &ldquo;frenchie&rdquo; all
+              work. We&apos;ll score your instinct honestly against your real life — your baseline
+              before the reveal.
+            </p>
+            <form
+              className="mt-6 flex flex-col gap-3"
+              onSubmit={(e) => {
+                e.preventDefault();
+                commitDream();
+              }}
+            >
+              <Input
+                autoFocus
+                value={dream}
+                onChange={(e) => setDream(e.target.value)}
+                placeholder="e.g. golden retriever, husky, lab…"
+                aria-label="Breed you think you want"
+              />
+              <Button type="submit" size="lg" variant="gradient" disabled={!dream.trim()}>
+                Continue <ArrowRight className="size-4" />
+              </Button>
+              <button
+                type="button"
+                onClick={commitDream}
+                className="inline-flex min-h-11 items-center justify-center text-center text-sm text-muted-foreground underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none"
+              >
+                No idea yet — that&apos;s the point
+              </button>
+            </form>
+          </div>
         ) : step === "loved" ? (
           <div className="animate-fade-up">
             <Badge variant="primary" className="mb-4">
-              <MapPin className="size-3" /> Step 2
+              <Heart className="size-3" /> Step 3
             </Badge>
             <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
-              Where have you felt most at home?
+              Any breeds you&apos;ve had or loved?
             </h1>
             <p className="mt-2 text-muted-foreground">
-              Anywhere you&apos;ve loved — lived, traveled, or just couldn&apos;t stop thinking about.
-              This is the strongest signal for finding your place. (Optional.)
+              The dog you grew up with, a friend&apos;s dog you adored, one you dog-sat and never
+              forgot. This is the strongest signal for finding yours. (Optional.)
             </p>
             <form
               className="mt-6 flex flex-col gap-3"
@@ -115,8 +162,8 @@ export default function StartPage() {
                 autoFocus
                 value={loved}
                 onChange={(e) => setLoved(e.target.value)}
-                placeholder="e.g. Bali, Lisbon, Mexico City…"
-                aria-label="Places you've loved"
+                placeholder="e.g. beagle, border collie, corgi…"
+                aria-label="Breeds you've had or loved"
               />
               <Button type="submit" size="lg" variant="gradient">
                 Continue <ArrowRight className="size-4" />
@@ -133,7 +180,7 @@ export default function StartPage() {
         ) : (
           <div className="animate-fade-up">
             <Badge variant="primary" className="mb-4">
-              <Sparkles className="size-3" /> Step 3 — choose your path
+              <Sparkles className="size-3" /> Step 4 — choose your path
             </Badge>
             <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
               How should we get to know you?
@@ -170,10 +217,10 @@ export default function StartPage() {
                     <PenLine className="size-5" />
                   </span>
                 </div>
-                <h2 className="text-lg font-semibold">Describe yourself in your own words</h2>
+                <h2 className="text-lg font-semibold">Describe your life in your own words</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Write a few sentences about your life and what you want. We read it for the signal
-                  that drives your match — nothing else.
+                  Write a few sentences about your home, schedule, and what you want in a dog. We
+                  read it for the signal that drives your match — nothing else.
                 </p>
                 <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-accent">
                   Write it out <ArrowRight className="size-4" />

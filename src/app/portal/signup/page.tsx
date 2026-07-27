@@ -66,7 +66,7 @@ export default function SignupPage() {
         </p>
 
         <form onSubmit={submit} className="mt-6 flex flex-col gap-5">
-          <Field label="Your code" hint="findyourplace.app/c/YOUR-CODE — letters/numbers only, 3+ chars">
+          <Field label="Your code" hint="findyourdog.app/c/YOUR-CODE — letters/numbers only, 3+ chars">
             <Input
               required
               value={form.code}

@@ -9,7 +9,7 @@ import { ImageResponse } from "next/og";
  * cards and the app itself. Satori rules: multi-child divs set display:flex; no emoji.
  */
 export const runtime = "nodejs";
-export const alt = "Find Your Place — find the place that actually fits you.";
+export const alt = "Find Your Dog — the breed you're actually meant to have.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -59,19 +59,20 @@ export default async function OpengraphImage() {
               marginRight: 16,
             }}
           >
+            {/* paw mark — keep in sync with BrandMark in src/lib/brandIcon.tsx */}
             <svg width={27} height={27} viewBox="0 0 24 24" fill="none">
+              <ellipse cx="5.2" cy="10.7" rx="2" ry="2.6" fill={TEAL} />
+              <ellipse cx="9.7" cy="7.2" rx="2.1" ry="2.8" fill={TEAL} />
+              <ellipse cx="14.3" cy="7.2" rx="2.1" ry="2.8" fill={TEAL} />
+              <ellipse cx="18.8" cy="10.7" rx="2" ry="2.6" fill={TEAL} />
               <path
-                d="M12 22.6c4.75-4.3 7.05-7.75 7.05-11.1A7.05 7.05 0 1 0 4.95 11.5c0 3.35 2.3 6.8 7.05 11.1Z"
+                d="M12 12.3c2.95 0 5.5 1.95 6.2 4.6.5 1.85-.55 3.7-2.3 4.2-1.3.38-2.6-.22-3.9-.22s-2.6.6-3.9.22c-1.75-.5-2.8-2.35-2.3-4.2.7-2.65 3.25-4.6 6.2-4.6Z"
                 fill={TEAL}
               />
-              <circle cx="12" cy="10.45" r="3.65" fill="#14160f" />
-              <path d="M8.35 10.45h7.3" stroke={TEAL} strokeWidth="0.75" strokeLinecap="round" />
-              <path d="M12 6.8c1.95 1.2 1.95 6.1 0 7.3" stroke={TEAL} strokeWidth="0.75" fill="none" strokeLinecap="round" />
-              <path d="M12 6.8c-1.95 1.2-1.95 6.1 0 7.3" stroke={TEAL} strokeWidth="0.75" fill="none" strokeLinecap="round" />
             </svg>
           </div>
           <div style={{ display: "flex", fontSize: 32, fontWeight: 500, letterSpacing: -0.5 }}>
-            Find Your Place
+            Find Your Dog
           </div>
         </div>
 
@@ -88,7 +89,7 @@ export default async function OpengraphImage() {
               marginBottom: 18,
             }}
           >
-            Where you actually belong
+            The breed you&apos;re actually meant to have
           </div>
           <div
             style={{
@@ -100,10 +101,10 @@ export default async function OpengraphImage() {
               maxWidth: 940,
             }}
           >
-            The biggest decision you haven&apos;t made yet.
+            The wrong dog is a 12-year mismatch.
           </div>
           <div style={{ display: "flex", fontSize: 30, color: "rgba(255,255,255,0.66)", marginTop: 24, maxWidth: 860 }}>
-            250 places on Earth, scored against who you actually are.
+            170 breeds, scored against how you actually live.
           </div>
         </div>
 
@@ -113,7 +114,7 @@ export default async function OpengraphImage() {
           <div style={{ display: "flex", margin: "0 12px" }}>·</div>
           <div style={{ display: "flex" }}>free to start</div>
           <div style={{ display: "flex", margin: "0 12px" }}>·</div>
-          <div style={{ display: "flex" }}>findyourplace.app</div>
+          <div style={{ display: "flex" }}>findyourdog.app</div>
         </div>
       </div>
     ),

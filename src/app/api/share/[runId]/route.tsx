@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { ImageResponse } from "next/og";
 import { getRun, isUnlocked } from "@/lib/server/runStore";
-import { LOCATIONS } from "@/data/locations";
+import { getBreedById } from "@/data/breeds";
 import { titleCase } from "@/lib/utils";
 
 /**
@@ -11,9 +11,9 @@ import { titleCase } from "@/lib/utils";
  * editorial type, glass chips, and the sharer's REAL numbers (Wrapped-style — personal
  * data is what makes a card feel worth posting).
  *
- * ?slide=identity|place|cta · ?format=og 1200×630 for link unfurls
+ * ?slide=identity|breed|cta · ?format=og 1200×630 for link unfurls
  * Gate: the #1 name/photo renders ONLY when the run is server-verified unlocked;
- * locked runs share the ring + continent tease.
+ * locked runs share the ring + breed-group tease.
  * Satori rules: every multi-child div has explicit display:flex; no emoji; fonts loaded
  * from repo TTFs (Space Grotesk 300/500/700) so the light editorial weight is real.
  */
@@ -49,7 +49,7 @@ async function loadFonts() {
   ];
 }
 
-/** The brand pin-globe on its dark tile — same vector as the app favicon. */
+/** The brand paw on its dark tile — same vector as the app favicon. */
 function Brand({ size = 44 }: { size?: number }) {
   const glyph = Math.round(size * 0.62);
   return (
@@ -67,18 +67,18 @@ function Brand({ size = 44 }: { size?: number }) {
         }}
       >
         <svg width={glyph} height={glyph} viewBox="0 0 24 24" fill="none">
+          <ellipse cx="7" cy="8.2" rx="2" ry="2.7" fill={TEAL} />
+          <ellipse cx="17" cy="8.2" rx="2" ry="2.7" fill={TEAL} />
+          <ellipse cx="3.6" cy="12.4" rx="1.8" ry="2.4" fill={TEAL} />
+          <ellipse cx="20.4" cy="12.4" rx="1.8" ry="2.4" fill={TEAL} />
           <path
-            d="M12 22.6c4.75-4.3 7.05-7.75 7.05-11.1A7.05 7.05 0 1 0 4.95 11.5c0 3.35 2.3 6.8 7.05 11.1Z"
+            d="M12 11.2c2.9 0 5.6 2.3 5.6 5.1 0 2.1-1.6 3.4-3.4 3.4-.9 0-1.5-.3-2.2-.3s-1.3.3-2.2.3c-1.8 0-3.4-1.3-3.4-3.4 0-2.8 2.7-5.1 5.6-5.1Z"
             fill={TEAL}
           />
-          <circle cx="12" cy="10.45" r="3.65" fill="#14160f" />
-          <path d="M8.35 10.45h7.3" stroke={TEAL} strokeWidth="0.75" strokeLinecap="round" />
-          <path d="M12 6.8c1.95 1.2 1.95 6.1 0 7.3" stroke={TEAL} strokeWidth="0.75" fill="none" strokeLinecap="round" />
-          <path d="M12 6.8c-1.95 1.2-1.95 6.1 0 7.3" stroke={TEAL} strokeWidth="0.75" fill="none" strokeLinecap="round" />
         </svg>
       </div>
       <div style={{ display: "flex", fontSize: Math.round(size * 0.72), fontWeight: 500, color: INK, letterSpacing: -0.5 }}>
-        Find Your Place
+        Find Your Dog
       </div>
     </div>
   );
@@ -161,22 +161,22 @@ function Ring({ score, size, label }: { score: number; size: number; label?: str
 
 /** Map the engine's category labels to short radar labels. */
 const RADAR_SHORT: Record<string, string> = {
-  "Climate Fit": "Climate",
-  "Nature & Outdoors": "Nature",
-  "Community & Social": "People",
-  "Career & Work": "Career",
-  "Cost & Value": "Cost",
-  "Safety & Stability": "Safety",
-  "Health & Wellness": "Wellness",
-  "Travel & Connectivity": "Travel",
-  "Culture & Openness": "Culture",
-  "Lifestyle Match": "Lifestyle",
+  "Energy & Exercise": "Energy",
+  "Home & Space": "Home",
+  "Training & Smarts": "Training",
+  "Grooming & Shedding": "Coat",
+  "Kids & Family": "Family",
+  "Dogs & Other Pets": "Social",
+  "Protection & Watchdog": "Guarding",
+  "Barking & Noise": "Quiet",
+  "Alone-Time Fit": "Alone-time",
+  "Temperament Match": "Temperament",
 };
 
 /**
- * The "Place DNA" radar — a 10-dimension fingerprint of who the sharer is. No two
- * people's polygons look alike; that uniqueness is what makes the card feel personal
- * enough to post. Pure SVG for Satori.
+ * The "Dog DNA" radar — a 10-dimension fingerprint of the sharer's dog-owner profile.
+ * No two people's polygons look alike; that uniqueness is what makes the card feel
+ * personal enough to post. Pure SVG for Satori.
  */
 function Radar({ items, size }: { items: { label: string; score: number }[]; size: number }) {
   const cx = size / 2;
@@ -235,7 +235,7 @@ function Radar({ items, size }: { items: { label: string; score: number }[]; siz
   );
 }
 
-/** Redacted-digit blocks for the mystery coordinates. */
+/** Redacted blocks for the mystery breed name. */
 function RedactedDigits() {
   return (
     <div style={{ display: "flex", flexDirection: "row", alignItems: "center", marginLeft: 6, marginRight: 6 }}>
@@ -298,7 +298,7 @@ function frame(content: React.ReactNode, footer: string) {
       <div style={{ display: "flex", flexDirection: "column", flexGrow: 1, justifyContent: "center" }}>{content}</div>
       <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", fontSize: 30, fontWeight: 500, color: MUT, letterSpacing: -0.3 }}>{footer}</div>
-        <div style={{ display: "flex", fontSize: 30, fontWeight: 500, color: FAINT }}>findyourplace.app</div>
+        <div style={{ display: "flex", fontSize: 30, fontWeight: 500, color: FAINT }}>findyourdog.app</div>
       </div>
     </div>
   );
@@ -334,7 +334,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ runId: s
         >
           <Brand size={56} />
           <div style={{ display: "flex", fontSize: 54, fontWeight: 300, color: MUT, marginTop: 32, letterSpacing: -1 }}>
-            Find the place that actually fits you.
+            Find the dog that actually fits you.
           </div>
         </div>
       ),
@@ -346,11 +346,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ runId: s
   const archetype = run.personality.archetype.replace(/^The /, "");
   const traits = run.personality.traits.slice(0, 3);
   const top = run.ranking[0];
-  const loc = LOCATIONS.find((l) => l.id === top?.id);
-  const continent = run.topTease.continent;
-  const region = run.topTease.region;
+  const breed = top ? getBreedById(top.id) : undefined;
+  const group = run.topTease.group;
+  const size = run.topTease.size;
   const teaseScore = run.topTease.score;
-  const currentScore = run.currentCityFit.score;
+  const currentScore = run.dreamBreedFit.score;
   const delta = run.lifeChange.overallDelta;
   const alreadyHome = Boolean(run.lifeChange.alreadyHome);
   const topCats = [...run.categoryAverages].sort((a, b) => b.score - a.score).slice(0, 3);
@@ -390,13 +390,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ runId: s
                 The {archetype}
               </div>
               <div style={{ display: "flex", fontSize: 26, color: MUT, marginTop: 22 }}>
-                My #1 place on Earth is waiting in {continent}.
+                My #1 breed is a {size.toLowerCase()} {group.toLowerCase()} dog. Locked, for now.
               </div>
             </div>
             <Ring score={teaseScore} size={280} label="match" />
           </div>
           <div style={{ display: "flex", fontSize: 24, fontWeight: 500, color: FAINT }}>
-            findyourplace.app · 60 seconds, free to start
+            findyourdog.app · 60 seconds, free to start
           </div>
         </div>
       ),
@@ -404,15 +404,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ runId: s
     );
   }
 
-  // ── PLACE DNA slide (the flagship share) ────────────────────────────────────
-  // Identity flex (radar fingerprint + archetype) + a game for the viewer (the real
-  // latitude of their #1 place with the longitude redacted). Free and paid share the
-  // same card — the coordinates never name the place.
+  // ── DOG DNA slide (the flagship share) ──────────────────────────────────────
+  // Identity flex (radar fingerprint + archetype) + a game for the viewer (the #1
+  // breed's group and size with the name redacted). Free and paid share the same
+  // card — the tease never names the breed.
   if (slide === "dna") {
-    const lat = loc?.latitude ?? null;
-    const lon = loc?.longitude ?? null;
-    const latStr = lat !== null ? `${Math.abs(lat).toFixed(1)}°${lat >= 0 ? "N" : "S"}` : null;
-    const ew = lon !== null ? (lon >= 0 ? "E" : "W") : "E";
 
     return new ImageResponse(
       frame(
@@ -420,7 +416,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ runId: s
           <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
             <div style={{ display: "flex", width: 12, height: 12, borderRadius: 999, background: TEAL_BRIGHT, marginRight: 16 }} />
             <MicroLabel color="rgba(255,255,255,0.7)" size={28}>
-              My place DNA
+              My dog DNA
             </MicroLabel>
           </div>
 
@@ -443,36 +439,29 @@ export async function GET(req: Request, { params }: { params: Promise<{ runId: s
             <Radar items={run.categoryAverages} size={800} />
           </div>
 
-          {/* The hooks: mystery coordinates of the #1 place + the proof score */}
+          {/* The hooks: the #1 breed's shape with the name redacted + the proof score */}
           <div style={{ display: "flex", flexDirection: "row", alignItems: "center", marginTop: 34 }}>
-            {latStr && (
-              <Chip color={TEAL_BRIGHT}>
-                <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
-                  <div style={{ display: "flex" }}>my #1 place: {latStr} ·</div>
-                  <RedactedDigits />
-                  <div style={{ display: "flex" }}>°{ew}</div>
-                </div>
-              </Chip>
-            )}
+            <Chip color={TEAL_BRIGHT}>
+              <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+                <div style={{ display: "flex" }}>my #1 breed: {size.toLowerCase()} · {group.toLowerCase()} ·</div>
+                <RedactedDigits />
+              </div>
+            </Chip>
             <Chip>{teaseScore} match</Chip>
           </div>
         </div>,
-        "guess where I belong?",
+        "guess my breed?",
       ),
       opts,
     );
   }
 
-  // ── PLACE slide ─────────────────────────────────────────────────────────────
-  if (slide === "place") {
-    const photoLooksOk =
-      loc?.image_url &&
-      !/portrait|painting|engraving|stamp|warrior|coronation|coat[-_ ]of[-_ ]arms|\bflag\b|\bseal\b|locator|\bmap\b|orthographic|mascarenhas|descripcion/i.test(
-        decodeURIComponent(loc.image_url),
-      );
+  // ── BREED slide ─────────────────────────────────────────────────────────────
+  if (slide === "breed" || slide === "place") {
+    const photoLooksOk = Boolean(breed?.image_url);
 
     // Unlocked + photo → cinematic reveal in the new identity.
-    if (unlocked && photoLooksOk && loc) {
+    if (unlocked && photoLooksOk && breed) {
       return new ImageResponse(
         (
           <div
@@ -488,8 +477,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ runId: s
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={loc.image_url as string}
-              alt={loc.name}
+              src={breed.image_url as string}
+              alt={breed.name}
               width={W}
               height={H}
               style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }}
@@ -532,11 +521,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ runId: s
             >
               <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ display: "flex", flexDirection: "column", maxWidth: 640 }}>
-                  <MicroLabel color="rgba(255,255,255,0.75)">I found my place</MicroLabel>
+                  <MicroLabel color="rgba(255,255,255,0.75)">I found my dog</MicroLabel>
                   <div
                     style={{
                       display: "flex",
-                      fontSize: loc.name.length > 12 ? 130 : 170,
+                      fontSize: breed.name.length > 12 ? 130 : 170,
                       fontWeight: 300,
                       lineHeight: 0.95,
                       letterSpacing: -5,
@@ -544,18 +533,16 @@ export async function GET(req: Request, { params }: { params: Promise<{ runId: s
                       marginTop: 20,
                     }}
                   >
-                    {loc.name}
+                    {breed.name}
                   </div>
-                  {loc.country !== loc.name && (
-                    <div style={{ display: "flex", fontSize: 40, color: "rgba(255,255,255,0.85)", fontWeight: 500, marginTop: 16 }}>
-                      {loc.country}
-                    </div>
-                  )}
+                  <div style={{ display: "flex", fontSize: 40, color: "rgba(255,255,255,0.85)", fontWeight: 500, marginTop: 16 }}>
+                    {breed.group} group · {breed.size}
+                  </div>
                 </div>
                 <Ring score={top.totalScore} size={230} label="match" />
               </div>
               <div style={{ display: "flex", fontSize: 30, fontWeight: 500, color: "rgba(255,255,255,0.8)", marginTop: 44 }}>
-                findyourplace.app · where do you belong?
+                findyourdog.app · which dog is yours?
               </div>
             </div>
           </div>
@@ -565,15 +552,15 @@ export async function GET(req: Request, { params }: { params: Promise<{ runId: s
     }
 
     // Unlocked, no usable photo → stage reveal.
-    if (unlocked && loc) {
+    if (unlocked && breed) {
       return new ImageResponse(
         frame(
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <MicroLabel>I found my place</MicroLabel>
+            <MicroLabel>I found my dog</MicroLabel>
             <div
               style={{
                 display: "flex",
-                fontSize: loc.name.length > 12 ? 150 : 190,
+                fontSize: breed.name.length > 12 ? 150 : 190,
                 fontWeight: 300,
                 lineHeight: 0.95,
                 letterSpacing: -6,
@@ -581,16 +568,16 @@ export async function GET(req: Request, { params }: { params: Promise<{ runId: s
                 marginTop: 26,
               }}
             >
-              {loc.name}
+              {breed.name}
             </div>
-            {loc.country !== loc.name && (
-              <div style={{ display: "flex", fontSize: 42, color: MUT, marginTop: 24, fontWeight: 500 }}>{loc.country}</div>
-            )}
+            <div style={{ display: "flex", fontSize: 42, color: MUT, marginTop: 24, fontWeight: 500 }}>
+              {breed.group} group · {breed.size}
+            </div>
             <div style={{ display: "flex", marginTop: 64 }}>
               <Ring score={top.totalScore} size={260} label="match" />
             </div>
           </div>,
-          "where do you belong?",
+          "which dog is yours?",
         ),
         opts,
       );
@@ -613,7 +600,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ runId: s
           >
             <div style={{ display: "flex", width: 12, height: 12, borderRadius: 999, background: TEAL_BRIGHT, marginRight: 16 }} />
             <MicroLabel color="rgba(255,255,255,0.8)" size={28}>
-              My #1 place on Earth
+              My #1 dog breed
             </MicroLabel>
           </div>
 
@@ -652,8 +639,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ runId: s
               ))}
             </div>
             <div style={{ display: "flex", fontSize: 34, color: MUT, marginTop: 14 }}>
-              {continent}
-              {region ? ` · ${region}` : ""}
+              {group} group · {size}
             </div>
             <div
               style={{
@@ -679,14 +665,14 @@ export async function GET(req: Request, { params }: { params: Promise<{ runId: s
           <div style={{ display: "flex", flexDirection: "row", marginTop: 60 }}>
             <Chip color={TEAL_BRIGHT}>
               {alreadyHome
-                ? "it might be where I already am"
+                ? "my instinct was right all along"
                 : delta > 0
-                  ? `+${delta} fit vs my city's ${currentScore}`
-                  : `my city scores ${currentScore}/100`}
+                  ? `+${delta} fit vs the breed I thought I wanted (${currentScore})`
+                  : `the breed I thought I wanted scores ${currentScore}/100`}
             </Chip>
           </div>
         </div>,
-        "guess where?",
+        "guess the breed?",
       ),
       opts,
     );
@@ -710,12 +696,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ runId: s
               marginTop: 30,
             }}
           >
-            <span>Where</span>
+            <span>Which dog</span>
             <span>should you</span>
-            <span style={{ color: TEAL_BRIGHT }}>live?</span>
+            <span style={{ color: TEAL_BRIGHT }}>get?</span>
           </div>
           <div style={{ display: "flex", fontSize: 40, color: MUT, marginTop: 48 }}>
-            250 places, scored against who you actually are.
+            170 breeds, scored against how you actually live.
           </div>
         </div>,
         "60 seconds · free to start",

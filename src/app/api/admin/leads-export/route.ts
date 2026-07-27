@@ -23,7 +23,7 @@ export async function GET() {
         csvCell(l.stage ?? ""),
         l.bought ? "yes" : "no",
         l.createdAt,
-        l.runId ? `https://findyourplace.app/results/${l.runId}` : "",
+        l.runId ? `https://findyourdog.app/results/${l.runId}` : "",
       ].join(","),
     ),
   ];

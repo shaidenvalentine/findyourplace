@@ -40,7 +40,7 @@ export default async function AdminCreators() {
           <CardContent>
             {rows.length === 0 ? (
               <div className="rounded-lg border border-dashed border-border bg-surface/40 p-8 text-center text-sm text-muted-foreground">
-                No creators have signed up yet. Share <code className="rounded bg-muted px-1.5 py-0.5">findyourplace.app/creators</code>.
+                No creators have signed up yet. Share <code className="rounded bg-muted px-1.5 py-0.5">findyourdog.app/creators</code>.
               </div>
             ) : (
               <div className="flex flex-col">

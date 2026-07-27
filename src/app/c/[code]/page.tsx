@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ code: str
   const { code } = await params;
   const c = await getCreatorStore().getCreatorByCode(normalizeCode(code));
   if (!c) return { title: "Creator not found" };
-  const title = `${c.displayName} × Find Your Place`;
+  const title = `${c.displayName} × Find Your Dog`;
   const description = `${c.displayName} sent you. Take the quiz that finds the one place on Earth that actually fits you.`;
   return {
     title,
@@ -80,7 +80,7 @@ export default async function CreatorLanding({ params }: { params: Promise<{ cod
       <footer className="mt-auto border-t border-border">
         <div className="mx-auto flex w-full max-w-5xl flex-col items-center justify-between gap-3 px-4 py-8 text-sm text-muted-foreground sm:flex-row">
           <Logo />
-          <p>© {new Date().getFullYear()} findyourplace.app</p>
+          <p>© {new Date().getFullYear()} findyourdog.app</p>
         </div>
       </footer>
     </main>

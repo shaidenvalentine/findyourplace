@@ -9,7 +9,7 @@ export function PersonalityProfile({ read }: { read: PersonalityRead }) {
         <div className="flex items-center gap-2">
           <span className="size-1.5 rounded-full bg-accent" />
           <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            Your read
+            Your owner profile
           </span>
         </div>
         <h2 className="text-3xl font-light tracking-[-0.02em]">{read.archetype}</h2>

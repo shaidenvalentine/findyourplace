@@ -6,7 +6,7 @@ import { ArrowRight, Sparkles, Users, Wallet, Link as LinkIcon, BarChart3 } from
 import { PRICE_LABEL, PRICE_CENTS } from "@/lib/pricing";
 
 export const metadata: Metadata = {
-  title: "Founding Creators · Find Your Place",
+  title: "Founding Creators · Find Your Dog",
   description:
     "Bring your audience. Keep 50% of every unlock — for life. Real-time dashboard, monthly payouts.",
 };
@@ -44,7 +44,7 @@ export default function CreatorsLanding() {
             </h1>
 
             <p className="mt-8 max-w-xl text-pretty text-lg text-muted-foreground sm:text-xl">
-              Find Your Place is the quiz that finds the one place on Earth that actually fits you.
+              Find Your Dog is the quiz that finds the one dog breed that actually fits your life — and routes every match to real shelter dogs near you.
               Promote it to your audience and earn ${(PRICE_CENTS / 200).toFixed(2)} of every {PRICE_LABEL} unlock — for life.
             </p>
 
@@ -66,7 +66,7 @@ export default function CreatorsLanding() {
           <DealCard
             icon={<LinkIcon className="size-5" />}
             title="Your own link"
-            body="findyourplace.app/c/yourcode — co-branded, with your name at the top. Plus a custom promo code for places that don't allow links."
+            body="findyourdog.app/c/yourcode — co-branded, with your name at the top. Plus a custom promo code for platforms that don't allow links."
           />
           <DealCard
             icon={<Wallet className="size-5" />}
@@ -95,7 +95,7 @@ export default function CreatorsLanding() {
               Make your video your way. We don&apos;t dictate the script, hashtags, or upload schedule.
             </Why>
             <Why title="Founding Creators wall">
-              You get listed on findyourplace.app as a founding voice. Lifelong credit, not just a kickback.
+              You get listed on findyourdog.app as a founding voice. Lifelong credit, not just a kickback.
             </Why>
             <Why title="It compounds">
               Your old videos keep earning. Every link, every promo code is forever yours.

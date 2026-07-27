@@ -14,7 +14,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
   return (
     <main className="grid min-h-dvh place-items-center px-6 text-center">
       <div className="flex flex-col items-center">
-        <Link href="/" aria-label="Find Your Place — home" className="mb-8">
+        <Link href="/" aria-label="Find Your Dog — home" className="mb-8">
           <Logo />
         </Link>
         <p className="text-sm font-semibold uppercase tracking-widest text-accent">Something broke</p>

@@ -12,7 +12,7 @@ import type { OnboardingData } from "@/types/onboarding";
  */
 export const runtime = "nodejs";
 
-const EXTRACT_KEYS = `lifestyleMode(rooted|nomadic), preferredClimate(tropical|mediterranean|temperate|cold), beachMountain(beach|mountains|either), noiseTolerance(low|medium|high), outdoorUrban(urban|outdoor), workStyle(remote|hybrid|onsite), industries(array of tech|creative|finance), communityVibes(array of digital-nomad|startup|expat|local), budgetRange(budget|mid-range|luxury), taxSensitivity(very-sensitive|somewhat|not-sensitive), safetyPriority(top-priority|important|flexible), riskTolerance(low|medium|high), wellnessImportance(high|medium|low), gymCulture(important|neutral), healthcarePriority(essential|nice|low), airportImportance(essential|important|low), mustHaves(array of affordable|safety|nature|nightlife|beach), dealBreakers(array of high-crime|expensive), lovedPlaces(array of specific place names the person has loved, felt at home in, or keeps returning to)`;
+const EXTRACT_KEYS = `homeType(apartment|house-small-yard|house-big-yard|rural), activityLevel(relaxed|moderate|active|athlete), hoursAlone(rarely|half-day|full-day), travelFrequency(rarely|sometimes|often), experienceLevel(first-time|had-dogs|experienced), trainingAppetite(love-it|basics|minimal), hasKids(boolean), kidsAges(toddlers|school-age|teens), otherPets(array of dog|cat|small-pets), allergies(boolean), sizePreference(small|medium|large|giant|open), groomingTolerance(minimal|moderate|enjoys-grooming), sheddingTolerance(low|medium|high), barkTolerance(low|medium|high), guardingImportance(top-priority|nice-to-have|not-needed), affectionStyle(velcro|balanced|independent), climate(hot|cold|temperate), budgetRange(budget|mid-range|no-ceiling), adoptPreference(adopt|breeder|either), dreamBreed(the single breed the person says they want or have always wanted, as a plain string), mustHaves(array of hypoallergenic|good-with-kids|apartment-ok|protective|low-shedding|quiet|easy-training|jogging-partner), dealBreakers(array of heavy-shedding|drooling|constant-barking|high-energy|stubborn|fragile-health), lovedBreeds(array of specific breed names the person has owned or loved)`;
 
 async function normalizeWithLLM(text: string, currentCity: string): Promise<NormalizedProfile | null> {
   const key = process.env.ANTHROPIC_API_KEY;
@@ -33,7 +33,7 @@ async function normalizeWithLLM(text: string, currentCity: string): Promise<Norm
         model: process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001",
         max_tokens: 1024,
         system:
-          "You extract structured relocation-preference signals from a personal profile. " +
+          "You extract structured dog-match preference signals from a personal profile. " +
           "Return ONLY a JSON object whose keys are a subset of: " +
           EXTRACT_KEYS +
           ". Omit any field you have no signal for. No prose, no markdown.",

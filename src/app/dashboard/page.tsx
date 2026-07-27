@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Compass } from "lucide-react";
+import { PawPrint } from "lucide-react";
 
 export const metadata = { title: "Your runs" };
 
@@ -25,9 +25,9 @@ export default function DashboardPage() {
       <Card className="mt-5">
         <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
           <span className="grid size-12 place-items-center rounded-xl bg-primary/15 text-primary">
-            <Compass className="size-6" />
+            <PawPrint className="size-6" />
           </span>
-          <p className="text-sm text-muted-foreground">No runs yet. Find your place to get started.</p>
+          <p className="text-sm text-muted-foreground">No runs yet. Find your dog to get started.</p>
           <Button asChild variant="gradient">
             <Link href="/start">Take the quiz</Link>
           </Button>

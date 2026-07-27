@@ -13,6 +13,10 @@ import { trackStep } from "@/lib/analytics";
 import type { OnboardingData } from "@/types/onboarding";
 import { ArrowLeft, ArrowRight, Loader2, Sparkles } from "lucide-react";
 
+// Quiz answers are always strings, but these OnboardingData keys are booleans —
+// their single-select options carry "true"/"false" values that must be coerced.
+const BOOL_KEYS = new Set<keyof OnboardingData>(["hasKids", "allergies"]);
+
 export default function QuizPage() {
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
@@ -81,10 +85,12 @@ export default function QuizPage() {
     const draft = loadDraft();
     const inputs: OnboardingData = { ...draft };
     for (const question of QUIZ) {
-      const v = answers[question.key as string];
+      let v = answers[question.key as string];
       if (v === undefined) continue;
+      // "Just us" is the explicit none-of-the-above chip — it means no other pets.
+      if (question.key === "otherPets" && Array.isArray(v)) v = v.filter((x) => x !== "none");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (inputs as any)[question.key] = v;
+      (inputs as any)[question.key] = BOOL_KEYS.has(question.key) ? v === "true" : v;
     }
     // Progress is cleared inside submit() ONLY on a successful score, so a failed attempt
     // keeps the answers and the user can retry instead of starting the quiz over.
@@ -94,7 +100,7 @@ export default function QuizPage() {
   return (
     <main className="flex min-h-dvh flex-col">
       <header className="mx-auto flex h-14 w-full max-w-xl items-center gap-3 px-4">
-        <Link href="/" aria-label="Find Your Place — home">
+        <Link href="/" aria-label="Find Your Dog — home">
           <Logo withWordmark={false} />
         </Link>
         <Progress value={progress} className="flex-1" label={`Question ${idx + 1} of ${QUIZ.length}`} />

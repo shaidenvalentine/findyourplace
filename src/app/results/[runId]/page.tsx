@@ -8,8 +8,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { runId } = await params;
   const image = `/api/share/${runId}?format=og`;
-  const title = "I found the place that fits me";
-  const description = "Take 60 seconds and find the place on Earth that actually fits you.";
+  const title = "I found the dog that fits me";
+  const description = "Take 60 seconds and find the dog breed that actually fits your life.";
   return {
     title: "Your results",
     description,

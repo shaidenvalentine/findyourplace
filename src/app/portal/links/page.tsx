@@ -33,7 +33,7 @@ export default async function LinksPage() {
   const creator = await getCurrentCreator();
   if (!creator) redirect("/portal/login");
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://findyourplace.app";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://findyourdog.app";
   const refLink = `${siteUrl}/c/${creator.code}`;
   const queryLink = `${siteUrl}?ref=${creator.code}`;
 
@@ -41,7 +41,7 @@ export default async function LinksPage() {
     <PortalShell>
       <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:py-10">
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Share kit</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Everything you need to share Find Your Place — your way.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Everything you need to share Find Your Dog — your way.</p>
 
         <Card className="mt-6">
           <CardHeader>

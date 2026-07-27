@@ -20,7 +20,7 @@ export default async function PortalDashboard() {
   if (!creator) redirect("/portal/login");
   const stats = await getCreatorStore().getStats(creator.id);
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://findyourplace.app";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://findyourdog.app";
   const refLink = `${siteUrl}/c/${creator.code}`;
   const queryLink = `${siteUrl}?ref=${creator.code}`;
 

@@ -17,26 +17,26 @@ export function ShareToStory({ runId, variant }: { runId: string; variant: "teas
   const cardUrl = `/api/share/${runId}?format=story`;
   const text =
     variant === "reveal"
-      ? "I found the place on Earth that actually fits me"
-      : "I found out where I should actually be living";
+      ? "I found the dog that actually fits my life"
+      : "I found out which dog I should actually get";
 
   async function share() {
     setBusy(true);
     try {
       const res = await fetch(cardUrl);
       const blob = await res.blob();
-      const file = new File([blob], "find-your-place.png", { type: "image/png" });
+      const file = new File([blob], "find-your-dog.png", { type: "image/png" });
 
       const nav = navigator as Navigator & { canShare?: (d: unknown) => boolean };
       if (nav.share && nav.canShare?.({ files: [file] })) {
         await nav.share({ files: [file], text, url: resultUrl });
       } else if (nav.share) {
-        await nav.share({ title: "Find Your Place", text, url: resultUrl });
+        await nav.share({ title: "Find Your Dog", text, url: resultUrl });
       } else {
         // Desktop fallback: download the card + copy the link.
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
-        a.download = "find-your-place.png";
+        a.download = "find-your-dog.png";
         a.click();
         URL.revokeObjectURL(a.href);
         try {
@@ -69,7 +69,7 @@ export function ShareToStory({ runId, variant }: { runId: string; variant: "teas
       ) : (
         <Share2 className="size-4" />
       )}
-      {done ? "Shared!" : variant === "reveal" ? "Share my place" : "Share to your story"}
+      {done ? "Shared!" : variant === "reveal" ? "Share my dog" : "Share to your story"}
     </Button>
   );
 }

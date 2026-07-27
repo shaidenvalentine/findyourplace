@@ -25,10 +25,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Valid email + runId required" }, { status: 422 });
   }
 
-  const origin = process.env.NEXT_PUBLIC_SITE_URL || "https://findyourplace.app";
+  const origin = process.env.NEXT_PUBLIC_SITE_URL || "https://findyourdog.app";
   const ok = await sendEmail({
     to: email,
-    subject: "Your results link — Find Your Place",
+    subject: "Your results link — Find Your Dog",
     html: resultsLinkHtml(`${origin}/results/${runId}`),
   });
   if (!ok) return NextResponse.json({ error: "Send failed — check Resend dashboard." }, { status: 502 });
