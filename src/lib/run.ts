@@ -1,8 +1,8 @@
-import type { MatchResult, CurrentCityScore } from "@/lib/scoring";
+import type { MatchResult, DreamBreedScore } from "@/lib/scoring";
 import { displayFit } from "@/lib/match/engine";
-import type { AnnualCircuit } from "@/lib/circuitGenerator";
+import type { AdoptionPlan } from "@/lib/adoptionPlan";
 import type { LifeChange } from "@/lib/lifeChange";
-import type { TaxComparison } from "@/lib/tax";
+import type { CostComparison } from "@/lib/cost";
 import type { OnboardingData } from "@/types/onboarding";
 
 /** How the run was created — used for analytics/attribution, never for gating. */
@@ -12,40 +12,44 @@ export type RunSource = "quiz" | "ai-profile" | "words";
 export interface ScoredRun {
   runId: string;
   createdAt: number;
+  /** Where the user lives — powers the local adoption layer, shown on free surface. */
   currentCity: string;
+  /** The breed the user came in wanting (free-text, as typed). */
+  dreamBreed: string;
   inputs: OnboardingData;
   source: RunSource;
   /** Creator who referred this run (attribution cookie). Set when run is created. */
   creatorId?: string | null;
   personality: PersonalityRead;
-  currentCityFit: CurrentCityScore;
+  /** Honest fit score for the breed they thought they wanted — the trust-builder. */
+  dreamBreedFit: DreamBreedScore;
   /** Category bars for the user's profile (averaged across the top matches). */
   categoryAverages: { label: string; score: number }[];
-  /** Current city vs #1 match — the free "how your life could change" comparison. */
+  /** Dream breed vs #1 match — the free "what you'd actually get" comparison. */
   lifeChange: LifeChange;
   /** 0–100 match confidence; climbs as the user answers the deeper quiz. */
   confidence: number;
-  /** Tax-savings estimate vs the #1 match (rates + savings only — no place name). */
-  taxComparison: TaxComparison | null;
+  /** Cost-of-ownership estimate for the #1 match (numbers only — no breed name). */
+  costComparison: CostComparison | null;
   /** The locked #1 tease — shape of the answer, never the name (free surface). */
   topTease: {
     score: number;
-    continent: string;
-    region: string | null;
+    group: string;
+    size: string;
   };
   /** Full ranking — gated. The results page only sends this to unlocked clients. */
-  ranking: RankedPlace[];
-  circuit: AnnualCircuit | null;
+  ranking: RankedBreed[];
+  /** Where to actually get this dog (shelter-first) — gated with the ranking. */
+  adoptionPlan: AdoptionPlan | null;
   topCount: number;
 }
 
-export interface RankedPlace {
+export interface RankedBreed {
   rank: number;
   id: string;
   name: string;
-  country: string;
-  continent: string;
-  region: string | null;
+  group: string;
+  size: string;
   totalScore: number;
   reasons: string[];
   tradeoffs: string[];
@@ -60,27 +64,26 @@ export interface PersonalityRead {
 
 /**
  * The FREE surface — safe to send to any client. It proves the engine is smart
- * (personality, category bars, current-city fit) and teases the #1 match's SHAPE
- * (score, continent, region) without ever naming it. The locked fields
- * (`ranking`, `circuit`, the #1 name) live only on the server until unlocked.
+ * (owner profile, category bars, dream-breed fit) and teases the #1 match's SHAPE
+ * (score, breed group, size) without ever naming it. The locked fields
+ * (`ranking`, `adoptionPlan`, the #1 name) live only on the server until unlocked.
  */
-export type FreeRun = Omit<ScoredRun, "ranking" | "circuit">;
+export type FreeRun = Omit<ScoredRun, "ranking" | "adoptionPlan">;
 
 export function toFreeRun(run: ScoredRun): FreeRun {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { ranking, circuit, ...free } = run;
+  const { ranking, adoptionPlan, ...free } = run;
   return free;
 }
 
-export function toRankedPlace(r: MatchResult): RankedPlace {
+export function toRankedBreed(r: MatchResult): RankedBreed {
   return {
     rank: r.rank,
-    id: r.location.id,
-    name: r.location.name,
-    country: r.location.country,
-    continent: r.location.continent,
-    region: r.location.region,
-    // The DISPLAYED score uses the same honest formula as the current-city fit, so the
+    id: r.breed.id,
+    name: r.breed.name,
+    group: r.breed.group,
+    size: r.breed.size,
+    // The DISPLAYED score uses the same honest formula as the dream-breed fit, so the
     // bucket breakdown and the headline number tell the same story. Rank order is still
     // based on the alignment-bonused score internally.
     totalScore: r.displayScore,
@@ -91,7 +94,7 @@ export function toRankedPlace(r: MatchResult): RankedPlace {
   };
 }
 
-const STORAGE_PREFIX = "fyp:run:";
+const STORAGE_PREFIX = "fyd:run:";
 
 /** Caches the FREE surface client-side for instant results render (non-sensitive). */
 export function saveRunLocal(run: FreeRun) {

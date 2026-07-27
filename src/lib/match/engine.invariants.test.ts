@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { scoreLocations, scoreCurrentCity } from "@/lib/scoring";
-import { LOCATIONS } from "@/data/locations";
+import { scoreBreeds, scoreDreamBreed } from "@/lib/scoring";
+import { BREEDS } from "@/data/breeds";
 import type { OnboardingData } from "@/types/onboarding";
 
 /**
@@ -12,7 +12,7 @@ import type { OnboardingData } from "@/types/onboarding";
  *  2. Displayed scores never increase down the ranking (a ranked list must read
  *     monotonically, even when revealed-preference resonance decides the order).
  *  3. Every displayed score lives in the display band [28, 99].
- *  4. The current-city composite is the weighted average of its six displayed
+ *  4. The dream-breed composite is the weighted average of its six displayed
  *     dimension tiles (the tiles partition all 10 categories with the user's own
  *     weights and share the affine display transform) — so, absent an explicit
  *     deal-breaker penalty, the ring provably sits inside the tiles' span.
@@ -36,38 +36,39 @@ function randomProfile(rnd: () => number): OnboardingData {
   const maybe = <T,>(v: T): T | undefined => (rnd() < 0.7 ? v : undefined);
 
   const p: OnboardingData = {
-    currentCity: pick(["Bali", "London", "Lisbon", "Chengdu", "New York", "Cape Town", "unknown"]),
-    lifestyleMode: pick(["rooted", "nomadic", undefined]),
-    preferredClimate: pick(["tropical", "mediterranean", "temperate", "cold", undefined]),
-    beachMountain: pick(["beach", "mountains", "either", undefined]),
-    budgetRange: pick(["budget", "mid-range", "luxury", undefined]),
-    workStyle: pick(["remote", "hybrid", "local", undefined]),
-    taxSensitivity: pick(["very-sensitive", "somewhat", "not-sensitive", undefined]),
-    safetyPriority: pick(["top-priority", "important", "flexible", undefined]),
-    wellnessImportance: pick(["high", "medium", "low", undefined]),
-    airportImportance: pick(["essential", "important", "flexible", undefined]),
-    cultureTolerance: pick(["important", "somewhat", "not-important", undefined]),
-    noiseTolerance: pick(["high", "medium", "low", undefined]),
-    peopleDensity: pick(["dense", "mid", "spacious", undefined]),
-    outdoorUrban: pick(["urban", "balanced", "outdoor", undefined]),
-    riskTolerance: pick(["high", "medium", "low", undefined]),
-    communityVibes: maybe(["digital-nomad", "expat"]),
-    industries: maybe(["tech"]),
-    mustHaves: maybe(["beach", "affordable"]),
-    dealBreakers: maybe(["high-crime"]),
-    lovedPlaces: rnd() < 0.5 ? [pick(["Bali", "Lisbon", "Mexico City", "Tokyo", "Tbilisi"])!] : undefined,
+    dreamBreed: pick(["Golden Retriever", "Husky", "lab", "Border Collie", "Frenchie", "some kind of terrier", "unknown"]),
+    homeType: pick(["apartment", "house-small-yard", "house-big-yard", "rural", undefined]),
+    activityLevel: pick(["relaxed", "moderate", "active", "athlete", undefined]),
+    hoursAlone: pick(["rarely", "half-day", "full-day", undefined]),
+    experienceLevel: pick(["first-time", "had-dogs", "experienced", undefined]),
+    hasKids: pick([true, false, undefined]),
+    kidsAges: pick(["toddlers", "school-age", "teens", undefined]),
+    sizePreference: pick(["small", "medium", "large", "giant", "open", undefined]),
+    groomingTolerance: pick(["minimal", "moderate", "enjoys-grooming", undefined]),
+    sheddingTolerance: pick(["low", "medium", "high", undefined]),
+    allergies: pick([true, false, undefined]),
+    barkTolerance: pick(["low", "medium", "high", undefined]),
+    guardingImportance: pick(["top-priority", "nice-to-have", "not-needed", undefined]),
+    affectionStyle: pick(["velcro", "balanced", "independent", undefined]),
+    trainingAppetite: pick(["love-it", "basics", "minimal", undefined]),
+    budgetRange: pick(["budget", "mid-range", "no-ceiling", undefined]),
+    climate: pick(["hot", "cold", "temperate", undefined]),
+    otherPets: maybe(["cat"]),
+    mustHaves: maybe(["good-with-kids", "quiet"]),
+    dealBreakers: maybe(["drooling"]),
+    lovedBreeds: rnd() < 0.5 ? [pick(["Golden Retriever", "Beagle", "German Shepherd", "Poodle", "farm collie mix"])!] : undefined,
   };
   return p;
 }
 
-const rnd = mulberry32(20260703);
+const rnd = mulberry32(20260716);
 const PROFILES = Array.from({ length: 12 }, () => randomProfile(rnd));
 
 describe("engine invariants (seeded profile sweep)", () => {
   it("ranking is contiguous, monotone in displayed score, and within the display band", () => {
     for (const p of PROFILES) {
-      const results = scoreLocations(LOCATIONS, p);
-      expect(results.length).toBe(LOCATIONS.length);
+      const results = scoreBreeds(BREEDS, p);
+      expect(results.length).toBe(BREEDS.length);
       results.forEach((r, i) => expect(r.rank).toBe(i + 1));
       for (let i = 0; i < results.length; i++) {
         expect(results[i].totalScore).toBeGreaterThanOrEqual(28);
@@ -80,9 +81,9 @@ describe("engine invariants (seeded profile sweep)", () => {
     }
   });
 
-  it("current-city composite sits inside the span of its displayed dimensions", () => {
+  it("dream-breed composite sits inside the span of its displayed dimensions", () => {
     for (const p of PROFILES) {
-      const fit = scoreCurrentCity(p.currentCity || "unknown", LOCATIONS, p);
+      const fit = scoreDreamBreed(p.dreamBreed || "unknown", BREEDS, p);
       const tiles = fit.categoryScores.map((c) => c.score);
       expect(tiles.length).toBe(6);
       for (const t of tiles) {
@@ -100,33 +101,46 @@ describe("engine invariants (seeded profile sweep)", () => {
 
   it("scoring is a pure function of its inputs", () => {
     for (const p of PROFILES.slice(0, 3)) {
-      const a = scoreLocations(LOCATIONS, p).map((r) => [r.location.id, r.totalScore, r.rank]);
-      const b = scoreLocations(LOCATIONS, p).map((r) => [r.location.id, r.totalScore, r.rank]);
+      const a = scoreBreeds(BREEDS, p).map((r) => [r.breed.id, r.totalScore, r.rank]);
+      const b = scoreBreeds(BREEDS, p).map((r) => [r.breed.id, r.totalScore, r.rank]);
       expect(a).toEqual(b);
-      const fa = scoreCurrentCity(p.currentCity || "unknown", LOCATIONS, p);
-      const fb = scoreCurrentCity(p.currentCity || "unknown", LOCATIONS, p);
+      const fa = scoreDreamBreed(p.dreamBreed || "unknown", BREEDS, p);
+      const fb = scoreDreamBreed(p.dreamBreed || "unknown", BREEDS, p);
       expect(fa).toEqual(fb);
     }
   });
 
-  it("a loved place rises to #1 without breaking display monotonicity", () => {
+  it("a loved breed rises to #1 without breaking display monotonicity", () => {
     const p: OnboardingData = {
-      currentCity: "Bali",
-      lifestyleMode: "nomadic",
-      beachMountain: "beach",
-      preferredClimate: "tropical",
-      workStyle: "remote",
-      budgetRange: "mid-range",
-      taxSensitivity: "somewhat",
-      wellnessImportance: "high",
-      communityVibes: ["digital-nomad"],
-      mustHaves: ["beach", "nature"],
-      lovedPlaces: ["Bali"],
+      dreamBreed: "Golden Retriever",
+      homeType: "house-big-yard",
+      activityLevel: "active",
+      hoursAlone: "half-day",
+      experienceLevel: "had-dogs",
+      hasKids: true,
+      kidsAges: "school-age",
+      affectionStyle: "velcro",
+      mustHaves: ["good-with-kids"],
+      lovedBreeds: ["Golden Retriever"],
     };
-    const results = scoreLocations(LOCATIONS, p);
-    expect(results[0].location.name.toLowerCase()).toBe("bali");
+    const results = scoreBreeds(BREEDS, p);
+    expect(results[0].breed.name.toLowerCase()).toBe("golden retriever");
     for (let i = 1; i < results.length; i++) {
       expect(results[i].totalScore).toBeLessThanOrEqual(results[i - 1].totalScore);
+    }
+  });
+
+  it("hard constraints actually filter: allergies push heavy shedders out of the top 10", () => {
+    const p: OnboardingData = {
+      allergies: true,
+      homeType: "apartment",
+      activityLevel: "moderate",
+      affectionStyle: "balanced",
+    };
+    const top10 = scoreBreeds(BREEDS, p).slice(0, 10);
+    for (const r of top10) {
+      const shed = r.breed.shedding_level ?? 50;
+      expect(r.breed.hypoallergenic || shed <= 40).toBe(true);
     }
   });
 });

@@ -2,90 +2,56 @@ export interface OnboardingData {
   // Basics
   name?: string;
   ageRange?: string;
+  /** Where the user lives — powers the local shelter/adoption layer, never scoring. */
   currentCity?: string;
-  passports?: string[];
-  languages?: string[];
 
-  // Lifestyle
-  workStyle?: string;
-  incomeLevel?: string;
-  relationshipStatus?: string;
+  // The trust-builder: the breed they grew up with, or the one they think they want.
+  // We score it honestly against their real life — the accurate read earns the sale.
+  dreamBreed?: string;
+
+  // Revealed preference — breeds the user has owned/loved. The strongest signal for the
+  // "I always knew" match: we surface breeds similar in character, and a loved breed that
+  // clears constraints is pulled toward #1.
+  lovedBreeds?: string[];
+
+  // Home & lifestyle
+  homeType?: "apartment" | "house-small-yard" | "house-big-yard" | "rural";
+  homeSetting?: "city" | "suburb" | "rural";
+  activityLevel?: "relaxed" | "moderate" | "active" | "athlete";
+  hoursAlone?: "rarely" | "half-day" | "full-day";
+  travelFrequency?: "rarely" | "sometimes" | "often";
+
+  // Experience & training
+  experienceLevel?: "first-time" | "had-dogs" | "experienced";
+  trainingAppetite?: "love-it" | "basics" | "minimal";
+
+  // Household
   hasKids?: boolean;
-  hasPets?: boolean;
-  preferredClimate?: string;
-  outdoorUrban?: string;
-  beachMountain?: string;
-  noiseTolerance?: string;
-  dailyRoutine?: string;
+  kidsAges?: "toddlers" | "school-age" | "teens";
+  otherPets?: string[]; // "dog" | "cat" | "small-pets"
 
-  // Health & Wellness
-  gymCulture?: string;
-  wellnessImportance?: string;
-  healthcareQuality?: string;
-  healthcarePriority?: string;
-  fitnessLevel?: string;
-  dietaryNeeds?: string[];
-  mentalHealthSupport?: string;
+  // Preferences
+  sizePreference?: "small" | "medium" | "large" | "giant" | "open";
+  groomingTolerance?: "minimal" | "moderate" | "enjoys-grooming";
+  sheddingTolerance?: "low" | "medium" | "high";
+  allergies?: boolean;
+  barkTolerance?: "low" | "medium" | "high";
+  guardingImportance?: "top-priority" | "nice-to-have" | "not-needed";
+  affectionStyle?: "velcro" | "balanced" | "independent";
+  climate?: "hot" | "cold" | "temperate";
 
-  // Career & Growth
-  industries?: string[];
-  industryFocus?: string;
-  networkingImportance?: string;
-  entrepreneurialInterest?: string;
+  // Money
+  budgetRange?: "budget" | "mid-range" | "no-ceiling";
 
-  // Social & Community
-  communityVibes?: string[]; // Multi-select community vibes
-  familyProximity?: string;
-  peopleDensity?: string;
-
-  // Safety & Stability
-  riskTolerance?: string;
-  ruleLawImportance?: string;
-  safetyPriority?: string;
-  politicalStability?: string;
-  lgbtqFriendliness?: string;
-
-  // Cost & Finances
-  budgetRange?: string;
-  taxSensitivity?: string;
-  taxConsideration?: string;
-  housingPreference?: string;
-
-  // Tax & income (for the tax-savings comparison)
-  taxResidenceCountry?: string; // where they currently pay tax (may differ from currentCity)
-  annualIncomeBand?: string; // "<50k" | "50-100k" | "100-200k" | "200-500k" | "500k+"
-  isUsCitizen?: boolean; // US citizens are taxed on worldwide income — flagged in the result
-  hasInvestmentIncome?: boolean; // founder/investor: factor capital-gains too
-
-  // Travel & Mobility
-  airportConnectivity?: string;
-  weekendTrips?: string;
-  travelFrequency?: string;
-  airportImportance?: string;
-  publicTransitNeed?: string;
-
-  // Values
-  freedomStability?: string;
-  noveltyConsistency?: string;
-  cultureTolerance?: string;
+  // Where the dog comes from — powers the adoption plan (shelter-first by default).
+  adoptPreference?: "adopt" | "breeder" | "either";
 
   // Signals (optional)
   socialTags?: string[];
-  instagramHandle?: string;
   chatgptReflection?: string;
 
   // Priorities
-  mustHaves?: string[];
-  dealBreakers?: string[];
+  mustHaves?: string[]; // "hypoallergenic" | "good-with-kids" | "apartment-ok" | "protective" | "low-shedding" | "quiet" | "easy-training" | "jogging-partner"
+  dealBreakers?: string[]; // "heavy-shedding" | "drooling" | "constant-barking" | "high-energy" | "stubborn" | "fragile-health"
   topPriorities?: string[];
-
-  // Revealed preference — places the user has loved / felt most at home. The strongest
-  // signal for the "I always knew" match: we surface places similar in character, and a
-  // loved place that's in-universe and clears constraints is pulled toward #1.
-  lovedPlaces?: string[];
-
-  // Mobility & Lifestyle Mode
-  lifestyleMode?: "rooted" | "nomadic";
-  locationChangesPerYear?: "3-4" | "4-6" | "6+";
-  movementDrivers?: string[];
 }

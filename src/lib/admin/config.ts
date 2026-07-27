@@ -89,7 +89,7 @@ export function integrationStatuses(): IntegrationStatus[] {
       detail: has("NEXT_PUBLIC_SITE_URL")
         ? "Checkout redirects, OG images, canonical URLs and emails resolve to the real domain."
         : "Falls back to the default domain — fine if that's correct, but set it to be safe.",
-      fix: has("NEXT_PUBLIC_SITE_URL") ? undefined : "Set NEXT_PUBLIC_SITE_URL=https://findyourplace.app.",
+      fix: has("NEXT_PUBLIC_SITE_URL") ? undefined : "Set NEXT_PUBLIC_SITE_URL=https://findyourdog.app.",
     },
   ];
 }

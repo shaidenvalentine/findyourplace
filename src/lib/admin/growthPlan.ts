@@ -1,5 +1,5 @@
 /**
- * The Find Your Place growth plan — the founder's guide from launch to $30k/month.
+ * The Find Your Dog growth plan — the founder's guide from launch to $30k/month.
  *
  * This is the single source of truth for the /admin/plan page. It encodes the target,
  * the unit economics that get us there, the channel mix at steady state, and a
@@ -7,7 +7,7 @@
  * concrete steps to hit it.
  *
  * The numbers are TARGETS, not promises — an S-curve a solo founder can actually walk
- * with a $29 unlock, the built creator/affiliate engine, the share loop, and Meta ads.
+ * with a $19 unlock, the built creator/affiliate engine, the share loop, and Meta ads.
  * Tune them as real data comes in; the page reads your live last-30 revenue against
  * this ladder to show where you actually are.
  */
@@ -26,7 +26,7 @@ export const FUNNEL = {
   landingToStart: 0.45,
   /** Starts → completes a scored run. */
   startToComplete: 0.55,
-  /** Completed run → pays the $29 unlock. The locked #1 + current-city trust build carry this. */
+  /** Completed run → pays the $19 unlock. The locked #1 + dream-breed trust build carry this. */
   completeToPurchase: 0.08,
 } as const;
 
@@ -170,11 +170,11 @@ export const PLAN: PlanMonth[] = [
     milestone: "First 30+ paid unlocks from a standing start.",
     lever: "Founder organic",
     steps: [
-      { id: "m1-reel", title: "Ship the hero reel", detail: "'How I chose Bali → find your place.' Story-first, the quiz is the CTA. This is the whole GTM — make it good." },
+      { id: "m1-reel", title: "Ship the hero reel", detail: "'I almost got the wrong dog → find yours.' Story-first, the quiz is the CTA. This is the whole GTM — make it good." },
       { id: "m1-funnel", title: "Watch a real cold run", detail: "Take the quiz on a phone as a stranger would. Time landing→paywall. If it drags anywhere, cut it." },
-      { id: "m1-creators5", title: "Hand-pick 5 creators", detail: "DM small relocation/nomad accounts. Give them a ref link and the reel template. Warm, personal, not a mass blast." },
+      { id: "m1-creators5", title: "Hand-pick 5 creators", detail: "DM small dog-content and adoption accounts. Give them a ref link and the reel template. Warm, personal, not a mass blast." },
       { id: "m1-pixel", title: "Confirm the pixel fires", detail: "landing_view, quiz_complete, purchase in Meta Events Manager with CAPI dedup — before you ever spend on ads." },
-      { id: "m1-share", title: "Design the result to be shared", detail: "From day one the free result is a status object — a card worth posting, with a curiosity gap that pulls friends in ('I matched Lisbon — what's yours?'). Your cheapest acquisition is the share, not the ad." },
+      { id: "m1-share", title: "Design the result to be shared", detail: "From day one the free result is a status object — a card worth posting, with a curiosity gap that pulls friends in ('I matched a Whippet — what's yours?'). Your cheapest acquisition is the share, not the ad." },
     ],
   },
   {
@@ -185,7 +185,7 @@ export const PLAN: PlanMonth[] = [
     milestone: "A live price test running and a measured k-factor (viral coefficient).",
     lever: "Pricing + virality",
     steps: [
-      { id: "m2-price", title: "Test the price early — don't wait", detail: "A/B $29 vs $39–49 now, not in month 10. A life decision is underpriced at $29; every extra dollar of margin widens your CAC ceiling and funds the points. (Naval: price the decision, not the quiz.)" },
+      { id: "m2-price", title: "Test the price early — don't wait", detail: "A/B $19 vs $29–39 now, not in month 10. A 12-year decision is underpriced at $19; every extra dollar of margin widens your CAC ceiling and funds the points. (Naval: price the decision, not the quiz.)" },
       { id: "m2-kfactor", title: "Measure your k-factor", detail: "Track shares-per-result and signups-per-share. k > 1 means the loop grows itself and ads become optional. This is the number to obsess over. (Nikita: measure k, not just CAC.)" },
       { id: "m2-share-object", title: "Make the free result a status object", detail: "Share must happen BEFORE the wallet. Maximize how many people get a broadcast-worthy result — non-payers are your distribution, not failures. Tune paywall placement so it never strangles the loop." },
       { id: "m2-teardown", title: "Read 20 real runs", detail: "Where do people drop — the AI paste step, the readback, the paywall? Delete the single biggest leak. (Elon: question every step, then remove it.)" },
@@ -230,7 +230,7 @@ export const PLAN: PlanMonth[] = [
     lever: "Multi-channel",
     steps: [
       { id: "m5-blend", title: "Balance the three channels", detail: "Target roughly the steady-state mix: creators ~55%, organic/share ~20%, ads ~25%. Note which is under-indexing." },
-      { id: "m5-ltv", title: "Test an order bump", detail: "A small upsell at checkout (deeper tax deep-dive / nomad circuit add-on) lifts average order value and your CAC ceiling with it." },
+      { id: "m5-ltv", title: "Test an order bump", detail: "A small upsell at checkout (deeper cost-of-ownership plan / first-90-days training add-on) lifts average order value and your CAC ceiling with it." },
       { id: "m5-support", title: "Systematize support", detail: "Canned answers for the top 5 questions + refund policy. Protect the ad account and creator trust with fast, clean service." },
       { id: "m5-retarget", title: "Add a retargeting set", detail: "Retarget paywall_view non-buyers with the price anchor + a testimonial. Cheapest incremental sales you'll find." },
     ],
@@ -286,7 +286,7 @@ export const PLAN: PlanMonth[] = [
     steps: [
       { id: "m9-creators45", title: "Reach ~45 active creators", detail: "The creator base is your most durable channel. Keep the recruiting → onboarding → payout loop humming." },
       { id: "m9-platform", title: "Test a second platform", detail: "TikTok / YouTube Shorts for creators, not just Instagram. Platform risk is real — don't be single-homed." },
-      { id: "m9-seo", title: "Ship 10 SEO location pages", detail: "'Best city for [X]' pages are cheap on Next and compound for free. Start the slow channel now so it's there in month 12." },
+      { id: "m9-seo", title: "Ship 10 SEO breed pages", detail: "'Best breeds for [X]' pages are cheap on Next and compound for free. Start the slow channel now so it's there in month 12." },
     ],
   },
   {
@@ -297,7 +297,7 @@ export const PLAN: PlanMonth[] = [
     milestone: "$26k rolling — within striking distance.",
     lever: "Optimization",
     steps: [
-      { id: "m10-price", title: "Run a price test", detail: "A/B $29 vs $34. If conversion holds, the extra margin lifts your CAC ceiling and pulls the goal closer immediately." },
+      { id: "m10-price", title: "Run a price test", detail: "A/B $19 vs $24. If conversion holds, the extra margin lifts your CAC ceiling and pulls the goal closer immediately." },
       { id: "m10-cro", title: "Squeeze the paywall", detail: "Test the value framing, the anchor, the testimonial placement. A 1pt lift on complete→purchase is worth real money at this volume." },
       { id: "m10-scale", title: "Push ad budget to the edge", detail: "Find the daily spend where CAC starts to break. Sit just under it — that's your paid ceiling for now." },
     ],
@@ -310,7 +310,7 @@ export const PLAN: PlanMonth[] = [
     milestone: "$28.5k with CAC and refund rate stable.",
     lever: "Durability",
     steps: [
-      { id: "m11-upsell", title: "Launch the consult upsell", detail: "High-ticket 'relocation strategy session' on the paid results page. A few sales/month move the number meaningfully." },
+      { id: "m11-upsell", title: "Launch the consult upsell", detail: "High-ticket 'bring-your-dog-home session' (trainer-led prep + adoption help) on the paid results page. A few sales/month move the number meaningfully." },
       { id: "m11-quality", title: "Protect the ad account", detail: "Low refund rate, clean creative, honest claims. An account ban erases a channel overnight — guard it." },
       { id: "m11-seo2", title: "Expand SEO to 30 pages", detail: "Compound the free channel. By now early pages should show impressions — double down on what ranks." },
     ],
@@ -373,7 +373,7 @@ export interface AdPlatform {
 }
 
 /**
- * Where to advertise THIS product — a $29–49, visual, aspirational, impulse life-change
+ * Where to advertise THIS product — a $19–39, visual, aspirational, impulse life-change
  * unlock sold to a mobile, travel-curious audience. Ranked for that specific shape.
  */
 export const AD_PLATFORMS: AdPlatform[] = [
@@ -381,13 +381,13 @@ export const AD_PLATFORMS: AdPlatform[] = [
     rank: 1,
     name: "Instagram Reels",
     role: "Primary",
-    why: "Your GTM already lives here. Aspirational relocation video is native to the feed, and the founder reel is the whole top of funnel. The warmest audience for a 'where should I live' impulse buy.",
+    why: "Your GTM already lives here. Dog video is the most native content in the feed, and the founder reel is the whole top of funnel. The warmest audience for a 'which dog should I get' impulse buy.",
   },
   {
     rank: 2,
     name: "TikTok",
     role: "Primary",
-    why: "Cheapest short-video reach and a nomad/'move abroad' curious crowd. The exact same reels repurpose 1:1 — hook in 2s, quiz as the CTA. Run organic first, then whitelist winners as ads.",
+    why: "Cheapest short-video reach and DogTok is enormous. The exact same reels repurpose 1:1 — hook in 2s, quiz as the CTA. Run organic first, then whitelist winners as ads.",
   },
   {
     rank: 3,
@@ -405,19 +405,19 @@ export const AD_PLATFORMS: AdPlatform[] = [
     rank: 5,
     name: "Pinterest",
     role: "Secondary",
-    why: "Underrated for relocation/travel planning — high-intent, cheap, a planner mindset. Aspirational city boards map straight onto your result cards.",
+    why: "Underrated for new-dog planning — high-intent, cheap, a planner mindset. 'Breeds for apartments' boards map straight onto your result cards.",
   },
   {
     rank: 6,
-    name: "Reddit + expat/nomad communities",
+    name: "Reddit + dog communities",
     role: "Organic",
-    why: "r/digitalnomad, r/expats, r/IWantOut, r/SameGrassButGreener — the highest-intent audiences anywhere, but they punish anything that smells like an ad. Show up as a person, not a brand.",
+    why: "r/dogs, r/puppy101, r/rescuedogs, r/WhatBreedIsMyDog — the highest-intent audiences anywhere, but they punish anything that smells like an ad. Show up as a person, not a brand.",
   },
 ];
 
 /** Channels to skip for this product — wrong context or wrong economics. */
 export const AD_PLATFORMS_SKIP =
-  "Skip LinkedIn (wrong headspace, brutal CPMs), broad display/banner networks (junk traffic), and Google Search as a paid channel early — search intent for this is better captured free via the 193 SEO location pages.";
+  "Skip LinkedIn (wrong headspace, brutal CPMs), broad display/banner networks (junk traffic), and Google Search as a paid channel early — search intent for this is better captured free via the 170 SEO breed pages.";
 
 export interface PlaybookItem {
   title: string;
@@ -452,11 +452,11 @@ export const META_PLAYBOOK: PlaybookItem[] = [
   },
   {
     title: "Retarget the non-buyers",
-    detail: "One set retargeting paywall_view non-buyers with the $39→$29 anchor + a real testimonial. The cheapest sales you'll ever buy.",
+    detail: "One set retargeting paywall_view non-buyers with the $29→$19 anchor + a real testimonial. The cheapest sales you'll ever buy.",
   },
   {
     title: "Judge everything against margin",
-    detail: "The only number that matters: CAC vs net-per-sale (~$27 minus creator cut). Kill any set above it; scale only what sits under it. At $29 the headroom is thin — which is why price and creative matter so much.",
+    detail: "The only number that matters: CAC vs net-per-sale (~$17 minus creator cut). Kill any set above it; scale only what sits under it. At $19 the headroom is thin — which is why price and creative matter so much.",
   },
 ];
 
@@ -624,7 +624,7 @@ export const POINTS_GOAL_NOTES: PlaybookItem[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// The value ladder — the revenue structure Naval would insist on. The $29 unlock
+// The value ladder — the revenue structure Naval would insist on. The $19 unlock
 // isn't the business; it's one rung. Own the audience, add recurring + high-ticket.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -649,21 +649,21 @@ export const VALUE_LADDER: LadderRung[] = [
     name: "The unlock",
     price: "$39",
     role: "Impulse buy",
-    detail: "The #1 match, full 193 ranking, tax + circuit — bought on a viral moment. Test $29 vs $39–49 early; a life decision is underpriced at $29.",
+    detail: "The #1 breed, full 170 ranking, cost deep-dive + adopt-near-you plan — bought on a viral moment. Test $19 vs $29–39 early; a 12-year decision is underpriced at $19.",
   },
   {
     step: 3,
     name: "Cohort / community",
     price: "$99–299",
     role: "Recurring-ish",
-    detail: "'Moving to Lisbon' groups — people who matched the same place, moving together. High margin, near-zero delivery cost, and it deepens the share loop. Belonging is the product.",
+    detail: "'First-time Whippet owners' groups — people who matched the same breed, raising dogs together. High margin, near-zero delivery cost, and it deepens the share loop. Belonging is the product.",
   },
   {
     step: 4,
-    name: "Concierge relocation",
+    name: "Concierge dog matchmaking",
     price: "$1–5k",
     role: "High-ticket",
-    detail: "Done-with-you: visas, housing, taxes, the actual move. A handful a month rivals hundreds of unlocks. Advisor-led, and it uses the ranking + inputs you already have.",
+    detail: "Done-with-you: shelter scouting, meet-and-greets, first-week setup. A handful a month rivals hundreds of unlocks. Trainer-led, and it uses the ranking + inputs you already have.",
   },
   {
     step: 5,
@@ -675,7 +675,7 @@ export const VALUE_LADDER: LadderRung[] = [
 ];
 
 export const VALUE_LADDER_NOTE =
-  "The $29 unlock is rung 2 of 5. Most of the money — and all of the durability — is in the rungs above and below it: free distribution at the bottom, recurring + high-ticket at the top. Build down (virality) before you build up (upsells).";
+  "The $19 unlock is rung 2 of 5. Most of the money — and all of the durability — is in the rungs above and below it: free distribution at the bottom, recurring + high-ticket at the top. Build down (virality) before you build up (upsells).";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Founder advisors — three permanent lenses to gut-check every decision against.

@@ -1,37 +1,36 @@
-import type { Location } from "@/lib/scoring";
+import type { Breed } from "@/lib/scoring";
 import type { OnboardingData } from "@/types/onboarding";
-import { resolvePlace } from "./resolve";
+import { resolveBreed } from "./resolve";
 
 /**
- * The matching engine (v2) — FIT, not amenity-maximization.
+ * The matching engine (v2) — FIT, not trait-maximization.
  *
- * The old model summed normalized amenity scores, which floated generically high-stat
- * metros (LA, Miami) and tax havens to the top regardless of who the person was, and
- * silently blended tax-friendliness into everyone's cost. This model instead scores each
- * place by how well it matches the axes the user ACTUALLY expressed:
+ * A naive model sums normalized trait scores, which floats generically "good" breeds
+ * (Golden, Lab) to the top regardless of who the person is. This model instead scores
+ * each breed by how well it matches the axes the user ACTUALLY expressed:
  *
- *  - Unexpressed axes contribute neutrally (50), so a place's strength on something the
- *    user never asked about can't inflate its rank. (Kills amenity-max + the tax leak.)
+ *  - Unexpressed axes contribute neutrally (50), so a breed's strength on something the
+ *    user never asked about can't inflate its rank. (Kills the "everyone gets a Golden"
+ *    failure mode.)
  *  - Hard constraints (deal-breakers / must-haves) filter, they don't softly nudge.
- *  - Revealed preference ("places you've loved") blends place-character similarity, and a
- *    loved place that's in-universe and clears constraints is pulled toward #1 — the
- *    "I always knew" result.
+ *  - Revealed preference ("breeds you've loved") blends breed-character similarity, and a
+ *    loved breed that clears constraints is pulled toward #1 — the "I always knew" result.
  *
- * Category fits map onto the SAME 10 labels the UI already uses, and the ranking score is
+ * Category fits map onto the SAME 10 labels the UI uses, and the ranking score is
  * derived from those same fits, so what users see (bars) and what we rank by never drift.
  */
 
 export const CATEGORY_LABELS: Record<string, string> = {
-  climate: "Climate Fit",
-  nature: "Nature & Outdoors",
-  community: "Community & Social",
-  career: "Career & Work",
-  cost: "Cost & Value",
-  safety: "Safety & Stability",
-  wellness: "Health & Wellness",
-  travel: "Travel & Connectivity",
-  culture: "Culture & Openness",
-  lifestyle: "Lifestyle Match",
+  energy: "Energy & Exercise",
+  home: "Home & Space",
+  training: "Training & Smarts",
+  grooming: "Grooming & Shedding",
+  family: "Kids & Family",
+  social: "Dogs & Other Pets",
+  protection: "Protection & Watchdog",
+  noise: "Barking & Noise",
+  independence: "Alone-Time Fit",
+  temperament: "Temperament Match",
 };
 export const CATEGORY_ORDER = Object.keys(CATEGORY_LABELS);
 
@@ -39,48 +38,59 @@ const NEUTRAL = 50;
 const clamp = (n: number, lo = 0, hi = 100) => Math.max(lo, Math.min(hi, n));
 const num = (v: number | null | undefined, fallback: number) => (typeof v === "number" ? v : fallback);
 
-// ── Country aggregates (offline) — average dataset fields per country, used to impute
-// missing place data AND to synthesize a vector for an unlisted current city. ───────────
+/** Numeric size scale (used for size-preference filtering + similarity). */
+export function sizeScore(size: string): number {
+  switch (size) {
+    case "Toy": return 10;
+    case "Small": return 30;
+    case "Medium": return 55;
+    case "Large": return 80;
+    case "Giant": return 95;
+    default: return 55;
+  }
+}
+
+// ── Group aggregates (offline) — average dataset fields per breed group, used to impute
+// missing breed data AND to synthesize a vector for an unlisted breed name. ──────────────
 type Agg = Record<string, { sum: number; n: number }>;
-let countryAgg: Map<string, Record<string, number>> | null = null;
+let groupAgg: Map<string, Record<string, number>> | null = null;
 const AGG_FIELDS = [
-  "cost_of_living_score", "rent_score", "safety_score", "healthcare_score", "climate_score",
-  "avg_temp_summer", "avg_temp_winter", "humidity_level", "sunshine_days", "beach_access_score",
-  "mountain_access_score", "outdoor_score", "nightlife_score", "wellness_score", "community_score",
-  "english_friendliness_score", "tax_friendliness_score", "airport_connectivity_score",
-  "internet_quality_score", "walkability_score", "transit_score", "culture_openness_score",
-  "startup_ecosystem_score",
+  "energy_level", "exercise_needs", "playfulness", "apartment_friendly", "novice_friendly",
+  "trainability", "intelligence", "grooming_needs", "shedding_level", "drooling_level",
+  "kid_friendly", "affection_level", "independence", "alone_tolerance", "dog_friendly",
+  "cat_friendly", "stranger_friendly", "protectiveness", "watchdog_alertness", "barking_level",
+  "heat_tolerance", "cold_tolerance", "health_robustness",
 ] as const;
 
-function buildAggregates(locations: Location[]) {
-  if (countryAgg) return countryAgg;
-  const byCountry = new Map<string, Agg>();
-  for (const l of locations) {
-    const a = byCountry.get(l.country) ?? {};
+function buildAggregates(breeds: Breed[]) {
+  if (groupAgg) return groupAgg;
+  const byGroup = new Map<string, Agg>();
+  for (const b of breeds) {
+    const a = byGroup.get(b.group) ?? {};
     for (const f of AGG_FIELDS) {
-      const v = l[f] as number | null;
+      const v = b[f] as number | null;
       if (typeof v === "number") {
         a[f] = a[f] ?? { sum: 0, n: 0 };
         a[f].sum += v;
         a[f].n += 1;
       }
     }
-    byCountry.set(l.country, a);
+    byGroup.set(b.group, a);
   }
-  countryAgg = new Map();
-  for (const [country, a] of byCountry) {
+  groupAgg = new Map();
+  for (const [group, a] of byGroup) {
     const out: Record<string, number> = {};
     for (const f of AGG_FIELDS) if (a[f]) out[f] = a[f].sum / a[f].n;
-    countryAgg.set(country, out);
+    groupAgg.set(group, out);
   }
-  return countryAgg;
+  return groupAgg;
 }
 
-/** A place value with imputation: real field → else country average → else a neutral prior. */
-function field(loc: Location, key: (typeof AGG_FIELDS)[number], prior: number, locations: Location[]): number {
-  const v = loc[key] as number | null;
+/** A breed value with imputation: real field → else group average → else a neutral prior. */
+function field(breed: Breed, key: (typeof AGG_FIELDS)[number], prior: number, breeds: Breed[]): number {
+  const v = breed[key] as number | null;
   if (typeof v === "number") return v;
-  const agg = buildAggregates(locations).get(loc.country);
+  const agg = buildAggregates(breeds).get(breed.group);
   if (agg && typeof agg[key] === "number") return agg[key];
   return prior;
 }
@@ -90,7 +100,7 @@ function field(loc: Location, key: (typeof AGG_FIELDS)[number], prior: number, l
 interface CategoryIdeal {
   /** more-is-better importance 0..1 (0 = unexpressed → neutral, no bias) */
   want: number;
-  /** for target-match axes (climate, lifestyle): desired level 0..100, else null */
+  /** for target-match axes (energy, temperament): desired level 0..100, else null */
   target: number | null;
   /** tolerance for target-match (how fast fit falls off from target) */
   tol: number;
@@ -102,112 +112,113 @@ function buildIdeal(p: OnboardingData): Ideal {
   const ideal: Ideal = {};
   for (const c of CATEGORY_ORDER) ideal[c] = { want: 0, target: null, tol: 25 };
 
-  // Climate — target-match on warmth.
-  if (p.preferredClimate) {
-    const target = p.preferredClimate === "tropical" ? 95 : p.preferredClimate === "mediterranean" ? 78
-      : p.preferredClimate === "temperate" ? 55 : 30; // cold
-    ideal.climate = { want: 1, target, tol: 22 };
+  // Energy — target-match: the dog's drive should MATCH the owner's life, not max it.
+  if (p.activityLevel || p.mustHaves?.includes("jogging-partner")) {
+    let target = p.activityLevel === "athlete" ? 95 : p.activityLevel === "active" ? 78
+      : p.activityLevel === "moderate" ? 55 : 28; // relaxed
+    if (p.mustHaves?.includes("jogging-partner")) target = Math.max(target, 85);
+    ideal.energy = { want: p.mustHaves?.includes("jogging-partner") ? 1.3 : 1, target, tol: 20 };
   }
 
-  // Nature — beach/mountain/outdoor (more-is-better when wanted).
-  if (p.beachMountain || p.mustHaves?.includes("nature") || p.mustHaves?.includes("beach") || p.wellnessImportance === "high") {
-    ideal.nature.want = 1;
-    if (p.mustHaves?.includes("nature") || p.mustHaves?.includes("beach")) ideal.nature.want = 1.3;
+  // Home & space — more-is-better on apartment suitability, scaled by how tight the home is.
+  if (p.homeType === "apartment" || p.mustHaves?.includes("apartment-ok")) ideal.home.want = 1.3;
+  else if (p.homeType === "house-small-yard") ideal.home.want = 0.7;
+  // big yard / rural: unexpressed → neutral (space solves itself)
+
+  // Training — first-timers need forgiving, trainable dogs; the must-have hardens it.
+  if (p.experienceLevel === "first-time" || p.mustHaves?.includes("easy-training") || p.trainingAppetite === "love-it") {
+    ideal.training.want = p.experienceLevel === "first-time" ? 1.2 : 1;
+  } else if (p.experienceLevel === "had-dogs") ideal.training.want = 0.5;
+
+  // Grooming & shedding — more-is-better on LOW-maintenance coat when the user cares.
+  if (p.allergies || p.mustHaves?.includes("hypoallergenic")) ideal.grooming.want = 1.4;
+  else if (p.groomingTolerance === "minimal" || p.sheddingTolerance === "low" || p.mustHaves?.includes("low-shedding") || p.dealBreakers?.includes("heavy-shedding")) {
+    ideal.grooming.want = 1.1;
+  } else if (p.groomingTolerance === "moderate" || p.sheddingTolerance === "medium") ideal.grooming.want = 0.5;
+
+  // Kids & family.
+  if (p.hasKids || p.mustHaves?.includes("good-with-kids")) {
+    ideal.family.want = p.kidsAges === "toddlers" || p.mustHaves?.includes("good-with-kids") ? 1.3 : 1;
   }
 
-  // Community.
-  if (has(p.communityVibes) || p.familyProximity) ideal.community.want = 1;
+  // Other dogs & pets.
+  if (has(p.otherPets) && !p.otherPets?.includes("none")) ideal.social.want = 1;
 
-  // Career.
-  if (p.workStyle === "remote" || has(p.industries)) ideal.career.want = p.workStyle === "remote" ? 1 : 0.8;
+  // Protection.
+  if (p.guardingImportance === "top-priority" || p.mustHaves?.includes("protective")) ideal.protection.want = 1.3;
+  else if (p.guardingImportance === "nice-to-have") ideal.protection.want = 0.6;
 
-  // Cost — only as strong as the user signals; tax folds in ONLY if tax-sensitive.
-  if (p.budgetRange === "budget" || p.mustHaves?.includes("affordable")) ideal.cost.want = 1.2;
-  else if (p.budgetRange === "mid-range") ideal.cost.want = 0.7;
-  else if (p.budgetRange === "luxury") ideal.cost.want = 0.2;
+  // Barking & noise — more-is-better on quiet when the user needs it.
+  if (p.barkTolerance === "low" || p.mustHaves?.includes("quiet") || p.dealBreakers?.includes("constant-barking")) {
+    ideal.noise.want = 1.2;
+  } else if (p.barkTolerance === "medium") ideal.noise.want = 0.5;
 
-  // Safety.
-  if (p.safetyPriority === "top-priority" || p.riskTolerance === "low" || p.mustHaves?.includes("safety") || p.dealBreakers?.includes("high-crime")) {
-    ideal.safety.want = p.safetyPriority === "top-priority" ? 1.3 : 1;
-  } else if (p.safetyPriority === "important") ideal.safety.want = 0.7;
+  // Alone-time — more-is-better on independence when the dog will actually be alone.
+  if (p.hoursAlone === "full-day" || p.travelFrequency === "often") ideal.independence.want = 1.3;
+  else if (p.hoursAlone === "half-day") ideal.independence.want = 0.7;
 
-  // Wellness.
-  if (p.wellnessImportance === "high" || p.gymCulture === "important") ideal.wellness.want = 1;
-  else if (p.wellnessImportance === "medium") ideal.wellness.want = 0.5;
-
-  // Travel/connectivity.
-  if (p.airportImportance === "essential" || p.airportConnectivity === "important" || p.travelFrequency === "frequent") ideal.travel.want = 1;
-  else if (p.airportImportance === "important") ideal.travel.want = 0.6;
-
-  // Culture openness.
-  if (p.cultureTolerance === "important" || p.lgbtqFriendliness === "essential") ideal.culture.want = 1;
-  else if (p.cultureTolerance === "somewhat") ideal.culture.want = 0.5;
-
-  // Lifestyle — target-match on urban energy / noise.
-  if (p.noiseTolerance || p.peopleDensity || p.outdoorUrban) {
-    const fromNoise = p.noiseTolerance === "high" ? 90 : p.noiseTolerance === "medium" ? 60 : p.noiseTolerance === "low" ? 25 : null;
-    const fromDensity = p.peopleDensity === "dense" ? 90 : p.peopleDensity === "mid" ? 55 : p.peopleDensity === "spacious" ? 20 : null;
-    const fromUrban = p.outdoorUrban === "urban" ? 85 : p.outdoorUrban === "balanced" ? 55 : p.outdoorUrban === "outdoor" ? 25 : null;
-    const vals = [fromNoise, fromDensity, fromUrban].filter((v): v is number => v !== null);
-    if (vals.length) ideal.lifestyle = { want: 1, target: vals.reduce((s, v) => s + v, 0) / vals.length, tol: 24 };
+  // Temperament — target-match on affection level.
+  if (p.affectionStyle) {
+    const target = p.affectionStyle === "velcro" ? 92 : p.affectionStyle === "balanced" ? 62 : 30;
+    ideal.temperament = { want: 1, target, tol: 24 };
   }
 
   return ideal;
 }
 
-// ── Place attribute extraction per category (0..100, imputed). ───────────────────────────
-function placeAttrs(loc: Location, p: OnboardingData, locations: Location[]): Record<string, number> {
-  const f = (k: (typeof AGG_FIELDS)[number], prior: number) => field(loc, k, prior, locations);
+// ── Breed attribute extraction per category (0..100, imputed). ───────────────────────────
+function breedAttrs(breed: Breed, p: OnboardingData, breeds: Breed[]): Record<string, number> {
+  const f = (k: (typeof AGG_FIELDS)[number], prior: number) => field(breed, k, prior, breeds);
 
-  // climate warmth proxy: combine winter/summer temp into a 0..100 warmth scale.
-  const warmth = clamp(((num(loc.avg_temp_winter, 12) + num(loc.avg_temp_summer, 24)) / 2 - 2) * 3.0);
+  // energy level (matched against the owner's target).
+  const energy = clamp(0.6 * f("energy_level", 55) + 0.4 * f("exercise_needs", 55));
 
-  // nature: pick the terrain the user cares about; else overall outdoor.
-  let nature = f("outdoor_score", 55);
-  if (p.beachMountain === "beach") nature = Math.max(f("beach_access_score", 40), (nature + f("beach_access_score", 40)) / 2);
-  else if (p.beachMountain === "mountains") nature = Math.max(f("mountain_access_score", 40), (nature + f("mountain_access_score", 40)) / 2);
-  else if (p.beachMountain === "either") nature = Math.max(f("beach_access_score", 40), f("mountain_access_score", 40), f("outdoor_score", 55));
+  // home: apartment suitability — coat/size/calm composite the field already encodes.
+  const home = clamp(0.75 * f("apartment_friendly", 50) + 0.25 * (100 - sizeScore(breed.size)));
 
-  const community = clamp(0.5 * f("community_score", 55) + 0.25 * f("english_friendliness_score", 60) + 0.25 * f("culture_openness_score", 60)
-    + (loc.tags?.includes("digital-nomad") && (p.communityVibes?.includes("digital-nomad")) ? 12 : 0)
-    + (loc.tags?.includes("expat") && p.communityVibes?.includes("expat") ? 8 : 0));
+  // training: how forgiving + how teachable, tilted by what the user wants from training.
+  let training = clamp(0.5 * f("novice_friendly", 55) + 0.5 * f("trainability", 60));
+  if (p.trainingAppetite === "love-it") training = clamp(0.3 * f("novice_friendly", 55) + 0.7 * f("trainability", 60));
 
-  const career = clamp(0.55 * f("startup_ecosystem_score", 50) + 0.45 * f("internet_quality_score", 70));
+  // grooming: LOW-maintenance coat scores high; hypoallergenic is a real bonus for allergies.
+  let grooming = clamp(100 - (0.45 * f("grooming_needs", 50) + 0.55 * f("shedding_level", 50)));
+  if ((p.allergies || p.mustHaves?.includes("hypoallergenic")) && breed.hypoallergenic) grooming = clamp(Math.max(grooming, 88));
 
-  // cost: affordability; fold tax friendliness in ONLY for tax-sensitive users.
-  let cost = (f("cost_of_living_score", 50) + f("rent_score", 50)) / 2;
-  if (p.taxSensitivity === "very-sensitive") cost = cost * 0.55 + f("tax_friendliness_score", 50) * 0.45;
-  else if (p.taxSensitivity === "somewhat") cost = cost * 0.85 + f("tax_friendliness_score", 50) * 0.15;
+  const family = f("kid_friendly", 60);
 
-  const safety = clamp(0.7 * f("safety_score", 65) + 0.3 * f("healthcare_score", 65));
-  const wellness = clamp(0.7 * f("wellness_score", 55) + 0.3 * f("outdoor_score", 55));
-  const travel = clamp(0.7 * f("airport_connectivity_score", 50) + 0.3 * f("transit_score", 50));
-  const culture = f("culture_openness_score", 60);
+  // social: weight the species actually in the house.
+  const hasDog = p.otherPets?.includes("dog");
+  const hasCat = p.otherPets?.includes("cat");
+  let social = f("dog_friendly", 60);
+  if (hasCat && hasDog) social = 0.5 * f("dog_friendly", 60) + 0.5 * f("cat_friendly", 50);
+  else if (hasCat) social = f("cat_friendly", 50);
 
-  // lifestyle urban-energy level (matched against target).
-  const lifestyle = clamp(0.45 * f("walkability_score", 55) + 0.3 * f("nightlife_score", 50) + 0.25 * f("transit_score", 50));
+  const protection = clamp(0.65 * f("protectiveness", 45) + 0.35 * f("watchdog_alertness", 55));
+  const noise = clamp(100 - f("barking_level", 50));
+  const independence = clamp(0.7 * f("alone_tolerance", 45) + 0.3 * f("independence", 50));
+  const temperament = f("affection_level", 65);
 
-  return { climate: warmth, nature, community, career, cost, safety, wellness, travel, culture, lifestyle };
+  return { energy, home, training, grooming, family, social, protection, noise, independence, temperament };
 }
 
 // ── Per-category fit 0..100 given the user's ideal. ─────────────────────────────────────
-function categoryFit(cat: string, placeValue: number, id: CategoryIdeal): number {
+function categoryFit(cat: string, breedValue: number, id: CategoryIdeal): number {
   if (id.target !== null) {
     // target-match: full marks at the target, falling off by distance.
     if (id.want <= 0) return NEUTRAL;
-    return clamp(100 - Math.abs(placeValue - id.target) * (100 / (id.tol * 2)) * 0.9, 10);
+    return clamp(100 - Math.abs(breedValue - id.target) * (100 / (id.tol * 2)) * 0.9, 10);
   }
-  // more-is-better only when wanted; unexpressed ⇒ neutral (no amenity-max bias).
+  // more-is-better only when wanted; unexpressed ⇒ neutral (no trait-max bias).
   if (id.want <= 0) return NEUTRAL;
-  return clamp(placeValue);
+  return clamp(breedValue);
 }
 
 export interface CategoryScoreV2 { category: string; label: string; score: number; weight: number }
 
-export function fitCategories(loc: Location, p: OnboardingData, locations: Location[]): CategoryScoreV2[] {
-  buildAggregates(locations);
+export function fitCategories(breed: Breed, p: OnboardingData, breeds: Breed[]): CategoryScoreV2[] {
+  buildAggregates(breeds);
   const ideal = buildIdeal(p);
-  const attrs = placeAttrs(loc, p, locations);
+  const attrs = breedAttrs(breed, p, breeds);
   const raw = CATEGORY_ORDER.map((cat) => {
     const id = ideal[cat];
     const fit = categoryFit(cat, attrs[cat], id);
@@ -221,16 +232,59 @@ export function fitCategories(loc: Location, p: OnboardingData, locations: Locat
   return raw.map((c) => ({ ...c, weight: c.weight / total }));
 }
 
-// ── Hard constraints: a place that fails a non-negotiable is filtered down, hard. ────────
-function constraintMultiplier(loc: Location, p: OnboardingData, locations: Location[]): number {
+// ── Hard constraints: a breed that fails a non-negotiable is filtered down, hard. ────────
+function constraintMultiplier(breed: Breed, p: OnboardingData, breeds: Breed[]): number {
   let m = 1;
-  const f = (k: (typeof AGG_FIELDS)[number], prior: number) => field(loc, k, prior, locations);
-  if ((p.safetyPriority === "top-priority" || p.dealBreakers?.includes("high-crime")) && f("safety_score", 65) < 55) m *= 0.55;
-  if (p.beachMountain === "beach" && p.mustHaves?.includes("beach") && f("beach_access_score", 0) < 35) m *= 0.55;
-  if (p.beachMountain === "mountains" && f("mountain_access_score", 0) < 30) m *= 0.7;
-  if (p.preferredClimate === "tropical" && num(loc.avg_temp_winter, 10) < 14) m *= 0.6;
-  if (p.preferredClimate === "cold" && num(loc.avg_temp_summer, 25) > 30) m *= 0.65;
-  if ((p.budgetRange === "budget" || p.dealBreakers?.includes("expensive")) && f("cost_of_living_score", 50) < 40) m *= 0.6;
+  const f = (k: (typeof AGG_FIELDS)[number], prior: number) => field(breed, k, prior, breeds);
+
+  // Allergies: hypoallergenic coats pass; heavy shedders are filtered hard.
+  if ((p.allergies || p.mustHaves?.includes("hypoallergenic")) && !breed.hypoallergenic) {
+    const shed = f("shedding_level", 50);
+    if (shed > 40) m *= 0.5;
+    else m *= 0.75;
+  }
+
+  // Apartment reality check.
+  if (p.homeType === "apartment") {
+    if (f("apartment_friendly", 50) < 30) m *= 0.5;
+    else if (f("apartment_friendly", 50) < 45 || breed.size === "Giant") m *= 0.7;
+  }
+
+  // Energy mismatch both directions.
+  if (p.activityLevel === "relaxed" && f("exercise_needs", 55) > 80) m *= 0.55;
+  if (p.activityLevel === "athlete" && f("energy_level", 55) < 35) m *= 0.7;
+
+  // Kids.
+  if (p.hasKids && p.kidsAges === "toddlers" && f("kid_friendly", 60) < 50) m *= 0.5;
+  else if (p.hasKids && f("kid_friendly", 60) < 40) m *= 0.6;
+
+  // Alone time.
+  if (p.hoursAlone === "full-day" && f("alone_tolerance", 45) < 30) m *= 0.6;
+
+  // Budget.
+  if (p.budgetRange === "budget" && num(breed.monthly_cost_usd, 130) > 200) m *= 0.65;
+
+  // Size preference is a filter, not a dimension.
+  const s = breed.size;
+  if (p.sizePreference === "small" && (s === "Large" || s === "Giant")) m *= 0.55;
+  if (p.sizePreference === "medium" && s === "Giant") m *= 0.7;
+  if ((p.sizePreference === "large" || p.sizePreference === "giant") && (s === "Toy" || s === "Small")) m *= 0.6;
+
+  // Climate.
+  if (p.climate === "hot" && f("heat_tolerance", 55) < 25) m *= 0.7;
+  if (p.climate === "cold" && f("cold_tolerance", 55) < 25) m *= 0.8;
+
+  // Cats in the house.
+  if (p.otherPets?.includes("cat") && f("cat_friendly", 50) < 30) m *= 0.6;
+
+  // Explicit deal-breakers.
+  if (p.dealBreakers?.includes("drooling") && f("drooling_level", 25) > 60) m *= 0.55;
+  if (p.dealBreakers?.includes("heavy-shedding") && f("shedding_level", 50) > 70) m *= 0.55;
+  if (p.dealBreakers?.includes("constant-barking") && f("barking_level", 50) > 75) m *= 0.6;
+  if (p.dealBreakers?.includes("high-energy") && f("energy_level", 55) > 85) m *= 0.6;
+  if (p.dealBreakers?.includes("stubborn") && f("trainability", 60) < 40) m *= 0.65;
+  if (p.dealBreakers?.includes("fragile-health") && f("health_robustness", 60) < 40) m *= 0.65;
+
   return m;
 }
 
@@ -241,11 +295,9 @@ function weightedFit(cats: CategoryScoreV2[]): number {
 
 // Map the raw fit/resonance score (which, because unexpressed axes sit at neutral, tends
 // to cluster in the ~10..75 band) into a believable display range. This is a MONOTONIC
-// affine transform — it never changes rank order, only the displayed numbers. The old
-// curve (center 64, gain 1.6) pushed the bulk below its floor, so a real ranking read as a
-// wall of identical "35"s. This one (slope 0.95, intercept 22, floor 28) gives a genuine
-// #1 ~90+ and a smooth gradient down the list, with almost nothing pinned to the floor.
-// Tuned empirically against representative profiles; a distribution test locks it.
+// affine transform — it never changes rank order, only the displayed numbers. Tuned so a
+// genuine #1 reads ~90+ with a smooth gradient down the list, and almost nothing pinned
+// to the floor. A distribution test locks it.
 function spread(v: number): number {
   return clamp(Math.round(22 + v * 0.95), 28, 99);
 }
@@ -253,7 +305,7 @@ function spread(v: number): number {
 /**
  * The ONE display transform, exported for every surface that shows a fit number.
  *
- * Composite scores (ranking displayScore, current-city ring) already pass through
+ * Composite scores (ranking displayScore, dream-breed ring) already pass through
  * spread(). Category/dimension numbers shown next to them MUST use the same transform,
  * or the math visibly breaks: spread() lifts the composite (~+22), so a "90" ring next
  * to raw bars topping out at 82 reads as a weighted average exceeding its parts.
@@ -264,14 +316,16 @@ function spread(v: number): number {
  */
 export const displayFit = spread;
 
-// ── Revealed preference: cosine similarity of a candidate to the user's loved places. ────
+// ── Revealed preference: cosine similarity of a candidate to the user's loved breeds. ────
 const SIM_FIELDS = [
-  "climate_score", "beach_access_score", "mountain_access_score", "outdoor_score", "cost_of_living_score",
-  "safety_score", "nightlife_score", "walkability_score", "community_score", "wellness_score",
-  "culture_openness_score", "startup_ecosystem_score",
+  "energy_level", "playfulness", "apartment_friendly", "trainability", "grooming_needs",
+  "shedding_level", "kid_friendly", "affection_level", "independence", "protectiveness",
+  "barking_level", "stranger_friendly",
 ] as const;
-function vec(loc: Location, locations: Location[]): number[] {
-  return SIM_FIELDS.map((k) => field(loc, k, 50, locations) / 100);
+function vec(breed: Breed, breeds: Breed[]): number[] {
+  const v = SIM_FIELDS.map((k) => field(breed, k, 50, breeds) / 100);
+  v.push(sizeScore(breed.size) / 100); // size is core to breed character
+  return v;
 }
 function cosine(a: number[], b: number[]): number {
   let dot = 0, na = 0, nb = 0;
@@ -279,76 +333,76 @@ function cosine(a: number[], b: number[]): number {
   return na && nb ? dot / (Math.sqrt(na) * Math.sqrt(nb)) : 0;
 }
 
-function lovedVectors(p: OnboardingData, locations: Location[]): { ids: Set<string>; vecs: number[][] } {
+function lovedVectors(p: OnboardingData, breeds: Breed[]): { ids: Set<string>; vecs: number[][] } {
   const ids = new Set<string>();
   const vecs: number[][] = [];
-  for (const raw of p.lovedPlaces ?? []) {
-    const r = resolvePlace(raw, locations);
-    // Always let the loved place's CHARACTER influence resonance — resolvePlace returns a
+  for (const raw of p.lovedBreeds ?? []) {
+    const r = resolveBreed(raw, breeds);
+    // Always let the loved breed's CHARACTER influence resonance — resolveBreed returns a
     // real vector even when the exact name isn't in our curated set (it synthesizes one
-    // from the country). Only an exact curated match gets pinned toward #1 (via ids), so an
-    // unresolved "Oaxaca"/"Tbilisi" still shapes the blend instead of silently no-op'ing.
-    vecs.push(vec(r.location, locations));
+    // from the breed group). Only an exact curated match gets pinned toward #1 (via ids),
+    // so an unresolved "farm collie mix" still shapes the blend instead of no-op'ing.
+    vecs.push(vec(r.breed, breeds));
     if (r.matched) ids.add(r.matched.id);
   }
   return { ids, vecs };
 }
 
 export interface RankedMatch {
-  location: Location;
+  breed: Breed;
   totalScore: number;
   displayScore: number;
   categoryScores: CategoryScoreV2[];
   rank: number;
 }
 
-export function rankLocationsV2(locations: Location[], p: OnboardingData): RankedMatch[] {
-  buildAggregates(locations);
-  const loved = lovedVectors(p, locations);
+export function rankBreedsV2(breeds: Breed[], p: OnboardingData): RankedMatch[] {
+  buildAggregates(breeds);
+  const loved = lovedVectors(p, breeds);
   const hasLoved = loved.vecs.length > 0;
 
-  const scored = locations.map((loc) => {
-    const cats = fitCategories(loc, p, locations);
-    const base = weightedFit(cats) * constraintMultiplier(loc, p, locations);
+  const scored = breeds.map((breed) => {
+    const cats = fitCategories(breed, p, breeds);
+    const base = weightedFit(cats) * constraintMultiplier(breed, p, breeds);
 
     let resonance = 0;
     if (hasLoved) {
-      const v = vec(loc, locations);
-      const c = Math.max(...loved.vecs.map((lv) => cosine(v, lv))); // similarity to nearest loved place
-      // Cosines between all-positive city vectors cluster in ~[0.86, 1], so the raw value
+      const v = vec(breed, breeds);
+      const c = Math.max(...loved.vecs.map((lv) => cosine(v, lv))); // similarity to nearest loved breed
+      // Cosines between all-positive trait vectors cluster in ~[0.86, 1], so the raw value
       // barely differentiates — rescale it so resonance separates candidates instead of
       // uniformly inflating every score.
       resonance = Math.max(0, Math.min(1, (c - 0.86) / 0.14));
     }
-    // Blend fit with resonance; a place the user explicitly loves is pulled to the top.
+    // Blend fit with resonance; a breed the user explicitly loves is pulled to the top.
     let blended = hasLoved ? base * 0.7 + resonance * 100 * 0.3 : base;
-    if (loved.ids.has(loc.id)) blended = Math.max(blended, 96);
+    if (loved.ids.has(breed.id)) blended = Math.max(blended, 96);
 
-    // The DISPLAYED score is always the honest fit — the exact formula the current-city
-    // card uses — so one place shows one number everywhere. Resonance and the loved pin
-    // shape RANK ORDER only; letting them into the display made a Bali resident who loves
-    // Bali see "90 fit" and "99 match" for the same city on the same page.
+    // The DISPLAYED score is always the honest fit — the exact formula the dream-breed
+    // card uses — so one breed shows one number everywhere. Resonance and the loved pin
+    // shape RANK ORDER only; letting them into the display would show two different
+    // numbers for the same breed on the same page.
     const display = spread(base);
-    return { location: loc, totalScore: blended, displayScore: display, categoryScores: cats, rank: 0 };
+    return { breed, totalScore: blended, displayScore: display, categoryScores: cats, rank: 0 };
   });
 
-  // Primary: fit/resonance. Tie-break: a bigger, safer city — so a near-tie (and the
-  // degenerate all-neutral case of an empty profile) resolves to a sensible, notable place
-  // instead of whatever happens to sit first in the dataset.
+  // Primary: fit/resonance. Tie-break: a more popular, more robust breed — so a near-tie
+  // (and the degenerate all-neutral case of an empty profile) resolves to a well-known,
+  // well-supported breed instead of whatever sits first in the dataset.
   scored.sort(
     (a, b) =>
       b.totalScore - a.totalScore ||
-      num(b.location.population, 0) - num(a.location.population, 0) ||
-      num(b.location.safety_score, 0) - num(a.location.safety_score, 0),
+      num(b.breed.popularity, 0) - num(a.breed.popularity, 0) ||
+      num(b.breed.health_robustness, 0) - num(a.breed.health_robustness, 0),
   );
   scored.forEach((s, i) => (s.rank = i + 1));
 
   // A ranked list must read monotonically. Rank comes from the blended score (fit +
   // revealed-preference resonance), display from honest fit — so without this cap a
-  // user who loves Bali could see "#1 Bali 90" sitting above "#9 Dubai 95", which reads
-  // as broken math. Revealed preference PROMOTES what you love; it never inflates a
-  // number — so every place's displayed score is capped by the one ranked above it.
-  // For profiles with no loved places, blended === fit and this is a no-op.
+  // user who loves Huskies could see "#1 Husky 90" sitting above "#9 Poodle 95", which
+  // reads as broken math. Revealed preference PROMOTES what you love; it never inflates
+  // a number — so every breed's displayed score is capped by the one ranked above it.
+  // For profiles with no loved breeds, blended === fit and this is a no-op.
   let cap = 99;
   for (const s of scored) {
     s.displayScore = Math.min(s.displayScore, cap);
@@ -357,27 +411,27 @@ export function rankLocationsV2(locations: Location[], p: OnboardingData): Ranke
   return scored;
 }
 
-// ── Current-city: resolve ANY input to a real vector and score it on the same engine. ────
-export interface CurrentCityFit {
+// ── Dream breed: resolve ANY input to a real vector and score it on the same engine. ─────
+export interface DreamBreedFit {
   score: number;
   categoryScores: { label: string; score: number }[];
-  cityFound: boolean;
+  breedFound: boolean;
   resolvedName: string;
   estimated: boolean;
-  /** Curated location id the input resolved to (null when synthesized). Lets callers
-   *  detect "the #1 match IS the user's current city" and keep one number for one place. */
+  /** Curated breed id the input resolved to (null when synthesized). Lets callers
+   *  detect "the #1 match IS the dream breed" and keep one number for one breed. */
   resolvedId: string | null;
   /** True when a hard deal-breaker penalty pulled the composite below the dimension
    *  average — the UI explains it so the lower ring doesn't read as broken math. */
   constraintPenalty: boolean;
 }
 
-export function scoreCurrentCityV2(input: string, locations: Location[], p: OnboardingData): CurrentCityFit {
-  buildAggregates(locations);
-  const r = resolvePlace(input, locations);
-  const loc = r.location; // always a real Location (dataset match or country-synthesized)
-  const cats = fitCategories(loc, p, locations);
-  const m = constraintMultiplier(loc, p, locations);
+export function scoreDreamBreedV2(input: string, breeds: Breed[], p: OnboardingData): DreamBreedFit {
+  buildAggregates(breeds);
+  const r = resolveBreed(input, breeds);
+  const breed = r.breed; // always a real Breed (dataset match or group-synthesized)
+  const cats = fitCategories(breed, p, breeds);
+  const m = constraintMultiplier(breed, p, breeds);
   const score = spread(weightedFit(cats) * m);
 
   // Dimension tiles shown NEXT TO the composite ring. Two rules make the math read
@@ -402,17 +456,17 @@ export function scoreCurrentCityV2(input: string, locations: Location[], p: Onbo
     return spread(sum / (wsum || 1));
   };
   const simplified = [
-    { label: "Cost & Value", score: bucket("cost") },
-    { label: "Lifestyle Fit", score: bucket("lifestyle", "wellness") },
-    { label: "Community Fit", score: bucket("community", "culture") },
-    { label: "Nature & Environment", score: bucket("nature", "climate") },
-    { label: "Safety & Stability", score: bucket("safety") },
-    { label: "Career & Opportunity", score: bucket("career", "travel") },
+    { label: "Energy & Exercise", score: bucket("energy") },
+    { label: "Home & Alone-Time", score: bucket("home", "independence") },
+    { label: "Family & Social", score: bucket("family", "social") },
+    { label: "Care & Training", score: bucket("training", "grooming") },
+    { label: "Guarding & Noise", score: bucket("protection", "noise") },
+    { label: "Temperament", score: bucket("temperament") },
   ];
   return {
     score,
     categoryScores: simplified,
-    cityFound: r.matched !== null,
+    breedFound: r.matched !== null,
     resolvedName: r.resolvedName,
     estimated: r.estimated,
     resolvedId: r.matched?.id ?? null,

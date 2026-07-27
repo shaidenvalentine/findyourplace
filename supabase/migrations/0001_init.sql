@@ -1,76 +1,77 @@
--- Find Your Place — initial schema (clean rebuild, no Lovable history).
--- RLS on every table. `locations` is public-read; everything else owner-scoped.
+-- Find Your Dog — initial schema (clean rebuild, no Lovable history).
+-- RLS on every table. `breeds` and `shelter_listings` are public-read;
+-- everything else owner-scoped or service-role only.
 
 create extension if not exists "pgcrypto";
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- locations: the curated dataset (seeded from src/data/locations.json). PUBLIC READ.
+-- breeds: the curated dataset (seeded from src/data/breeds.json). PUBLIC READ.
+-- Columns mirror the Breed interface in src/lib/scoring.ts.
 -- ─────────────────────────────────────────────────────────────────────────────
-create table if not exists public.locations (
+create table if not exists public.breeds (
   id text primary key,
   name text not null,
-  region text,
-  country text not null,
-  continent text not null,
-  latitude numeric(10, 6),
-  longitude numeric(10, 6),
-  population integer,
+  "group" text not null,
+  size text not null,
+  weight_lbs numeric(6, 1),
+  lifespan_years numeric(4, 1),
   image_url text,
   description text,
   vibe_summary text,
   tags jsonb not null default '[]'::jsonb,
-  cost_of_living_score integer,
-  rent_score integer,
-  safety_score integer,
-  healthcare_score integer,
-  climate_score integer,
-  avg_temp_summer integer,
-  avg_temp_winter integer,
-  humidity_level integer,
-  sunshine_days integer,
-  beach_access_score integer,
-  mountain_access_score integer,
-  outdoor_score integer,
-  nightlife_score integer,
-  wellness_score integer,
-  dating_scene_score integer,
-  community_score integer,
-  english_friendliness_score integer,
-  visa_friendliness_score integer,
-  tax_friendliness_score integer,
-  airport_connectivity_score integer,
-  internet_quality_score integer,
-  walkability_score integer,
-  transit_score integer,
-  culture_openness_score integer,
-  startup_ecosystem_score integer,
-  bureaucracy_score integer,
-  personal_income_tax_rate numeric(5, 2),
-  corporate_tax_rate numeric(5, 2),
-  capital_gains_tax_rate numeric(5, 2),
-  tax_notes text,
+  hypoallergenic boolean not null default false,
+  -- Trait scores 0–100
+  energy_level integer,
+  exercise_needs integer,
+  playfulness integer,
+  apartment_friendly integer,
+  novice_friendly integer,
+  trainability integer,
+  intelligence integer,
+  grooming_needs integer,
+  shedding_level integer,
+  drooling_level integer,
+  kid_friendly integer,
+  affection_level integer,
+  independence integer,
+  alone_tolerance integer,
+  dog_friendly integer,
+  cat_friendly integer,
+  stranger_friendly integer,
+  protectiveness integer,
+  watchdog_alertness integer,
+  barking_level integer,
+  heat_tolerance integer,
+  cold_tolerance integer,
+  health_robustness integer,
+  -- Cost & meta
+  monthly_cost_usd integer,
+  popularity integer,
+  shelter_availability integer,
   created_at timestamptz not null default now()
 );
 
-alter table public.locations enable row level security;
+alter table public.breeds enable row level security;
 
-drop policy if exists "locations are public read" on public.locations;
-create policy "locations are public read" on public.locations
+drop policy if exists "breeds are public read" on public.breeds;
+create policy "breeds are public read" on public.breeds
   for select using (true);
 -- No insert/update/delete policy => writes only via service role (seed script).
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- onboarding_runs: a user's scored run. Owner-scoped; anonymous runs allowed.
+-- Columns match src/lib/server/runStore.ts exactly.
 -- ─────────────────────────────────────────────────────────────────────────────
 create table if not exists public.onboarding_runs (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users (id) on delete set null,
   source text not null default 'quiz',
   current_city text,
+  dream_breed text,
   inputs_json jsonb not null default '{}'::jsonb,
   free_json jsonb not null default '{}'::jsonb,    -- the non-sensitive FREE surface
-  ranking_json jsonb,                              -- LOCKED: full ranking
-  circuit_json jsonb,                              -- LOCKED: annual circuit
+  ranking_json jsonb,                              -- LOCKED: full breed ranking
+  plan_json jsonb,                                 -- LOCKED: adoption plan
   created_at timestamptz not null default now()
 );
 
@@ -100,7 +101,7 @@ alter table public.unlocked_results enable row level security;
 drop policy if exists "own unlocks are readable" on public.unlocked_results;
 create policy "own unlocks are readable" on public.unlocked_results
   for select using (user_id is null or auth.uid() = user_id);
--- Inserts happen ONLY via service role from the Stripe webhook (never client).
+-- Inserts happen ONLY via service role from the payment webhook (never client).
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- email_captures: pre-paywall email gate → ESP nurture.
@@ -152,3 +153,35 @@ create policy "own profile upsert" on public.profiles
 drop policy if exists "own profile update" on public.profiles;
 create policy "own profile update" on public.profiles
   for update using (auth.uid() = id);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- shelter_listings: the free shelter-adoption layer. PUBLIC READ.
+-- Shelters submit via us (email/ops for now); rows are written by the service
+-- role only — no anon/auth insert policies, matching the seed-script pattern.
+-- ─────────────────────────────────────────────────────────────────────────────
+create table if not exists public.shelter_listings (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  shelter_name text,
+  shelter_email text,
+  city text,
+  breed_id text references public.breeds (id) on delete set null,
+  breed_guess text,                -- shelter's own guess when the mix maps to no breed_id
+  dog_name text,
+  age_months integer,
+  sex text,
+  description text,
+  photo_url text,
+  source_url text,                 -- the shelter's own page for this dog
+  status text not null default 'available'
+);
+
+create index if not exists shelter_listings_breed_idx on public.shelter_listings (breed_id);
+create index if not exists shelter_listings_status_idx on public.shelter_listings (status, created_at desc);
+
+alter table public.shelter_listings enable row level security;
+
+drop policy if exists "shelter listings are public read" on public.shelter_listings;
+create policy "shelter listings are public read" on public.shelter_listings
+  for select using (true);
+-- No insert/update/delete policy => writes only via service role.

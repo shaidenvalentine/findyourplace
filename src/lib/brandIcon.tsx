@@ -1,30 +1,25 @@
 /**
- * The Find Your Place brand mark — a refined location pin holding a small globe, in the
- * app's dark + teal identity. One vector source of truth for the favicon, Apple touch
- * icon, PWA/app icon, the /api/icon generator, the Instagram profile picture, and the
- * in-app header logo. Pure SVG so it stays razor-crisp at every size.
+ * The Find Your Dog brand mark — a clean paw print in the app's dark + teal identity.
+ * One vector source of truth for the favicon, Apple touch icon, PWA/app icon, the
+ * /api/icon generator, the Instagram profile picture, and the in-app header logo.
+ * Pure SVG so it stays razor-crisp at every size. (These are export-surface literals —
+ * favicons/OG render outside the CSS token system, so the brand hexes live here.)
  */
 
-/** The pin+globe glyph on its own (transparent) — used over any background. */
-export function BrandMark({
-  size,
-  pin = "#2fbcae",
-  well = "#14160f",
-}: {
-  size: number;
-  pin?: string;
-  well?: string;
-}) {
+/** The paw glyph on its own (transparent) — used over any background. */
+export function BrandMark({ size, paw = "#2fbcae" }: { size: number; paw?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      {/* teardrop pin */}
-      <path d="M12 22.6c4.75-4.3 7.05-7.75 7.05-11.1A7.05 7.05 0 1 0 4.95 11.5c0 3.35 2.3 6.8 7.05 11.1Z" fill={pin} />
-      {/* globe well (negative space) */}
-      <circle cx="12" cy="10.45" r="3.65" fill={well} />
-      {/* equator + meridians, in the pin color */}
-      <path d="M8.35 10.45h7.3" stroke={pin} strokeWidth="0.75" strokeLinecap="round" />
-      <path d="M12 6.8c1.95 1.2 1.95 6.1 0 7.3" stroke={pin} strokeWidth="0.75" fill="none" strokeLinecap="round" />
-      <path d="M12 6.8c-1.95 1.2-1.95 6.1 0 7.3" stroke={pin} strokeWidth="0.75" fill="none" strokeLinecap="round" />
+      {/* four toe pads */}
+      <ellipse cx="5.2" cy="10.7" rx="2" ry="2.6" fill={paw} />
+      <ellipse cx="9.7" cy="7.2" rx="2.1" ry="2.8" fill={paw} />
+      <ellipse cx="14.3" cy="7.2" rx="2.1" ry="2.8" fill={paw} />
+      <ellipse cx="18.8" cy="10.7" rx="2" ry="2.6" fill={paw} />
+      {/* main pad */}
+      <path
+        d="M12 12.3c2.95 0 5.5 1.95 6.2 4.6.5 1.85-.55 3.7-2.3 4.2-1.3.38-2.6-.22-3.9-.22s-2.6.6-3.9.22c-1.75-.5-2.8-2.35-2.3-4.2.7-2.65 3.25-4.6 6.2-4.6Z"
+        fill={paw}
+      />
     </svg>
   );
 }

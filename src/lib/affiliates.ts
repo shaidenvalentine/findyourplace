@@ -1,28 +1,23 @@
 import type { FreeRun } from "@/lib/run";
-import { incomeMidpoint } from "@/lib/tax";
+import { budgetMidpoint } from "@/lib/cost";
 
 /**
  * Affiliate catalog + recommendation engine — the primary back-end revenue stream.
  *
- * Each partner is a real, relevant service a mover needs. The actual tracked link lives
- * in an env var (the affiliate URL the partner's program gives you); until it's set, the
- * link falls back to the plain site (no commission, still useful). We route every click
+ * Each partner is a real, relevant service a new dog owner needs. The actual tracked link
+ * lives in an env var (the affiliate URL the partner's program gives you); until it's set,
+ * the link falls back to the plain site (no commission, still useful). We route every click
  * through /go/[id] so we can attribute + measure. Recommendations are PERSONALIZED to the
  * run so they read as concierge advice, not ads. FTC disclosure shown in the UI.
  */
 
 export type AffCategory =
-  | "tax"
   | "insurance"
-  | "banking"
-  | "visa"
-  | "flights"
-  | "stay"
-  | "esim"
-  | "vpn"
-  | "moving"
-  | "coworking"
-  | "language";
+  | "food"
+  | "training"
+  | "gear"
+  | "care"
+  | "health";
 
 export interface AffiliatePartner {
   id: string;
@@ -35,167 +30,134 @@ export interface AffiliatePartner {
   affEnv: string;
   recurring?: boolean;
   conditions?: {
-    lifestyle?: ("rooted" | "nomadic")[];
-    usCitizenOnly?: boolean;
-    investorOnly?: boolean;
-    minIncomeMidpoint?: number;
+    /** Only for first-time owners (training-heavy picks). */
+    firstTimeOnly?: boolean;
+    /** Only when the user is open to adopting (DNA kits, rescue-flavored picks). */
+    adoptersOnly?: boolean;
+    /** Only when the dog will regularly be without them (long days / frequent travel). */
+    awayALot?: boolean;
+    /** Minimum monthly budget midpoint (premium food, subscriptions). */
+    minBudgetMidpoint?: number;
   };
 }
 
 export const PARTNERS: AffiliatePartner[] = [
-  // Tax
-  {
-    id: "brighttax",
-    name: "Bright!Tax",
-    category: "tax",
-    blurb: "US expat tax specialists — file from abroad and claim the exclusions you're owed.",
-    cta: "Talk to a US expat CPA",
-    baseUrl: "https://brighttax.com",
-    affEnv: "AFF_BRIGHTTAX",
-    conditions: { usCitizenOnly: true },
-  },
-  {
-    id: "taxesforexpats",
-    name: "Taxes for Expats",
-    category: "tax",
-    blurb: "Vetted cross-border tax advisors who plan the move, not just file the return.",
-    cta: "Get a tax plan",
-    baseUrl: "https://www.taxesforexpats.com",
-    affEnv: "AFF_TAXESFOREXPATS",
-  },
   // Insurance
   {
-    id: "safetywing",
-    name: "SafetyWing",
+    id: "lemonade-pet",
+    name: "Lemonade Pet",
     category: "insurance",
-    blurb: "Health + travel insurance built for nomads — covers you in 180+ countries, cancel anytime.",
-    cta: "Get covered",
-    baseUrl: "https://safetywing.com",
-    affEnv: "AFF_SAFETYWING",
+    blurb: "Pet insurance in minutes — cover the surgery bill before it exists. Cheapest while they're young.",
+    cta: "Get a quote",
+    baseUrl: "https://www.lemonade.com/pet",
+    affEnv: "AFF_LEMONADE_PET",
     recurring: true,
-    conditions: { lifestyle: ["nomadic"] },
   },
   {
-    id: "genki",
-    name: "Genki",
+    id: "healthypaws",
+    name: "Healthy Paws",
     category: "insurance",
-    blurb: "Flexible long-term health insurance for people living abroad. Simple, monthly, global.",
-    cta: "Compare plans",
-    baseUrl: "https://genki.world",
-    affEnv: "AFF_GENKI",
+    blurb: "One simple plan, no payout caps — the workhorse policy for accident + illness coverage.",
+    cta: "Compare coverage",
+    baseUrl: "https://www.healthypawspetinsurance.com",
+    affEnv: "AFF_HEALTHYPAWS",
     recurring: true,
   },
-  // Banking
+  // Food
   {
-    id: "wise",
-    name: "Wise",
-    category: "banking",
-    blurb: "Hold + spend 40+ currencies at the real exchange rate. The default nomad bank account.",
-    cta: "Open a Wise account",
-    baseUrl: "https://wise.com",
-    affEnv: "AFF_WISE",
-  },
-  {
-    id: "mercury",
-    name: "Mercury",
-    category: "banking",
-    blurb: "Banking built for founders running a business from anywhere.",
-    cta: "Set up business banking",
-    baseUrl: "https://mercury.com",
-    affEnv: "AFF_MERCURY",
-    conditions: { investorOnly: true },
-  },
-  // Visa / residency
-  {
-    id: "ivisa",
-    name: "iVisa",
-    category: "visa",
-    blurb: "Check requirements and apply for visas and digital-nomad permits without the embassy run-around.",
-    cta: "Check visa options",
-    baseUrl: "https://www.ivisa.com",
-    affEnv: "AFF_IVISA",
-  },
-  // Flights
-  {
-    id: "skyscanner",
-    name: "Skyscanner",
-    category: "flights",
-    blurb: "Scout flights for your trial run — set a price alert and watch the route.",
-    cta: "Find flights",
-    baseUrl: "https://www.skyscanner.com",
-    affEnv: "AFF_SKYSCANNER",
-  },
-  // Stay
-  {
-    id: "booking",
-    name: "Booking.com",
-    category: "stay",
-    blurb: "Book your scouting trip or first weeks while you find a long-term place.",
-    cta: "Book a stay",
-    baseUrl: "https://www.booking.com",
-    affEnv: "AFF_BOOKING",
-  },
-  {
-    id: "blueground",
-    name: "Blueground",
-    category: "stay",
-    blurb: "Move-in-ready furnished apartments by the month — perfect for a soft landing.",
-    cta: "Browse furnished homes",
-    baseUrl: "https://www.theblueground.com",
-    affEnv: "AFF_BLUEGROUND",
-  },
-  // eSIM
-  {
-    id: "airalo",
-    name: "Airalo",
-    category: "esim",
-    blurb: "Land with data already working — an eSIM for your new country in two taps.",
-    cta: "Get an eSIM",
-    baseUrl: "https://www.airalo.com",
-    affEnv: "AFF_AIRALO",
-  },
-  // VPN
-  {
-    id: "nordvpn",
-    name: "NordVPN",
-    category: "vpn",
-    blurb: "Keep your banking, streaming, and home-country logins working from abroad.",
-    cta: "Stay connected",
-    baseUrl: "https://nordvpn.com",
-    affEnv: "AFF_NORDVPN",
+    id: "chewy",
+    name: "Chewy",
+    category: "food",
+    blurb: "Food, treats, and everything else on autoship — never run out the week you're busiest.",
+    cta: "Set up autoship",
+    baseUrl: "https://www.chewy.com",
+    affEnv: "AFF_CHEWY",
     recurring: true,
   },
-  // Moving
   {
-    id: "sirelo",
-    name: "Sirelo",
-    category: "moving",
-    blurb: "Compare quotes from vetted international movers if you're shipping a life, not a suitcase.",
-    cta: "Compare movers",
-    baseUrl: "https://www.sirelo.com",
-    affEnv: "AFF_SIRELO",
-    conditions: { lifestyle: ["rooted"] },
+    id: "farmersdog",
+    name: "The Farmer's Dog",
+    category: "food",
+    blurb: "Fresh food portioned to your dog's breed, weight, and age — delivered on your schedule.",
+    cta: "Build their plan",
+    baseUrl: "https://www.thefarmersdog.com",
+    affEnv: "AFF_FARMERSDOG",
+    recurring: true,
+    conditions: { minBudgetMidpoint: 200 },
   },
-  // Coworking
+  // Training
   {
-    id: "coworker",
-    name: "Coworker",
-    category: "coworking",
-    blurb: "Find a desk and a community from day one in your new city.",
-    cta: "Find coworking",
-    baseUrl: "https://www.coworker.com",
-    affEnv: "AFF_COWORKER",
-    conditions: { lifestyle: ["nomadic"] },
+    id: "goodpup",
+    name: "GoodPup",
+    category: "training",
+    blurb: "1-on-1 video training with a certified trainer — house rules and recall from your living room.",
+    cta: "Meet your trainer",
+    baseUrl: "https://goodpup.com",
+    affEnv: "AFF_GOODPUP",
+    recurring: true,
   },
-  // Language
   {
-    id: "italki",
-    name: "italki",
-    category: "language",
-    blurb: "Learn enough of the local language to actually belong — 1-on-1 tutors, your schedule.",
-    cta: "Start learning",
-    baseUrl: "https://www.italki.com",
-    affEnv: "AFF_ITALKI",
+    id: "spiritdog",
+    name: "SpiritDog Training",
+    category: "training",
+    blurb: "Self-paced online courses for the specifics — leash pulling, barking, separation, recall.",
+    cta: "Browse courses",
+    baseUrl: "https://spiritdogtraining.com",
+    affEnv: "AFF_SPIRITDOG",
+    conditions: { firstTimeOnly: true },
+  },
+  // Gear
+  {
+    id: "barkbox",
+    name: "BarkBox",
+    category: "gear",
+    blurb: "A monthly box of toys + treats matched to your dog's size — enrichment on autopilot.",
+    cta: "Get the box",
+    baseUrl: "https://www.barkbox.com",
+    affEnv: "AFF_BARKBOX",
+    recurring: true,
+  },
+  {
+    id: "fi",
+    name: "Fi Smart Collar",
+    category: "gear",
+    blurb: "GPS collar with escape alerts and step tracking — know where they are and how far they ran.",
+    cta: "Track your dog",
+    baseUrl: "https://tryfi.com",
+    affEnv: "AFF_FI",
+    recurring: true,
+    conditions: { awayALot: true },
+  },
+  // Care (when you're away)
+  {
+    id: "rover",
+    name: "Rover",
+    category: "care",
+    blurb: "Vetted local sitters and dog walkers — midday walks for long workdays, boarding for trips.",
+    cta: "Find a sitter",
+    baseUrl: "https://www.rover.com",
+    affEnv: "AFF_ROVER",
+    conditions: { awayALot: true },
+  },
+  // Health
+  {
+    id: "vetster",
+    name: "Vetster",
+    category: "health",
+    blurb: "Licensed vets on video, day or night — triage the 2am 'should I worry?' without the ER bill.",
+    cta: "Talk to a vet",
+    baseUrl: "https://vetster.com",
+    affEnv: "AFF_VETSTER",
+  },
+  {
+    id: "embark",
+    name: "Embark",
+    category: "health",
+    blurb: "The dog DNA test — confirm your rescue's breed mix and screen 250+ genetic health risks.",
+    cta: "Decode your dog",
+    baseUrl: "https://embarkvet.com",
+    affEnv: "AFF_EMBARK",
+    conditions: { adoptersOnly: true },
   },
 ];
 
@@ -207,12 +169,12 @@ function passesConditions(p: AffiliatePartner, run: FreeRun): boolean {
   const c = p.conditions;
   if (!c) return true;
   const inp = run.inputs;
-  if (c.lifestyle && (!inp.lifestyleMode || !c.lifestyle.includes(inp.lifestyleMode))) return false;
-  if (c.usCitizenOnly && !inp.isUsCitizen) return false;
-  if (c.investorOnly && !inp.hasInvestmentIncome) return false;
-  if (c.minIncomeMidpoint) {
-    const mid = incomeMidpoint(inp.annualIncomeBand) ?? 0;
-    if (mid < c.minIncomeMidpoint) return false;
+  if (c.firstTimeOnly && inp.experienceLevel && inp.experienceLevel !== "first-time") return false;
+  if (c.adoptersOnly && inp.adoptPreference === "breeder") return false;
+  if (c.awayALot && !(inp.hoursAlone === "full-day" || inp.travelFrequency === "often")) return false;
+  if (c.minBudgetMidpoint) {
+    const mid = budgetMidpoint(inp.budgetRange) ?? 0;
+    if (mid < c.minBudgetMidpoint) return false;
   }
   return true;
 }
@@ -224,42 +186,53 @@ export interface ToolkitSection {
 }
 
 /**
- * Personalized "relocation toolkit" — sectioned, ordered by the user's situation so the
+ * Personalized "new-dog toolkit" — sectioned, ordered by the user's situation so the
  * most relevant, highest-intent items lead. Only includes partners whose conditions match.
  */
 export function recommendToolkit(run: FreeRun): ToolkitSection[] {
   const pick = (cats: AffCategory[], extra?: (p: AffiliatePartner) => boolean) =>
     PARTNERS.filter((p) => cats.includes(p.category) && passesConditions(p, run) && (!extra || extra(p)));
 
-  const taxRelevant =
-    Boolean(run.taxComparison) ||
-    run.inputs.taxSensitivity === "very-sensitive" ||
-    Boolean(run.inputs.isUsCitizen) ||
-    Boolean(run.inputs.hasInvestmentIncome);
+  // Insurance leads when the match's health profile makes it urgent (or budget is tight —
+  // one surprise surgery is exactly what a lean budget can't absorb).
+  const insuranceUrgent =
+    Boolean(run.costComparison?.insuranceRecommended) || run.inputs.budgetRange === "budget";
 
   const sections: ToolkitSection[] = [];
 
-  if (taxRelevant) {
-    const tax = pick(["tax"]);
-    if (tax.length) sections.push({ title: "Sort your taxes", subtitle: "Get the move structured right from day one.", items: tax });
-  }
-
-  const money = pick(["banking"]);
-  if (money.length) sections.push({ title: "Move your money", subtitle: "Multi-currency accounts that work everywhere.", items: money });
-
   const cover = pick(["insurance"]);
-  if (cover.length) sections.push({ title: "Get covered", subtitle: "Health + travel insurance for life abroad.", items: cover });
+  const coverSection = cover.length
+    ? {
+        title: "Cover the vet bills",
+        subtitle: insuranceUrgent
+          ? "Your match's health profile makes insurance a day-one move."
+          : "Lock in a rate while they're young and healthy.",
+        items: cover,
+      }
+    : null;
+  if (coverSection && insuranceUrgent) sections.push(coverSection);
 
-  const getThere = pick(["visa", "flights", "moving"]);
-  if (getThere.length) sections.push({ title: "Get there", subtitle: "Visas, flights, and shipping your life over.", items: getThere });
+  const feed = pick(["food"]);
+  if (feed.length) sections.push({ title: "Feed them right", subtitle: "The right food, delivered before you run out.", items: feed });
 
-  const settle = pick(["stay", "esim", "coworking", "language", "vpn"]);
-  if (settle.length) sections.push({ title: "Land softly", subtitle: "Everything for a smooth first month.", items: settle });
+  if (coverSection && !insuranceUrgent) sections.push(coverSection);
+
+  const train = pick(["training"]);
+  if (train.length) sections.push({ title: "Train the good habits", subtitle: "The first month sets the next decade.", items: train });
+
+  const gear = pick(["gear"]);
+  if (gear.length) sections.push({ title: "Gear up", subtitle: "The kit that keeps them busy, safe, and found.", items: gear });
+
+  const away = pick(["care"]);
+  if (away.length) sections.push({ title: "When you're away", subtitle: "Walkers and sitters for long days and trips.", items: away });
+
+  const health = pick(["health"]);
+  if (health.length) sections.push({ title: "Know your dog", subtitle: "Answers on their health without the waiting room.", items: health });
 
   return sections;
 }
 
-/** A single highest-intent recommendation for a contextual spot (e.g. under the tax card). */
-export function topTaxPartner(run: FreeRun): AffiliatePartner | undefined {
-  return PARTNERS.filter((p) => p.category === "tax" && passesConditions(p, run))[0];
+/** A single highest-intent recommendation for a contextual spot (e.g. under the cost card). */
+export function topInsurancePartner(run: FreeRun): AffiliatePartner | undefined {
+  return PARTNERS.filter((p) => p.category === "insurance" && passesConditions(p, run))[0];
 }

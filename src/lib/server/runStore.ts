@@ -13,9 +13,9 @@ import { getSupabaseAdmin } from "@/lib/supabase/server";
  * The run is stored split across the columns the schema already defines:
  *   - free_json    → the FREE surface (safe to send to any client; carries creatorId)
  *   - ranking_json → LOCKED full ranking
- *   - circuit_json → LOCKED annual circuit
+ *   - plan_json    → LOCKED adoption plan
  * On read we reassemble the ScoredRun from those columns — no dependency on
- * re-running the (deterministic) engine, and no dependency on LOCATIONS being loaded.
+ * re-running the (deterministic) engine, and no dependency on BREEDS being loaded.
  *
  * FALLBACK: with no Supabase env (local dev / preview without a DB) every function
  * degrades to an in-memory globalThis store, so the funnel still works end-to-end.
@@ -30,16 +30,16 @@ type Store = { runs: Map<string, ScoredRun>; unlocked: Set<string> };
 const g = globalThis as unknown as { __fypStore?: Store };
 const mem: Store = (g.__fypStore ??= { runs: new Map(), unlocked: new Set() });
 
-/** Reassemble a ScoredRun from the persisted free/ranking/circuit columns. */
+/** Reassemble a ScoredRun from the persisted free/ranking/plan columns. */
 function joinRun(
   free: Record<string, unknown>,
   ranking: unknown,
-  circuit: unknown,
+  plan: unknown,
 ): ScoredRun {
   return {
-    ...(free as unknown as Omit<ScoredRun, "ranking" | "circuit">),
+    ...(free as unknown as Omit<ScoredRun, "ranking" | "adoptionPlan">),
     ranking: (Array.isArray(ranking) ? ranking : []) as ScoredRun["ranking"],
-    circuit: (circuit ?? null) as ScoredRun["circuit"],
+    adoptionPlan: (plan ?? null) as ScoredRun["adoptionPlan"],
   };
 }
 
@@ -49,16 +49,17 @@ export async function putRun(run: ScoredRun): Promise<void> {
   const db = getSupabaseAdmin();
   if (!db) return;
 
-  const { ranking, circuit, ...free } = run;
+  const { ranking, adoptionPlan, ...free } = run;
   const { error } = await db.from("onboarding_runs").upsert(
     {
       id: run.runId,
       source: run.source,
       current_city: run.currentCity || null,
+      dream_breed: run.dreamBreed || null,
       inputs_json: run.inputs ?? {},
       free_json: free,
       ranking_json: ranking,
-      circuit_json: circuit,
+      plan_json: adoptionPlan,
     },
     { onConflict: "id" },
   );
@@ -72,7 +73,7 @@ export async function getRun(runId: string): Promise<ScoredRun | undefined> {
   if (db) {
     const { data, error } = await db
       .from("onboarding_runs")
-      .select("free_json, ranking_json, circuit_json")
+      .select("free_json, ranking_json, plan_json")
       .eq("id", runId)
       .maybeSingle();
     if (error) console.error("[runStore] getRun read failed:", error.message);
@@ -80,7 +81,7 @@ export async function getRun(runId: string): Promise<ScoredRun | undefined> {
       const run = joinRun(
         data.free_json as Record<string, unknown>,
         data.ranking_json,
-        data.circuit_json,
+        data.plan_json,
       );
       mem.runs.set(runId, run);
       return run;

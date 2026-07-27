@@ -7,7 +7,7 @@ import "server-only";
  * or fail a user action on email delivery.
  */
 
-const FROM_DEFAULT = "Find Your Place <hello@findyourplace.app>";
+const FROM_DEFAULT = "Find Your Dog <hello@findyourdog.app>";
 
 export function isEmailConfigured(): boolean {
   return Boolean(process.env.RESEND_API_KEY);
@@ -42,12 +42,12 @@ export function resultsLinkHtml(resultsUrl: string): string {
   return `
   <div style="background:#10161d;padding:40px 24px;font-family:'Space Grotesk',ui-sans-serif,system-ui,sans-serif;color:#f4f2ec;">
     <div style="max-width:520px;margin:0 auto;">
-      <div style="font-size:20px;font-weight:600;margin-bottom:28px;">Find Your Place</div>
+      <div style="font-size:20px;font-weight:600;margin-bottom:28px;">Find Your Dog</div>
       <div style="font-size:28px;font-weight:300;line-height:1.15;letter-spacing:-0.5px;">
         Your results are saved.
       </div>
       <p style="color:#a9b0bc;font-size:15px;line-height:1.6;margin:18px 0 28px;">
-        Your read, your current-city fit, and your locked #1 match are waiting whenever
+        Your read, your dream-breed fit, and your locked #1 breed are waiting whenever
         you're ready. This link is yours — it works on any device.
       </p>
       <a href="${resultsUrl}"
@@ -55,7 +55,7 @@ export function resultsLinkHtml(resultsUrl: string): string {
         Open my results
       </a>
       <p style="color:#6f7683;font-size:12px;margin-top:36px;">
-        You're receiving this because you entered your email on findyourplace.app.
+        You're receiving this because you entered your email on findyourdog.app.
       </p>
     </div>
   </div>`;

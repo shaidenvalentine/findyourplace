@@ -1,15 +1,16 @@
 import "server-only";
-import { LOCATIONS, LOCATION_COUNT } from "@/data/locations";
+import { BREEDS, BREED_COUNT } from "@/data/breeds";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
-import type { Location } from "@/lib/scoring";
+import type { Breed } from "@/lib/scoring";
 
 /**
  * Content Studio — the admin's content machine for Instagram carousels + Meta ads.
  *
  * Two engines, one output shape:
- *  - DATA engine (always available): composes carousels straight from the 250-place
- *    dataset — real names, real scores. On-brand by construction: the scoring data IS
- *    the product, so "7 places where $2k/mo lives like $6k" is both content and demo.
+ *  - DATA engine (always available): composes carousels straight from the breed
+ *    dataset — real names, real trait scores. On-brand by construction: the scoring
+ *    data IS the product, so "7 breeds that thrive in apartments" is both content
+ *    and demo.
  *  - LLM engine (when ANTHROPIC_API_KEY is set): writes hooks/captions/ad copy in the
  *    brand voice, constrained to JSON, with the data engine as hard fallback so the
  *    studio never errors into a blank screen.
@@ -24,6 +25,7 @@ export type Slide = {
   title: string;
   body?: string;
   rank?: number;
+  /** For breeds: `country` carries the breed group (shape kept for the slide renderer). */
   place?: { name: string; country: string; stat: string; statLabel: string };
 };
 
@@ -51,11 +53,11 @@ export type ContentItem = {
 };
 
 const HASHTAGS = [
-  "#findyourplace", "#wheretolive", "#relocation", "#digitalnomad", "#movingabroad",
-  "#expatlife", "#costofliving", "#travel2026", "#lifedesign", "#geoarbitrage",
+  "#findyourdog", "#dogbreeds", "#adoptdontshop", "#dogsofinstagram", "#puppylove",
+  "#rescuedog", "#doglife", "#futuredogparent", "#whichbreed", "#shelterdog",
 ];
 
-const CTA_LINE = "Take the 60-second quiz → findyourplace.app";
+const CTA_LINE = "Take the 60-second quiz → findyourdog.app";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Data-driven angles — each turns a slice of the dataset into a ranked carousel.
@@ -66,99 +68,116 @@ type Angle = {
   label: string;
   hook: { kicker: string; title: string; body: string };
   statLabel: string;
-  stat: (l: Location) => string;
-  pick: () => Location[];
+  stat: (b: Breed) => string;
+  pick: () => Breed[];
   insight: string;
 };
 
-const byScore = (key: keyof Location, filter?: (l: Location) => boolean) => () =>
-  [...LOCATIONS]
-    .filter((l) => (filter ? filter(l) : true) && typeof l[key] === "number")
+const byScore = (key: keyof Breed, filter?: (b: Breed) => boolean) => () =>
+  [...BREEDS]
+    .filter((b) => (filter ? filter(b) : true) && typeof b[key] === "number")
     .sort((a, b) => (b[key] as number) - (a[key] as number))
     .slice(0, 7);
 
 export const ANGLES: Angle[] = [
   {
-    id: "cheap-paradise",
-    label: "Beach towns your budget already affords",
+    id: "apartment-stars",
+    label: "Best breeds for apartments",
     hook: {
-      kicker: "cost of living",
-      title: "7 beach towns where $2k/mo lives like $6k",
-      body: "Real places, scored on real cost data. Your money is worth 3x somewhere.",
+      kicker: "small space, big love",
+      title: "7 breeds that thrive in apartments",
+      body: "No yard needed. Scored on real bark, energy, and space data — not vibes.",
     },
-    statLabel: "affordability",
-    stat: (l) => `${l.cost_of_living_score}/100`,
-    pick: byScore("cost_of_living_score", (l) => (l.beach_access_score ?? 0) >= 60),
-    insight: "The city you're in silently decides your savings rate, your stress, your dating pool — everything.",
+    statLabel: "apartment score",
+    stat: (b) => `${b.apartment_friendly}/100`,
+    pick: byScore("apartment_friendly", (b) => (b.barking_level ?? 100) <= 60),
+    insight: "The wrong breed in the wrong home fails both of you. Fit is measurable — we measure it.",
   },
   {
-    id: "tax-friendly",
-    label: "Places that barely tax you",
+    id: "first-time",
+    label: "Breeds that forgive beginner mistakes",
     hook: {
-      kicker: "keep what you earn",
-      title: "The places that tax you least",
-      body: "Same income. Wildly different take-home. Tax residency is a choice most people never realize they have.",
+      kicker: "first dog?",
+      title: "The breeds built for first-time owners",
+      body: "Forgiving, trainable, eager to meet you halfway. Start here, not with the hardest dog on Instagram.",
     },
-    statLabel: "income tax",
-    stat: (l) => `${l.personal_income_tax_rate ?? 0}%`,
+    statLabel: "beginner-friendly",
+    stat: (b) => `${b.novice_friendly}/100`,
+    pick: byScore("novice_friendly"),
+    insight: "Most 'bad dogs' are just mismatched dogs. The right first breed makes you a dog person for life.",
+  },
+  {
+    id: "busy-people",
+    label: "Dogs that handle your 9-to-5",
+    hook: {
+      kicker: "for full schedules",
+      title: "Dogs that don't fall apart when you leave",
+      body: "Separation anxiety is the #1 silent dealbreaker. These breeds genuinely cope with alone time.",
+    },
+    statLabel: "OK alone",
+    stat: (b) => `${b.alone_tolerance}/100`,
+    pick: byScore("alone_tolerance", (b) => (b.exercise_needs ?? 100) <= 65),
+    insight: "A dog's needs don't pause for your job. Match the dog to the life you actually live.",
+  },
+  {
+    id: "hypoallergenic",
+    label: "Allergy-friendly breeds that barely shed",
+    hook: {
+      kicker: "achoo-proof",
+      title: "Allergic? These breeds still want you.",
+      body: "Hypoallergenic coats, near-zero shedding. Sneezing is not a reason to stay dogless.",
+    },
+    statLabel: "shedding",
+    stat: (b) => `${b.shedding_level}/100`,
     pick: () =>
-      [...LOCATIONS]
-        .filter((l) => typeof l.personal_income_tax_rate === "number" && (l.safety_score ?? 0) >= 55)
-        .sort((a, b) => (a.personal_income_tax_rate ?? 99) - (b.personal_income_tax_rate ?? 99))
+      [...BREEDS]
+        .filter((b) => b.hypoallergenic && typeof b.shedding_level === "number")
+        .sort((a, b) => (a.shedding_level ?? 99) - (b.shedding_level ?? 99))
         .slice(0, 7),
-    insight: "Moving well can be worth more than a raise — and it compounds every single year.",
+    insight: "There's a coat type for almost every immune system. The right match exists — find it before you settle.",
   },
   {
-    id: "sunshine",
-    label: "The sunniest places on Earth to live",
+    id: "family-dogs",
+    label: "The great family dogs",
     hook: {
-      kicker: "climate",
-      title: "320+ days of sun. Every year.",
-      body: "Seasonal sadness is optional. These places basically don't have winter.",
+      kicker: "kid-tested",
+      title: "The breeds that adore your kids",
+      body: "Patient, sturdy, gentle — scored on real kid-friendliness data, not marketing.",
     },
-    statLabel: "sunny days/yr",
-    stat: (l) => `${l.sunshine_days ?? 0}`,
-    pick: byScore("sunshine_days"),
-    insight: "Sunlight is the cheapest antidepressant ever invented. Some places just have more of it.",
+    statLabel: "kid-friendly",
+    stat: (b) => `${b.kid_friendly}/100`,
+    pick: byScore("kid_friendly", (b) => (b.affection_level ?? 0) >= 60),
+    insight: "A childhood dog shapes a whole life. Pick the one that was built for the chaos of yours.",
   },
   {
-    id: "nomad-capitals",
-    label: "Digital nomad capitals with real community",
+    id: "shelter-gems",
+    label: "Breeds you can adopt this weekend",
     hook: {
-      kicker: "community",
-      title: "Where you won't be the only one",
-      body: "The places where remote workers actually build a life — fast wifi, deep community, easy visas.",
+      kicker: "adopt, don't shop",
+      title: "These dogs are in a shelter near you right now",
+      body: "The most common shelter breeds and mixes — amazing dogs, waiting, at a fraction of breeder prices.",
     },
-    statLabel: "community",
-    stat: (l) => `${l.community_score ?? 0}/100`,
-    pick: byScore("community_score", (l) => (l.tags ?? []).includes("digital-nomad") && (l.internet_quality_score ?? 0) >= 60),
-    insight: "Loneliness kills more relocations than money ever will. Pick a place with your people already in it.",
+    statLabel: "shelter availability",
+    stat: (b) => `${b.shelter_availability}/100`,
+    pick: byScore("shelter_availability"),
+    insight: "Your perfect dog might already be waiting in a kennel 15 minutes away. Look there first.",
   },
   {
-    id: "safe-and-cheap",
-    label: "Safe AND affordable (yes, both exist)",
+    id: "budget-friendly",
+    label: "Great dogs that don't break the bank",
     hook: {
-      kicker: "the unicorns",
-      title: "Safe and cheap. Pick both.",
-      body: "“You get what you pay for” is a lie in geography. These places break the tradeoff.",
+      kicker: "real cost data",
+      title: "The best dogs under $120/month",
+      body: "Food, grooming, insurance, routine vet — the honest monthly number nobody tells you before you commit.",
     },
-    statLabel: "safety",
-    stat: (l) => `${l.safety_score}/100`,
-    pick: byScore("safety_score", (l) => (l.cost_of_living_score ?? 0) >= 65),
-    insight: "The gap between where you are and where you fit is measurable. We measure it.",
-  },
-  {
-    id: "nightlife",
-    label: "Cities that never bore you",
-    hook: {
-      kicker: "energy",
-      title: "Cities that never run out of nights",
-      body: "For the ones whose battery charges in a crowd.",
-    },
-    statLabel: "nightlife",
-    stat: (l) => `${l.nightlife_score ?? 0}/100`,
-    pick: byScore("nightlife_score"),
-    insight: "Fit isn't one-size. A perfect city for someone else can be a slow leak on your life.",
+    statLabel: "monthly cost",
+    stat: (b) => `$${b.monthly_cost_usd}/mo`,
+    pick: () =>
+      [...BREEDS]
+        .filter((b) => typeof b.monthly_cost_usd === "number" && (b.monthly_cost_usd ?? 999) <= 120 && (b.novice_friendly ?? 0) >= 55)
+        .sort((a, b) => (b.novice_friendly ?? 0) - (a.novice_friendly ?? 0))
+        .slice(0, 7),
+    insight: "A dog is a 12-year budget line. Know the number before the number knows you.",
   },
 ];
 
@@ -167,22 +186,22 @@ export const ANGLES: Angle[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 
 function angleToCarousel(angle: Angle): CarouselPayload {
-  const places = angle.pick();
+  const breeds = angle.pick();
   const slides: Slide[] = [
     { kind: "hook", kicker: angle.hook.kicker, title: angle.hook.title, body: angle.hook.body },
-    ...places.slice(0, 6).map((l, i) => ({
+    ...breeds.slice(0, 6).map((b, i) => ({
       kind: "list" as const,
       rank: i + 1,
-      title: l.name,
-      body: (l.vibe_summary ?? l.description ?? "").split(" — ")[0].slice(0, 110),
-      place: { name: l.name, country: l.country, stat: angle.stat(l), statLabel: angle.statLabel },
+      title: b.name,
+      body: (b.vibe_summary ?? b.description ?? "").split(" — ")[0].slice(0, 110),
+      place: { name: b.name, country: `${b.group} group`, stat: angle.stat(b), statLabel: angle.statLabel },
     })),
     { kind: "insight", kicker: "the point", title: angle.insight },
     {
       kind: "cta",
       kicker: "your turn",
-      title: "Your place is on this planet. Find it.",
-      body: `We score you against ${LOCATION_COUNT} places on ${"10 dimensions"} and show you your #1. ${CTA_LINE}`,
+      title: "Your dog is out there. Find your breed.",
+      body: `We score you against ${BREED_COUNT} breeds on ${"10 dimensions"} of your real life and show you your #1. ${CTA_LINE}`,
     },
   ];
   const caption = [
@@ -190,7 +209,7 @@ function angleToCarousel(angle: Angle): CarouselPayload {
     "",
     angle.hook.body,
     "",
-    places.slice(0, 6).map((l, i) => `${i + 1}. ${l.name}, ${l.country} — ${angle.stat(l)} ${angle.statLabel}`).join("\n"),
+    breeds.slice(0, 6).map((b, i) => `${i + 1}. ${b.name} — ${angle.stat(b)} ${angle.statLabel}`).join("\n"),
     "",
     `${angle.insight}`,
     "",
@@ -205,15 +224,15 @@ function fallbackCarousel(topic: string): CarouselPayload {
   const matched = ANGLES.find((a) => a.id.includes(t) || a.label.toLowerCase().includes(t) || t.includes(a.hook.kicker));
   if (matched) return angleToCarousel(matched);
   const slides: Slide[] = [
-    { kind: "hook", kicker: "find your place", title: "You weren't built for everywhere.", body: "But somewhere on Earth was built for you." },
-    { kind: "insight", kicker: "the problem", title: "Most people choose where they live by accident.", body: "Born there. Studied there. Followed a job. Stayed." },
-    { kind: "insight", kicker: "the cost", title: "The wrong city taxes everything.", body: "Your savings rate, your friendships, your health, your odds of meeting someone." },
-    { kind: "insight", kicker: "the fix", title: `We scored ${LOCATION_COUNT} places on 10 dimensions of you.`, body: "Climate, money, community, pace, risk — matched to how you actually live." },
-    { kind: "cta", kicker: "your turn", title: "60 seconds to your #1 place.", body: CTA_LINE },
+    { kind: "hook", kicker: "find your dog", title: "You weren't built for every dog.", body: "But one breed was built for you." },
+    { kind: "insight", kicker: "the problem", title: "Most people choose a breed by accident.", body: "Saw it in a movie. Neighbor had one. It was cute on Instagram. Then real life starts." },
+    { kind: "insight", kicker: "the cost", title: "The wrong dog taxes everything.", body: "Your schedule, your apartment, your sleep, your budget — and the dog pays the biggest price." },
+    { kind: "insight", kicker: "the fix", title: `We scored ${BREED_COUNT} breeds on 10 dimensions of you.`, body: "Space, schedule, energy, kids, allergies, budget — matched to how you actually live." },
+    { kind: "cta", kicker: "your turn", title: "60 seconds to your #1 breed.", body: CTA_LINE },
   ];
   return {
     slides,
-    caption: `You weren't built for everywhere — but somewhere was built for you.\n\nWe score you against ${LOCATION_COUNT} places on 10 dimensions and reveal your #1.\n\n${CTA_LINE}`,
+    caption: `You weren't built for every dog — but one breed was built for you.\n\nWe score you against ${BREED_COUNT} breeds on 10 dimensions and reveal your #1.\n\n${CTA_LINE}`,
     hashtags: HASHTAGS.slice(0, 8),
   };
 }
@@ -224,22 +243,22 @@ function fallbackAd(topic: string): AdPayload {
       {
         angle: "Identity",
         primaryText:
-          "The city you live in quietly decides who you become — your savings rate, your friendships, your energy. Most people never chose theirs. We built a 60-second quiz that scores you against 250 of the best places on Earth and shows you the one that actually fits.",
-        headline: "Find the place that fits you",
-        description: "60-second quiz · 250 places scored · your #1 revealed",
+          "The dog you choose shapes the next 12 years of your life — your mornings, your apartment, your weekends. Most people pick a breed on looks and hope. We built a 60-second quiz that scores you against 170 dog breeds and shows you the one that actually fits your life.",
+        headline: "Find the breed that fits you",
+        description: "60-second quiz · 170 breeds scored · your #1 revealed",
       },
       {
         angle: "Data / proof",
         primaryText:
-          `We scored ${LOCATION_COUNT} places on 10 dimensions — cost, climate, community, tax, safety, pace. Answer a few questions and see your top match, plus how well your current city really fits you. The result feels like being read by someone who knows you.`,
-        headline: "250 places. One is yours.",
-        description: "Take the quiz — see your current city's honest score",
+          `We scored ${BREED_COUNT} breeds on 10 dimensions — energy, space, schedule, kids, allergies, budget, grooming. Answer a few questions and see your top match, plus an honest score for the breed you think you want. The result feels like being read by someone who knows you.`,
+        headline: "170 breeds. One is yours.",
+        description: "Take the quiz — see your dream breed's honest score",
       },
       {
         angle: `Curiosity${topic && topic !== "default" ? ` · ${topic}` : ""}`,
         primaryText:
-          "There's a city where your rent is halved, your winters are warm, and your people already live. It has a name. Our matching engine found it for thousands of people — most had never considered their #1 before seeing it.",
-        headline: "Your #1 place has a name",
+          "There's a dog that fits your apartment, your work hours, and your energy — and it's probably not the breed you've been picturing. It has a name. Our matching engine found it for thousands of people — many ended up adopting theirs from a shelter nearby.",
+        headline: "Your #1 breed has a name",
         description: "Find it in 60 seconds",
       },
     ],
@@ -250,9 +269,9 @@ function fallbackAd(topic: string): AdPayload {
 // LLM engine — brand-voiced generation, JSON-constrained, data-grounded.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const BRAND_VOICE = `You write for "Find Your Place" (findyourplace.app) — a quiz that scores people against ${LOCATION_COUNT} of the best places on Earth across 10 dimensions and reveals their #1 match behind a one-time unlock.
-Voice: confident, specific, a little cinematic; second person; short lines; zero corporate speak, zero emoji spam (max 1 per caption, none on slides). The audience is 20–35, mobile, found us through reels/ads about choosing where to live.
-Core narrative: where you live decides who you become; most people never chose it; the fit between you and a place is measurable; your #1 exists.`;
+const BRAND_VOICE = `You write for "Find Your Dog" (findyourdog.app) — a quiz that scores people against ${BREED_COUNT} dog breeds across 10 dimensions of their real life and reveals their #1 match behind a one-time unlock, then points them at shelter adoption first.
+Voice: confident, specific, warm but never saccharine; second person; short lines; zero corporate speak, zero emoji spam (max 1 per caption, none on slides). The audience is 20–35, mobile, found us through reels/ads about choosing the right dog.
+Core narrative: the dog you choose shapes the next decade; most people choose on looks; the fit between you and a breed is measurable; your #1 exists — and it might be in a shelter near you.`;
 
 async function callClaude(system: string, user: string, maxTokens = 2000): Promise<string | null> {
   const key = process.env.ANTHROPIC_API_KEY;
@@ -293,15 +312,15 @@ function parseJson<T>(raw: string | null): T | null {
 /** A compact, LLM-readable slice of the dataset relevant to a topic (keyword scored). */
 function datasetContext(topic: string): string {
   const t = topic.toLowerCase().split(/\s+/);
-  const scored = LOCATIONS.map((l) => {
-    const hay = `${l.name} ${l.country} ${l.continent} ${(l.tags ?? []).join(" ")} ${l.vibe_summary ?? ""}`.toLowerCase();
+  const scored = BREEDS.map((b) => {
+    const hay = `${b.name} ${b.group} ${b.size} ${(b.tags ?? []).join(" ")} ${b.vibe_summary ?? ""}`.toLowerCase();
     const score = t.reduce((s, w) => s + (hay.includes(w) ? 1 : 0), 0);
-    return { l, score };
+    return { b, score };
   })
     .sort((a, b) => b.score - a.score)
     .slice(0, 24)
-    .map(({ l }) =>
-      `${l.name}, ${l.country} | cost:${l.cost_of_living_score} safety:${l.safety_score} sun:${l.sunshine_days}d tax:${l.personal_income_tax_rate}% nightlife:${l.nightlife_score} community:${l.community_score} beach:${l.beach_access_score} | ${(l.vibe_summary ?? "").slice(0, 90)}`,
+    .map(({ b }) =>
+      `${b.name} (${b.group}, ${b.size}) | energy:${b.energy_level} apartment:${b.apartment_friendly} beginner:${b.novice_friendly} kids:${b.kid_friendly} alone:${b.alone_tolerance} shed:${b.shedding_level} bark:${b.barking_level} cost:$${b.monthly_cost_usd}/mo shelter:${b.shelter_availability} | ${(b.vibe_summary ?? "").slice(0, 90)}`,
     );
   return scored.join("\n");
 }
@@ -310,8 +329,8 @@ async function llmCarousel(topic: string): Promise<CarouselPayload | null> {
   const raw = await callClaude(
     BRAND_VOICE +
       `\nReturn ONLY JSON matching: {"slides":[{"kind":"hook|list|insight|cta","kicker":string,"title":string,"body":string,"rank":number?,"place":{"name":string,"country":string,"stat":string,"statLabel":string}?}],"caption":string,"hashtags":string[]}.
-Rules: 6–8 slides. Slide 1 kind "hook" with a scroll-stopping title under 60 chars. Middle slides: either "list" slides ranking REAL places from the provided dataset (use their real stats — never invent numbers) or "insight" slides advancing the narrative. Last slide kind "cta" pointing to the 60-second quiz at findyourplace.app. Caption: hook line, line breaks, the list if any, one insight, then "${CTA_LINE}". 6–9 hashtags.`,
-    `Topic for this carousel: "${topic}".\n\nDataset (real places + real stats you may cite):\n${datasetContext(topic)}`,
+Rules: 6–8 slides. Slide 1 kind "hook" with a scroll-stopping title under 60 chars. Middle slides: either "list" slides ranking REAL breeds from the provided dataset (use their real stats — never invent numbers; put the breed group in the "country" field) or "insight" slides advancing the narrative. Last slide kind "cta" pointing to the 60-second quiz at findyourdog.app. Caption: hook line, line breaks, the list if any, one insight, then "${CTA_LINE}". 6–9 hashtags.`,
+    `Topic for this carousel: "${topic}".\n\nDataset (real breeds + real stats you may cite):\n${datasetContext(topic)}`,
   );
   const parsed = parseJson<CarouselPayload>(raw);
   if (!parsed || !Array.isArray(parsed.slides) || parsed.slides.length < 3 || !parsed.caption) return null;
@@ -322,7 +341,7 @@ async function llmAd(topic: string): Promise<AdPayload | null> {
   const raw = await callClaude(
     BRAND_VOICE +
       `\nReturn ONLY JSON matching: {"variants":[{"angle":string,"primaryText":string,"headline":string,"description":string}]}.
-Rules: exactly 4 variants, each a genuinely different psychological angle (e.g. identity, data/proof, loss-aversion, curiosity, founder-story). primaryText 40–90 words, mobile-first, first line must stop the scroll. headline ≤ 38 chars. description ≤ 60 chars. Never invent statistics; you may cite the real dataset numbers provided.`,
+Rules: exactly 4 variants, each a genuinely different psychological angle (e.g. identity, data/proof, loss-aversion, curiosity, adopt-first). primaryText 40–90 words, mobile-first, first line must stop the scroll. headline ≤ 38 chars. description ≤ 60 chars. Never invent statistics; you may cite the real dataset numbers provided.`,
     `Topic/angle emphasis: "${topic}".\n\nDataset context (real numbers you may cite):\n${datasetContext(topic)}`,
   );
   const parsed = parseJson<AdPayload>(raw);

@@ -2,8 +2,8 @@
 
 import type { OnboardingData } from "@/types/onboarding";
 
-/** Cross-screen draft of the in-progress run (current city, quiz answers) before scoring. */
-const KEY = "fyp:draft";
+/** Cross-screen draft of the in-progress run (city, dream breed, quiz answers) before scoring. */
+const KEY = "fyd:draft";
 
 export function loadDraft(): OnboardingData {
   if (typeof window === "undefined") return {};
@@ -36,7 +36,7 @@ export function clearDraft() {
 // ── Quiz progress ────────────────────────────────────────────────────────────
 // The tap/swipe quiz answers, persisted so a refresh, notification, or app-switch
 // on mobile never sends the user back to question 1 with an empty state.
-const QUIZ_KEY = "fyp:quiz";
+const QUIZ_KEY = "fyd:quiz";
 
 export type QuizProgress = { idx: number; answers: Record<string, string | string[]> };
 

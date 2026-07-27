@@ -1,109 +1,157 @@
-import type { Location } from "@/lib/scoring";
+import type { Breed } from "@/lib/scoring";
 
 /**
- * Worldwide current-city resolution. Turns ANY free-text input ("Seseh Bali",
- * "Lisbon, Portugal", "Chengdu", "Portugal") into a REAL feature vector:
- *   1. alias table        — neighborhoods / alt-names → a curated city
- *   2. dataset match       — exact, then comma-part, then word-token
- *   3. country synthesis    — average of that country's curated places
- *   4. global-median synth  — last resort, still grounded (never a random hash)
+ * Breed resolution. Turns ANY free-text input ("lab", "golden", "GSD", "some kind of
+ * husky mix", "doodle") into a REAL trait vector:
+ *   1. alias table       — nicknames / abbreviations / misspellings → a curated breed
+ *   2. dataset match     — exact, then contains, then word-token
+ *   3. group synthesis   — "some terrier" → average of that group's curated breeds
+ *   4. global-median synth — last resort, still grounded (never a random hash)
  *
- * Offline by design (no geocoder/network). The alias + city→country tables are a
- * hand-authored starter set; a full GeoNames gazetteer can be dropped in later via a
- * build step without touching callers.
+ * Offline by design (no network). The alias table is a hand-authored starter set and can
+ * grow without touching callers.
  */
 
 export interface ResolveResult {
-  /** A real Location to score — a dataset hit, or a synthesized vector. Never null. */
-  location: Location;
-  /** The curated location, if the input resolved to one; null if synthesized. */
-  matched: Location | null;
+  /** A real Breed to score — a dataset hit, or a synthesized vector. Never null. */
+  breed: Breed;
+  /** The curated breed, if the input resolved to one; null if synthesized. */
+  matched: Breed | null;
   resolvedName: string;
-  /** True when the vector was synthesized (country/global), not a curated place. */
+  /** True when the vector was synthesized (group/global), not a curated breed. */
   estimated: boolean;
 }
 
-// Neighborhood / alt-name → canonical curated city name (lowercase keys).
+// Nickname / abbreviation → canonical curated breed name (lowercase keys).
 const ALIASES: Record<string, string> = {
-  // Bali
-  canggu: "Canggu", pererenan: "Canggu", berawa: "Canggu", seseh: "Canggu", echo_beach: "Canggu",
-  ubud: "Ubud", seminyak: "Bali", kuta: "Bali", sanur: "Bali", uluwatu: "Bali", denpasar: "Bali",
-  "nusa dua": "Bali", jimbaran: "Bali", "bali island": "Bali",
-  // Common metro neighborhoods
-  brooklyn: "New York", manhattan: "New York", nyc: "New York", "new york city": "New York",
-  hollywood: "Los Angeles", "la, ca": "Los Angeles", "santa monica": "Los Angeles", venice: "Los Angeles",
-  "south beach": "Miami", "miami beach": "Miami",
-  shoreditch: "London", hackney: "London",
-  // Other frequent nomad spots → nearest curated
-  pererenan_bali: "Canggu", ahangama: "Weligama", midigama: "Weligama",
+  lab: "Labrador Retriever", labrador: "Labrador Retriever", "yellow lab": "Labrador Retriever",
+  "black lab": "Labrador Retriever", "chocolate lab": "Labrador Retriever",
+  golden: "Golden Retriever", "golden retreiver": "Golden Retriever",
+  gsd: "German Shepherd", "german shepard": "German Shepherd", alsatian: "German Shepherd",
+  "shepherd": "German Shepherd",
+  frenchie: "French Bulldog", "french bull dog": "French Bulldog",
+  bulldog: "English Bulldog", "british bulldog": "English Bulldog",
+  husky: "Siberian Husky", "siberian huskie": "Siberian Husky",
+  poodle: "Standard Poodle", "mini poodle": "Miniature Poodle",
+  doodle: "Goldendoodle", "golden doodle": "Goldendoodle", "labra doodle": "Labradoodle",
+  yorkie: "Yorkshire Terrier", "yorkshire terier": "Yorkshire Terrier",
+  corgi: "Pembroke Welsh Corgi", "welsh corgi": "Pembroke Welsh Corgi",
+  dachsund: "Dachshund", "wiener dog": "Dachshund", "sausage dog": "Dachshund", doxie: "Dachshund",
+  "pit bull": "American Pit Bull Terrier", pitbull: "American Pit Bull Terrier", pittie: "Pit Bull Mix",
+  staffy: "Staffordshire Bull Terrier", amstaff: "American Staffordshire Terrier",
+  rottie: "Rottweiler", rott: "Rottweiler", rottweiller: "Rottweiler",
+  dobie: "Doberman Pinscher", doberman: "Doberman Pinscher", dobermann: "Doberman Pinscher",
+  "aussie": "Australian Shepherd", "australian shepard": "Australian Shepherd",
+  "blue heeler": "Australian Cattle Dog", heeler: "Australian Cattle Dog", "cattle dog": "Australian Cattle Dog",
+  "jack russell": "Jack Russell Terrier", jrt: "Jack Russell Terrier",
+  westie: "West Highland White Terrier",
+  "scottie": "Scottish Terrier",
+  chi: "Chihuahua", chiwawa: "Chihuahua", chihuaha: "Chihuahua",
+  pom: "Pomeranian", pomeranean: "Pomeranian",
+  "shih-tzu": "Shih Tzu", shitzu: "Shih Tzu", "shi tzu": "Shih Tzu",
+  "great dane": "Great Dane", dane: "Great Dane",
+  "saint bernard": "Saint Bernard", "st bernard": "Saint Bernard", "st. bernard": "Saint Bernard",
+  newfie: "Newfoundland",
+  berner: "Bernese Mountain Dog", "bernese": "Bernese Mountain Dog",
+  pyr: "Great Pyrenees", "pyrenees": "Great Pyrenees",
+  malinois: "Belgian Malinois", "belgian shepherd": "Belgian Malinois", mal: "Belgian Malinois",
+  cavalier: "Cavalier King Charles Spaniel", "king charles": "Cavalier King Charles Spaniel",
+  "cavalier king charles": "Cavalier King Charles Spaniel",
+  cocker: "Cocker Spaniel", "cocker spainel": "Cocker Spaniel",
+  springer: "English Springer Spaniel",
+  weim: "Weimaraner", weimeraner: "Weimaraner",
+  vizla: "Vizsla", viszla: "Vizsla",
+  ridgeback: "Rhodesian Ridgeback",
+  "shar-pei": "Shar Pei", sharpei: "Shar Pei",
+  "chow": "Chow Chow",
+  shiba: "Shiba Inu",
+  "mini schnauzer": "Miniature Schnauzer", schnauzer: "Miniature Schnauzer",
+  malamute: "Alaskan Malamute",
+  boxer: "Boxer",
+  beagle: "Beagle",
+  greyhound: "Greyhound", "grey hound": "Greyhound",
+  whippet: "Whippet",
+  "italian greyhound": "Italian Greyhound", iggy: "Italian Greyhound",
+  "border collie": "Border Collie", collie: "Collie (Rough)",
+  sheltie: "Shetland Sheepdog",
+  "old english sheepdog": "Old English Sheepdog",
+  havanese: "Havanese",
+  maltese: "Maltese",
+  bichon: "Bichon Frise", "bichon frise": "Bichon Frise",
+  pug: "Pug",
+  "boston": "Boston Terrier",
+  "cane corso": "Cane Corso", corso: "Cane Corso",
+  mastiff: "English Mastiff",
+  bullmastiff: "Bullmastiff",
+  akita: "Akita",
+  samoyed: "Samoyed", sammy: "Samoyed",
+  dalmation: "Dalmatian", dalmatian: "Dalmatian",
+  basset: "Basset Hound",
+  bloodhound: "Bloodhound",
+  "coonhound": "Treeing Walker Coonhound",
+  pointer: "Pointer", gsp: "German Shorthaired Pointer", "shorthaired pointer": "German Shorthaired Pointer",
+  setter: "Irish Setter", "irish setter": "Irish Setter",
+  brittany: "Brittany",
+  "wolfhound": "Irish Wolfhound",
+  leonberger: "Leonberger",
+  "portuguese water dog": "Portuguese Water Dog", porty: "Portuguese Water Dog",
+  "wheaten": "Soft Coated Wheaten Terrier", "wheaten terrier": "Soft Coated Wheaten Terrier",
+  "mini pin": "Miniature Pinscher", "min pin": "Miniature Pinscher",
+  papillon: "Papillon",
+  pekingese: "Pekingese",
+  "lhasa": "Lhasa Apso",
+  basenji: "Basenji",
+  borzoi: "Borzoi",
+  saluki: "Saluki",
+  "xolo": "Xoloitzcuintli", "mexican hairless": "Xoloitzcuintli",
+  mutt: "All-Star Rescue Mutt", "mixed breed": "All-Star Rescue Mutt", mix: "All-Star Rescue Mutt",
+  rescue: "All-Star Rescue Mutt", "rescue dog": "All-Star Rescue Mutt", mongrel: "All-Star Rescue Mutt",
+  "lab mix": "Labrador Mix", "shepherd mix": "Shepherd Mix", "pit mix": "Pit Bull Mix",
+  "hound mix": "Hound Mix", "terrier mix": "Terrier Mix", "chihuahua mix": "Chihuahua Mix",
 };
 
-// Country-string normalization → canonical country name (matches dataset `country`).
-const COUNTRY_NORM: Record<string, string> = {
-  usa: "United States", us: "United States", "u.s.": "United States", "u.s.a.": "United States",
-  america: "United States", "united states of america": "United States",
-  uk: "United Kingdom", "u.k.": "United Kingdom", britain: "United Kingdom", england: "United Kingdom",
-  uae: "United Arab Emirates", "czech republic": "Czechia", "south korea": "South Korea",
-};
-
-// Bare-city → country, for well-known places not in the curated set (no comma given).
-const CITY_COUNTRY: Record<string, string> = {
-  chengdu: "China", chongqing: "China", shenzhen: "China", guangzhou: "China", hangzhou: "China",
-  nagoya: "Japan", sapporo: "Japan", busan: "South Korea", kaohsiung: "Taiwan",
-  surabaya: "Indonesia", bandung: "Indonesia", cebu: "Philippines", davao: "Philippines",
-  pune: "India", hyderabad: "India", ahmedabad: "India", kolkata: "India", surat: "India",
-  lyon: "France", marseille: "France", toulouse: "France", nantes: "France",
-  hamburg: "Germany", cologne: "Germany", stuttgart: "Germany", dusseldorf: "Germany", leipzig: "Germany",
-  naples: "Italy", turin: "Italy", bologna: "Italy", verona: "Italy",
-  seville: "Spain", malaga: "Spain", bilbao: "Spain", zaragoza: "Spain", murcia: "Spain",
-  rotterdam: "Netherlands", "the hague": "Netherlands", utrecht: "Netherlands",
-  manchester: "United Kingdom", birmingham: "United Kingdom", leeds: "United Kingdom", glasgow: "United Kingdom",
-  calgary: "Canada", ottawa: "Canada", edmonton: "Canada", winnipeg: "Canada",
-  houston: "United States", phoenix: "United States", philadelphia: "United States", dallas: "United States",
-  "san jose": "United States", columbus: "United States", charlotte: "United States", detroit: "United States",
-  guadalajara: "Mexico", monterrey: "Mexico", puebla: "Mexico", queretaro: "Mexico", merida: "Mexico",
-  curitiba: "Brazil", recife: "Brazil", fortaleza: "Brazil", "porto alegre": "Brazil", brasilia: "Brazil",
-  rosario: "Argentina", cordoba: "Argentina", cali: "Colombia", barranquilla: "Colombia",
-  durban: "South Africa", pretoria: "South Africa", nairobi: "Kenya", accra: "Ghana", lagos: "Nigeria",
-  perth: "Australia", adelaide: "Australia", "gold coast": "Australia", hobart: "Australia",
+// Loose group hints, for "some kind of terrier" → synthesize the Terrier group.
+const GROUP_HINTS: Record<string, string> = {
+  terrier: "Terrier", hound: "Hound", herding: "Herding", sheepdog: "Herding",
+  retriever: "Sporting", spaniel: "Sporting", pointer: "Sporting", setter: "Sporting",
+  working: "Working", guard: "Working", toy: "Toy", lapdog: "Toy",
 };
 
 const AGG_FIELDS = [
-  "cost_of_living_score", "rent_score", "safety_score", "healthcare_score", "climate_score",
-  "avg_temp_summer", "avg_temp_winter", "humidity_level", "sunshine_days", "beach_access_score",
-  "mountain_access_score", "outdoor_score", "nightlife_score", "wellness_score", "community_score",
-  "english_friendliness_score", "tax_friendliness_score", "airport_connectivity_score",
-  "internet_quality_score", "walkability_score", "transit_score", "culture_openness_score",
-  "startup_ecosystem_score", "dating_scene_score", "visa_friendliness_score", "bureaucracy_score",
+  "energy_level", "exercise_needs", "playfulness", "apartment_friendly", "novice_friendly",
+  "trainability", "intelligence", "grooming_needs", "shedding_level", "drooling_level",
+  "kid_friendly", "affection_level", "independence", "alone_tolerance", "dog_friendly",
+  "cat_friendly", "stranger_friendly", "protectiveness", "watchdog_alertness", "barking_level",
+  "heat_tolerance", "cold_tolerance", "health_robustness",
 ] as const;
 
-type Stats = { byCountry: Map<string, Record<string, number>>; global: Record<string, number> };
+type Stats = { byGroup: Map<string, Record<string, number>>; global: Record<string, number> };
 let stats: Stats | null = null;
 
-function buildStats(locations: Location[]): Stats {
+function buildStats(breeds: Breed[]): Stats {
   if (stats) return stats;
   const acc = new Map<string, Record<string, { s: number; n: number }>>();
   const g: Record<string, { s: number; n: number }> = {};
-  for (const l of locations) {
-    const c = acc.get(l.country) ?? {};
+  for (const b of breeds) {
+    const c = acc.get(b.group) ?? {};
     for (const f of AGG_FIELDS) {
-      const v = l[f] as number | null;
+      const v = b[f] as number | null;
       if (typeof v === "number") {
         c[f] = c[f] ?? { s: 0, n: 0 }; c[f].s += v; c[f].n += 1;
         g[f] = g[f] ?? { s: 0, n: 0 }; g[f].s += v; g[f].n += 1;
       }
     }
-    acc.set(l.country, c);
+    acc.set(b.group, c);
   }
-  const byCountry = new Map<string, Record<string, number>>();
-  for (const [country, rec] of acc) {
+  const byGroup = new Map<string, Record<string, number>>();
+  for (const [group, rec] of acc) {
     const out: Record<string, number> = {};
     for (const f of AGG_FIELDS) if (rec[f]) out[f] = rec[f].s / rec[f].n;
-    byCountry.set(country, out);
+    byGroup.set(group, out);
   }
   const global: Record<string, number> = {};
   for (const f of AGG_FIELDS) if (g[f]) global[f] = g[f].s / g[f].n;
-  stats = { byCountry, global };
+  stats = { byGroup, global };
   return stats;
 }
 
@@ -111,88 +159,89 @@ function titleCase(s: string): string {
   return s.replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function synthesize(name: string, country: string | null, locations: Location[]): Location {
-  const st = buildStats(locations);
-  const src = (country && st.byCountry.get(country)) || st.global;
-  const get = (f: (typeof AGG_FIELDS)[number]) => (typeof src[f] === "number" ? Math.round(src[f]) : (typeof st.global[f] === "number" ? Math.round(st.global[f]) : null));
-  const sample = country ? locations.find((l) => l.country === country) : undefined;
+function synthesize(name: string, group: string | null, breeds: Breed[]): Breed {
+  const st = buildStats(breeds);
+  const src = (group && st.byGroup.get(group)) || st.global;
+  const get = (f: (typeof AGG_FIELDS)[number]) =>
+    typeof src[f] === "number" ? Math.round(src[f]) : (typeof st.global[f] === "number" ? Math.round(st.global[f]) : null);
   return {
     id: `synth:${name.toLowerCase()}`,
     name: titleCase(name),
-    region: null,
-    country: country ?? "",
-    continent: sample?.continent ?? "",
-    latitude: null, longitude: null, population: null, image_url: null, description: null, vibe_summary: null,
+    group: group ?? "Mixed & Rescue",
+    size: "Medium",
+    weight_lbs: null, lifespan_years: null, image_url: null, description: null, vibe_summary: null,
     tags: [],
-    cost_of_living_score: get("cost_of_living_score"), rent_score: get("rent_score"),
-    safety_score: get("safety_score"), healthcare_score: get("healthcare_score"),
-    climate_score: get("climate_score"), avg_temp_summer: get("avg_temp_summer"),
-    avg_temp_winter: get("avg_temp_winter"), humidity_level: get("humidity_level"),
-    sunshine_days: get("sunshine_days"), beach_access_score: get("beach_access_score"),
-    mountain_access_score: get("mountain_access_score"), outdoor_score: get("outdoor_score"),
-    nightlife_score: get("nightlife_score"), wellness_score: get("wellness_score"),
-    dating_scene_score: get("dating_scene_score"), community_score: get("community_score"),
-    english_friendliness_score: get("english_friendliness_score"),
-    visa_friendliness_score: get("visa_friendliness_score"),
-    tax_friendliness_score: get("tax_friendliness_score"),
-    airport_connectivity_score: get("airport_connectivity_score"),
-    internet_quality_score: get("internet_quality_score"), walkability_score: get("walkability_score"),
-    transit_score: get("transit_score"), culture_openness_score: get("culture_openness_score"),
-    startup_ecosystem_score: get("startup_ecosystem_score"), bureaucracy_score: get("bureaucracy_score"),
-    personal_income_tax_rate: null, corporate_tax_rate: null, capital_gains_tax_rate: null, tax_notes: null,
+    hypoallergenic: false,
+    energy_level: get("energy_level"), exercise_needs: get("exercise_needs"), playfulness: get("playfulness"),
+    apartment_friendly: get("apartment_friendly"), novice_friendly: get("novice_friendly"),
+    trainability: get("trainability"), intelligence: get("intelligence"),
+    grooming_needs: get("grooming_needs"), shedding_level: get("shedding_level"), drooling_level: get("drooling_level"),
+    kid_friendly: get("kid_friendly"), affection_level: get("affection_level"),
+    independence: get("independence"), alone_tolerance: get("alone_tolerance"),
+    dog_friendly: get("dog_friendly"), cat_friendly: get("cat_friendly"), stranger_friendly: get("stranger_friendly"),
+    protectiveness: get("protectiveness"), watchdog_alertness: get("watchdog_alertness"), barking_level: get("barking_level"),
+    heat_tolerance: get("heat_tolerance"), cold_tolerance: get("cold_tolerance"), health_robustness: get("health_robustness"),
+    monthly_cost_usd: null, popularity: null, shelter_availability: null,
   };
 }
 
-export function resolvePlace(input: string, locations: Location[]): ResolveResult {
+export function resolveBreed(input: string, breeds: Breed[]): ResolveResult {
   const raw = (input ?? "").trim();
-  if (!raw || raw.toLowerCase() === "unknown") {
-    return { location: synthesize("your area", null, locations), matched: null, resolvedName: "your area", estimated: true };
+  if (!raw || raw.toLowerCase() === "unknown" || raw.toLowerCase() === "none") {
+    return { breed: synthesize("a great dog", null, breeds), matched: null, resolvedName: "a great dog", estimated: true };
   }
-  const norm = raw.toLowerCase();
-  const parts = norm.split(",").map((s) => s.trim()).filter(Boolean);
-  const byName = (n: string) => locations.find((l) => l.name.toLowerCase() === n);
+  const norm = raw.toLowerCase().replace(/\s+/g, " ");
+  const byName = (n: string) => breeds.find((b) => b.name.toLowerCase() === n);
 
-  // 1) exact dataset match on the whole string or any comma part (city part).
-  let matched = byName(norm) || parts.map(byName).find(Boolean);
+  // 1) exact dataset match on the whole string.
+  let matched = byName(norm);
 
-  // 2) alias table (substring/word match) → canonical curated city.
+  // 2) alias table (exact key, then key contained in the input — longest keys first, so
+  //    "lab mix" beats "lab" and "golden doodle" beats "golden").
+  if (!matched && ALIASES[norm]) matched = byName(ALIASES[norm].toLowerCase());
   if (!matched) {
-    for (const key of Object.keys(ALIASES)) {
-      const k = key.replace(/_/g, " ");
-      if (norm === k || norm.includes(k)) { matched = byName(ALIASES[key].toLowerCase()); if (matched) break; }
+    const keys = Object.keys(ALIASES).sort((a, b) => b.length - a.length);
+    for (const key of keys) {
+      if (norm === key || norm.includes(key)) {
+        matched = byName(ALIASES[key].toLowerCase());
+        if (matched) break;
+      }
     }
   }
 
-  // 3) word-token dataset match (e.g. "canggu bali" → Canggu).
+  // 3) dataset name contained in the input ("my childhood golden retriever") or vice versa,
+  //    then word-token overlap (best breed sharing the most words with the input).
   if (!matched) {
-    const words = norm.split(/[,\s]+/).filter(Boolean);
-    matched = words.map(byName).find(Boolean);
+    matched = breeds.find((b) => norm.includes(b.name.toLowerCase()));
+  }
+  if (!matched) {
+    // A breed matches only if EVERY word of its name appears in the input (so reordered /
+    // interspersed inputs match, but generic overlaps like "…Mountain Dog" can't hijack an
+    // unrelated breed). Most-specific (longest) name wins.
+    const words = new Set(norm.split(/[\s,/-]+/).filter(Boolean));
+    let best: { breed: Breed; nWords: number } | null = null;
+    for (const b of breeds) {
+      const nameWords = b.name.toLowerCase().split(/[\s()-]+/).filter(Boolean);
+      const allPresent = nameWords.every((w) => words.has(w));
+      if (allPresent && (!best || nameWords.length > best.nWords)) best = { breed: b, nWords: nameWords.length };
+    }
+    if (best) matched = best.breed;
   }
 
   if (matched) {
-    return { location: matched, matched, resolvedName: matched.name, estimated: false };
+    return { breed: matched, matched, resolvedName: matched.name, estimated: false };
   }
 
-  // 4) country synthesis. Identify a country from any part / known city→country map.
-  const normCountry = (s: string) => COUNTRY_NORM[s] ?? titleCase(s);
-  const datasetCountries = new Set(locations.map((l) => l.country));
-  let country: string | null = null;
-  let cityLabel = parts[0] ? titleCase(parts[0]) : titleCase(raw);
-  for (const part of parts) {
-    const cand = normCountry(part);
-    if (datasetCountries.has(cand)) { country = cand; break; }
+  // 4) group synthesis from a hint word ("some kind of terrier", "a hound of some sort").
+  let group: string | null = null;
+  for (const hint of Object.keys(GROUP_HINTS)) {
+    if (norm.includes(hint)) { group = GROUP_HINTS[hint]; break; }
   }
-  if (!country) {
-    const cityKey = parts[0] ?? norm;
-    if (CITY_COUNTRY[cityKey]) country = CITY_COUNTRY[cityKey];
-  }
-  // If the input WAS just a country name, label it by the country.
-  if (country && parts.length === 1 && normCountry(parts[0]) === country) cityLabel = country;
-
+  const label = titleCase(raw);
   return {
-    location: synthesize(cityLabel, country, locations),
+    breed: synthesize(label, group, breeds),
     matched: null,
-    resolvedName: cityLabel,
+    resolvedName: label,
     estimated: true,
   };
 }

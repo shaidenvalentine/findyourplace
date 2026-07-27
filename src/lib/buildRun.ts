@@ -1,11 +1,11 @@
-import { scoreLocations, scoreCurrentCity } from "@/lib/scoring";
-import { generateAnnualCircuit } from "@/lib/circuitGenerator";
-import { LOCATIONS } from "@/data/locations";
+import { scoreBreeds, scoreDreamBreed } from "@/lib/scoring";
+import { buildAdoptionPlan } from "@/lib/adoptionPlan";
+import { BREEDS, getBreedById } from "@/data/breeds";
 import { buildPersonalityRead } from "@/lib/personality";
 import { computeLifeChange } from "@/lib/lifeChange";
 import { computeConfidence } from "@/lib/confidence";
-import { computeTaxComparison } from "@/lib/tax";
-import { toRankedPlace, type ScoredRun, type RunSource } from "@/lib/run";
+import { computeCostComparison } from "@/lib/cost";
+import { toRankedBreed, type ScoredRun, type RunSource } from "@/lib/run";
 import { displayFit } from "@/lib/match/engine";
 import type { OnboardingData } from "@/types/onboarding";
 
@@ -21,19 +21,20 @@ export function buildScoredRun(opts: {
 }): ScoredRun {
   const { runId, createdAt, inputs, source } = opts;
   const currentCity = (inputs.currentCity ?? "").trim();
+  const dreamBreed = (inputs.dreamBreed ?? "").trim();
 
-  const matches = scoreLocations(LOCATIONS, inputs);
+  const matches = scoreBreeds(BREEDS, inputs);
   const top = matches[0];
-  const currentCityFit = scoreCurrentCity(currentCity || "unknown", LOCATIONS, inputs);
+  const dreamBreedFit = scoreDreamBreed(dreamBreed || "unknown", BREEDS, inputs);
 
-  // One place, one number. When the #1 match IS the user's current city (the loved-place
-  // boost makes this common for people who love where they live), every surface must show
-  // the same honest fit — otherwise the free page compares the city to itself with two
-  // different scores ("your fit jumps +9" while every category reads X → X).
-  const alreadyHome = Boolean(currentCityFit.resolvedId && top.location.id === currentCityFit.resolvedId);
-  if (alreadyHome) top.displayScore = currentCityFit.score;
+  // One breed, one number. When the #1 match IS the breed the user came in wanting (the
+  // loved-breed boost makes this common for people who already know their dog), every
+  // surface must show the same honest fit — otherwise the free page compares the breed
+  // to itself with two different scores.
+  const alreadyHome = Boolean(dreamBreedFit.resolvedId && top.breed.id === dreamBreedFit.resolvedId);
+  if (alreadyHome) top.displayScore = dreamBreedFit.score;
 
-  const circuit = generateAnnualCircuit(LOCATIONS, inputs);
+  const adoptionPlan = buildAdoptionPlan(top.breed, matches, inputs);
 
   const topSlice = matches.slice(0, 10);
   const labels = top.categoryScores.map((c) => c.label);
@@ -44,29 +45,32 @@ export function buildScoredRun(opts: {
     score: displayFit(topSlice.reduce((s, m) => s + (m.categoryScores[i]?.score ?? 0), 0) / topSlice.length),
   }));
 
+  const dreamBreedResolved = dreamBreedFit.resolvedId ? (getBreedById(dreamBreedFit.resolvedId) ?? null) : null;
+
   return {
     runId,
     createdAt,
     currentCity,
+    dreamBreed,
     inputs,
     source,
     personality: buildPersonalityRead(inputs),
-    currentCityFit,
+    dreamBreedFit,
     categoryAverages,
-    // Comparison + tease use the HONEST displayScore (same formula as currentCityFit),
+    // Comparison + tease use the HONEST displayScore (same formula as dreamBreedFit),
     // so the headline number is consistent with the bucket breakdown the user sees.
     // The internal ranking (top.totalScore) still uses the alignment bonus to pick #1.
-    lifeChange: computeLifeChange(currentCityFit, top.categoryScores, top.displayScore, {
+    lifeChange: computeLifeChange(dreamBreedFit, top.categoryScores, top.displayScore, {
       alreadyHome,
-      // In home mode, the story is "nowhere else beat where you are" — the closest
-      // challenger is the best-scoring OTHER place.
+      // In home mode, the story is "no other breed beat your instinct" — the closest
+      // challenger is the best-scoring OTHER breed.
       runnerUpScore: alreadyHome ? (matches[1]?.displayScore ?? null) : null,
     }),
     confidence: computeConfidence(inputs, matches),
-    taxComparison: computeTaxComparison(inputs, top.location),
-    topTease: { score: top.displayScore, continent: top.location.continent, region: top.location.region },
-    ranking: matches.map(toRankedPlace),
-    circuit,
+    costComparison: computeCostComparison(inputs, top.breed, dreamBreedResolved),
+    topTease: { score: top.displayScore, group: top.breed.group, size: top.breed.size },
+    ranking: matches.map(toRankedBreed),
+    adoptionPlan,
     topCount: matches.length,
   };
 }
