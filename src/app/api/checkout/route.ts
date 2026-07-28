@@ -72,6 +72,9 @@ export async function POST(req: NextRequest) {
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
+      // Lets buyers enter promo codes (e.g. 100%-off creator/friend codes) created in
+      // the Stripe dashboard. The webhook accepts the resulting $0 sessions.
+      allow_promotion_codes: true,
       customer_email: body.email || undefined,
       line_items: [
         {
