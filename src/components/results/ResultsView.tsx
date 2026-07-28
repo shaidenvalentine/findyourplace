@@ -39,6 +39,15 @@ export function ResultsView({ runId }: { runId: string }) {
   const [locked, setLocked] = useState<Locked | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  // True while we're back from checkout (?unlocked=1) but the server hasn't seen the
+  // provider's webhook yet — renders the "finishing your unlock" state, not the paywall.
+  // Lazy init (false on the server) so SSR HTML is unaffected; at hydration only the
+  // loading spinner is rendered, so the differing value can't mismatch.
+  const [confirming, setConfirming] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("unlocked") === "1",
+  );
   const purchaseFired = useRef(false);
   const viewFired = useRef(false);
 
@@ -116,6 +125,25 @@ export function ResultsView({ runId }: { runId: string }) {
     refresh();
   }, [refresh]);
 
+  // Post-checkout redirect race: the unlock is written by the payment provider's
+  // WEBHOOK, which can land seconds after the buyer is redirected back with
+  // ?unlocked=1. A single fetch loses that race and re-shows the paywall to someone
+  // who just paid — so keep polling the server until the webhook lands (~2 min cap,
+  // then fall back to the paywall).
+  useEffect(() => {
+    if (!confirming || unlocked) return;
+    let tries = 0;
+    const id = setInterval(() => {
+      if (++tries > 40) {
+        clearInterval(id);
+        setConfirming(false);
+      } else {
+        refresh();
+      }
+    }, 3000);
+    return () => clearInterval(id);
+  }, [confirming, unlocked, refresh]);
+
   if (loading && !free) {
     return (
       <div className="grid min-h-dvh place-items-center">
@@ -190,7 +218,19 @@ export function ResultsView({ runId }: { runId: string }) {
               fitDelta={free.lifeChange.overallDelta}
               annualTaxSavings={free.taxComparison?.annualSavings ?? null}
             />
-            <Paywall runId={runId} onUnlocked={refresh} />
+            {confirming ? (
+              /* Just returned from checkout — don't flash the paywall at a buyer while
+                 the webhook is still in flight. */
+              <div className="rounded-2xl border border-border bg-card p-6 text-center">
+                <Loader2 className="mx-auto size-5 animate-spin text-primary" />
+                <p className="mt-3 text-sm font-medium">Finishing your unlock…</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Confirming your checkout — this usually takes a few seconds. Keep this page open.
+                </p>
+              </div>
+            ) : (
+              <Paywall runId={runId} onUnlocked={refresh} />
+            )}
             {/* Share lives AFTER the offer decision — never between tension and gate. */}
             <div className="rounded-2xl glass p-5">
               <p className="mb-1 text-center text-sm font-medium">Pull your friends in</p>
