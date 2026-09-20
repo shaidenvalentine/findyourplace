@@ -48,6 +48,7 @@ export function ResultsView({ runId }: { runId: string }) {
       typeof window !== "undefined" &&
       new URLSearchParams(window.location.search).get("unlocked") === "1",
   );
+  const [confirmationDelayed, setConfirmationDelayed] = useState(false);
   const purchaseFired = useRef(false);
   const viewFired = useRef(false);
 
@@ -137,6 +138,7 @@ export function ResultsView({ runId }: { runId: string }) {
       if (++tries > 40) {
         clearInterval(id);
         setConfirming(false);
+        setConfirmationDelayed(true);
       } else {
         refresh();
       }
@@ -168,6 +170,8 @@ export function ResultsView({ runId }: { runId: string }) {
     );
   }
 
+  const hasCurrentCity = Boolean(free.currentCity?.trim()) && !free.currentCityFit.estimated;
+
   return (
     <main className="mx-auto w-full max-w-xl px-4 pb-20">
       <header className="flex h-14 items-center justify-between">
@@ -191,8 +195,10 @@ export function ResultsView({ runId }: { runId: string }) {
       <div className="mt-5 flex flex-col gap-5">
         <PersonalityProfile read={free.personality} />
         <CategoryBars items={free.categoryAverages} title="Your category fit (top matches)" />
-        <CurrentCityFitCard city={free.currentCity} fit={free.currentCityFit} />
-        <LifeChangeCompare city={free.currentCity} lifeChange={free.lifeChange} />
+        {hasCurrentCity && <>
+          <CurrentCityFitCard city={free.currentCity} fit={free.currentCityFit} />
+          <LifeChangeCompare city={free.currentCity} lifeChange={free.lifeChange} />
+        </>}
         <TaxProfile free={free} onRefined={setFree} />
 
         {unlocked && locked ? (
@@ -201,7 +207,7 @@ export function ResultsView({ runId }: { runId: string }) {
             <RelocationToolkit run={free} />
             <div className="rounded-2xl glass p-5">
               <p className="mb-3 text-center text-sm font-medium">Show the world where you belong.</p>
-              <ShareSlides free={free} variant="reveal" />
+              {hasCurrentCity && <ShareSlides free={free} variant="reveal" />}
             </div>
           </>
         ) : (
@@ -214,8 +220,8 @@ export function ResultsView({ runId }: { runId: string }) {
               continent={free.topTease.continent}
               region={free.topTease.region}
               confidence={free.confidence}
-              currentScore={free.lifeChange.currentScore}
-              fitDelta={free.lifeChange.overallDelta}
+              currentScore={hasCurrentCity ? free.lifeChange.currentScore : undefined}
+              fitDelta={hasCurrentCity ? free.lifeChange.overallDelta : undefined}
               annualTaxSavings={free.taxComparison?.annualSavings ?? null}
             />
             {confirming ? (
@@ -228,6 +234,12 @@ export function ResultsView({ runId }: { runId: string }) {
                   Confirming your checkout — this usually takes a few seconds. Keep this page open.
                 </p>
               </div>
+            ) : confirmationDelayed ? (
+              <div className="rounded-2xl border border-border bg-card p-6 text-center">
+                <p className="font-medium">Your payment confirmation is taking longer than expected.</p>
+                <p className="mt-2 text-sm text-muted-foreground">If you completed payment, please don’t pay again. Keep your receipt and this result link.</p>
+                <Button className="mt-4" onClick={() => { setConfirmationDelayed(false); setConfirming(true); void refresh(); }}>Check my payment again</Button>
+              </div>
             ) : (
               <Paywall runId={runId} onUnlocked={refresh} />
             )}
@@ -237,7 +249,7 @@ export function ResultsView({ runId }: { runId: string }) {
               <p className="mb-3 text-center text-xs text-muted-foreground">
                 Share your slides — your archetype, your gap, and the mystery of where you belong.
               </p>
-              <ShareSlides free={free} variant="teaser" />
+              {hasCurrentCity && <ShareSlides free={free} variant="teaser" />}
             </div>
           </>
         )}
