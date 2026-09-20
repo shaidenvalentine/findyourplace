@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getRun, putRun } from "@/lib/server/runStore";
 import { buildScoredRun } from "@/lib/buildRun";
 import { PRICE_CENTS, CURRENCY, activePaymentProvider } from "@/lib/pricing";
@@ -26,16 +27,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
   const runId = body.runId ?? "";
-  // Cold-lambda fallback: rebuild the run from client-cached inputs if needed.
-  if (!(await getRun(runId))) {
-    if (body.inputs) {
-      await putRun(buildScoredRun({ runId, createdAt: Date.now(), inputs: body.inputs, source: "quiz" }));
-    } else {
-      return NextResponse.json({ error: "Run not found" }, { status: 404 });
+  const provider = activePaymentProvider();
+  if ((provider !== "dev" && !getSupabaseAdmin()) ||
+      (provider === "dev" && process.env.NODE_ENV === "production")) {
+    return NextResponse.json({ error: "Checkout is temporarily unavailable. Please try again later." }, { status: 503 });
+  }
+  // Do not send someone to payment until their result is durably stored.
+  try {
+    if (!(await getRun(runId))) {
+      if (body.inputs) {
+        await putRun(buildScoredRun({ runId, createdAt: Date.now(), inputs: body.inputs, source: "quiz" }));
+      } else {
+        return NextResponse.json({ error: "Run not found" }, { status: 404 });
+      }
     }
+  } catch {
+    return NextResponse.json({ error: "Unable to save your results. Please try again." }, { status: 503 });
   }
 
-  const provider = activePaymentProvider();
   const origin = req.headers.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
   if (provider === "dev") {
