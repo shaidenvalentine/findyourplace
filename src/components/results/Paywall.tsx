@@ -8,7 +8,7 @@ import { ANCHOR_LABEL, PRICE_LABEL } from "@/lib/pricing";
 import { loadRunLocal } from "@/lib/run";
 import { LOCATION_COUNT } from "@/data/locations";
 import { track } from "@/lib/analytics";
-import { Check, Loader2, Lock, ShieldCheck, Star } from "lucide-react";
+import { Check, Loader2, Lock, ShieldCheck } from "lucide-react";
 
 const INCLUDES = [
   "The name of your #1 place, revealed",
@@ -112,20 +112,6 @@ export function Paywall({
           </li>
         ))}
       </ul>
-
-      {/* Social proof — one specific, on-brand testimonial at the moment of decision. */}
-      <figure className="mb-5 rounded-xl border border-border bg-surface/50 p-4">
-        <div className="mb-1 flex gap-0.5 text-primary">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Star key={i} className="size-3.5 fill-current" />
-          ))}
-        </div>
-        <blockquote className="text-sm text-foreground">
-          &ldquo;It named a city I&apos;d never have picked — and it was so obviously right I booked a
-          scouting trip that week.&rdquo;
-        </blockquote>
-        <figcaption className="mt-1 text-xs text-muted-foreground">— Maya R., now in Lisbon</figcaption>
-      </figure>
 
       <Input
         type="email"

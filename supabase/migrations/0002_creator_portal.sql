@@ -35,16 +35,16 @@ alter table public.creators enable row level security;
 
 drop policy if exists "creators read their own profile" on public.creators;
 create policy "creators read their own profile" on public.creators
-  for select using (auth.uid() = user_id);
+  for select using ((select auth.uid()) = user_id);
 
 drop policy if exists "creators update their own profile" on public.creators;
 create policy "creators update their own profile" on public.creators
-  for update using (auth.uid() = user_id);
+  for update using ((select auth.uid()) = user_id);
 
 -- New signups insert their own row at user_id = auth.uid()
 drop policy if exists "creators self-signup" on public.creators;
 create policy "creators self-signup" on public.creators
-  for insert with check (auth.uid() = user_id);
+  for insert with check ((select auth.uid()) = user_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- creator_clicks: every ?ref= or /c/[code] visit
@@ -66,7 +66,7 @@ alter table public.creator_clicks enable row level security;
 drop policy if exists "creators see their own clicks" on public.creator_clicks;
 create policy "creators see their own clicks" on public.creator_clicks
   for select using (
-    creator_id in (select id from public.creators where user_id = auth.uid())
+    creator_id in (select id from public.creators where user_id = (select auth.uid()))
   );
 
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -93,7 +93,7 @@ alter table public.creator_conversions enable row level security;
 drop policy if exists "creators see their own conversions" on public.creator_conversions;
 create policy "creators see their own conversions" on public.creator_conversions
   for select using (
-    creator_id in (select id from public.creators where user_id = auth.uid())
+    creator_id in (select id from public.creators where user_id = (select auth.uid()))
   );
 -- INSERTs only happen via service role (Stripe webhook), never client.
 
@@ -122,7 +122,7 @@ alter table public.creator_payouts enable row level security;
 drop policy if exists "creators see their own payouts" on public.creator_payouts;
 create policy "creators see their own payouts" on public.creator_payouts
   for select using (
-    creator_id in (select id from public.creators where user_id = auth.uid())
+    creator_id in (select id from public.creators where user_id = (select auth.uid()))
   );
 
 -- ─────────────────────────────────────────────────────────────────────────────
