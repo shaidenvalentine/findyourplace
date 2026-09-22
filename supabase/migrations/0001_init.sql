@@ -78,11 +78,11 @@ alter table public.onboarding_runs enable row level security;
 
 drop policy if exists "own runs are readable" on public.onboarding_runs;
 create policy "own runs are readable" on public.onboarding_runs
-  for select using (user_id is null or auth.uid() = user_id);
+  for select using (user_id is not null and (select auth.uid()) = user_id);
 
 drop policy if exists "insert own runs" on public.onboarding_runs;
 create policy "insert own runs" on public.onboarding_runs
-  for insert with check (user_id is null or auth.uid() = user_id);
+  for insert with check (user_id is not null and (select auth.uid()) = user_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- unlocked_results: server-verified payment flag. The paywall source of truth.
@@ -99,7 +99,7 @@ alter table public.unlocked_results enable row level security;
 
 drop policy if exists "own unlocks are readable" on public.unlocked_results;
 create policy "own unlocks are readable" on public.unlocked_results
-  for select using (user_id is null or auth.uid() = user_id);
+  for select using (user_id is not null and (select auth.uid()) = user_id);
 -- Inserts happen ONLY via service role from the Stripe webhook (never client).
 
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -143,12 +143,12 @@ alter table public.profiles enable row level security;
 
 drop policy if exists "own profile readable" on public.profiles;
 create policy "own profile readable" on public.profiles
-  for select using (auth.uid() = id);
+  for select using ((select auth.uid()) = id);
 
 drop policy if exists "own profile upsert" on public.profiles;
 create policy "own profile upsert" on public.profiles
-  for insert with check (auth.uid() = id);
+  for insert with check ((select auth.uid()) = id);
 
 drop policy if exists "own profile update" on public.profiles;
 create policy "own profile update" on public.profiles
-  for update using (auth.uid() = id);
+  for update using ((select auth.uid()) = id);
