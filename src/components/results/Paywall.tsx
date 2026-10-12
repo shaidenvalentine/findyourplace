@@ -33,14 +33,14 @@ export function Paywall({
 
   // Meta "AddToCart" — the user reached the gate. The core paid-intent signal.
   useEffect(() => {
-    track("paywall_view");
-  }, []);
+    track("paywall_view", { runId });
+  }, [runId]);
 
   async function startCheckout() {
     if (!emailValid) return;
     setBusy(true);
     setErr(null);
-    track("checkout_start"); // Meta "InitiateCheckout"
+    track("checkout_start", { runId }); // Meta "InitiateCheckout"
     try {
       // Email gate — captured BEFORE payment so the nurture list gets every checkout
       // starter. keepalive survives the immediate hand-off to hosted checkout.

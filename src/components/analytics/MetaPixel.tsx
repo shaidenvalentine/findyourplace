@@ -3,6 +3,7 @@
 import Script from "next/script";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { logEvent } from "@/lib/analytics";
 
 /**
  * Meta Pixel base loader. Injects the pixel once and fires a PageView on every client
@@ -16,6 +17,10 @@ export function MetaPixel() {
   const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
   const pathname = usePathname();
   const firstLoad = useRef(true);
+
+  useEffect(() => {
+    logEvent("landing_view");
+  }, [pathname]);
 
   useEffect(() => {
     if (!pixelId) return;

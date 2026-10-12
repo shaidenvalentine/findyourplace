@@ -18,6 +18,7 @@
 
 import { META_STANDARD, type FunnelEvent } from "@/lib/metaEvents";
 import { isAnalyticsEvent, type AnalyticsEventName } from "@/lib/analytics/events";
+import { acquisitionSource } from "@/lib/analytics/acquisition";
 
 export type { FunnelEvent };
 
@@ -66,6 +67,7 @@ function logFirstParty(
       sessionId: sessionId(),
       path: window.location.pathname,
       ...extra,
+      source: extra.source ?? acquisitionSource(),
     });
     if (navigator.sendBeacon) {
       navigator.sendBeacon("/api/track", new Blob([body], { type: "application/json" }));
