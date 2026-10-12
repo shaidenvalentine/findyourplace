@@ -45,8 +45,8 @@ export default function LandingPage() {
               <span className="italic font-normal">haven&apos;t</span> made yet.
             </h1>
             <p className="mt-6 max-w-md text-pretty text-lg leading-relaxed text-muted-foreground">
-              Where you live decides your money, your people, your health. In 60 seconds we score you
-              against 250 of the best places on Earth — and show you the one that fits.
+              Explore places that fit how you want to live. A short quiz ranks 250 curated places
+              against your preferences, so you can start researching your next move.
             </p>
             <div className="mt-9 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
               <Button asChild size="lg" variant="gradient" className="w-full sm:w-auto">
@@ -74,8 +74,8 @@ export default function LandingPage() {
           A city <span className="text-gradient">picks you.</span>
         </h2>
         <div className="mt-14 grid gap-4 sm:grid-cols-3">
-          <Stake stat="6×" body="The same income can mean 6× the lifestyle — or 6× less — depending on where you spend it." />
-          <Stake stat="$54k" body="Move from a 45% tax country to a 0% one and a $120k salary keeps roughly $54k more a year." />
+          <Stake stat="Budget" body="Compare places through the cost and lifestyle priorities you give us." />
+          <Stake stat="Fit" body="Explore your climate, community, work, and wellbeing preferences together." />
           <Stake stat="One" body="Where you live decides who you meet. Your friends, your partner, your future — all downstream of one decision." />
         </div>
       </section>
@@ -86,7 +86,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
             <Stat icon={<Globe2 className="size-5" />} value="250" label="places scored against you" />
             <Stat icon={<Fingerprint className="size-5" />} value="10" label="dimensions of your life weighed" />
-            <Stat icon={<Landmark className="size-5" />} value="0%" label="income tax in 15+ of them" />
+            <Stat icon={<Landmark className="size-5" />} value="$29" label="full results, one time" />
             <Stat icon={<Timer className="size-5" />} value="60s" label="to your first score — free" />
           </div>
         </div>
@@ -110,7 +110,7 @@ export default function LandingPage() {
           Your place is already on this list.
         </h2>
         <p className="mx-auto mt-4 max-w-md text-center text-base leading-relaxed text-muted-foreground">
-          Zero-tax hubs, surf towns, alpine escapes, megacities — {LOCATION_COUNT} real places, each
+          Surf towns, alpine escapes, and megacities — {LOCATION_COUNT} real places, each
           scored against who you actually are.
         </p>
         <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
@@ -345,7 +345,7 @@ function HeroPreview() {
 
       {/* Ranking satellite — the locked list, exactly as the product shows it. */}
       <div className="glass absolute bottom-[4.5rem] left-4 w-44 rounded-2xl p-4 sm:left-6">
-        <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Your ranking</div>
+        <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Example ranking</div>
         <div className="mt-2.5 flex flex-col gap-2">
           <RankRow n={1} name="Lisbon" score={94} revealed />
           <RankRow n={2} score={91} />
@@ -357,8 +357,8 @@ function HeroPreview() {
       {/* Tax satellite */}
       <div className="glass absolute bottom-6 right-6 w-44 rounded-2xl p-4">
         <ArrowUpRight className="absolute right-3 top-3 size-3.5 text-muted-foreground/50" />
-        <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Tax saved</div>
-        <div className="mt-1 text-2xl font-light tabular-nums text-accent">≈ $54k<span className="text-sm text-muted-foreground">/yr</span></div>
+        <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Your priorities</div>
+        <div className="mt-1 text-2xl font-light tabular-nums text-accent">10<span className="text-sm text-muted-foreground"> dimensions</span></div>
         <div className="mt-2 flex items-end gap-0.5">
           {[30, 44, 38, 60, 52, 74, 68, 88].map((h, i) => (
             <span key={i} className="w-1.5 rounded-full bg-foreground/25" style={{ height: h * 0.35 }} />

@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
     inputs: mergedInputs,
     source: existing.source,
   });
+  updated.creatorId = existing.creatorId;
 
   await putRun(updated);
   return NextResponse.json({ free: toFreeRun(updated) });

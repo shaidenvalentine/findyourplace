@@ -30,7 +30,7 @@ export default function PrivacyPage() {
           <h2>What we collect</h2>
           <p className="mt-2">
             <span className="font-medium text-foreground">Quiz answers.</span> Your responses (climate,
-            budget, lifestyle preferences, and similar) are used to compute your match and are stored
+            budget, lifestyle preferences, optional income bands and tax preferences) are used to compute your match and are stored
             with your results so your link keeps working.
           </p>
           <p className="mt-2">
