@@ -105,7 +105,7 @@ export function TaxProfile({ free, onRefined }: { free: FreeRun; onRefined: (u: 
               </p>
             )}
             <p className="text-[11px] text-muted-foreground">
-              Estimate only — not tax advice. We never store your income.
+              Estimate only — not tax advice. Optional answers are saved with your results.
             </p>
           </div>
         ) : (
