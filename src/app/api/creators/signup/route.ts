@@ -9,6 +9,9 @@ import type { Creator } from "@/lib/creators/types";
  * later from the admin view. Doubles as login when an existing code is used.
  */
 export async function POST(req: NextRequest) {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Creator signup is closed while we upgrade account security." }, { status: 503 });
+  }
   let body: {
     code?: string;
     displayName?: string;

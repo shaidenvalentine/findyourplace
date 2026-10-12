@@ -1,7 +1,11 @@
 -- Lock down the automatic-RLS helper created by the project wizard, optimize
 -- owner policies, and cover foreign keys used by deletes and joins.
 
-revoke execute on function public.rls_auto_enable() from public;
+do $$ begin
+  if to_regprocedure('public.rls_auto_enable()') is not null then
+    revoke execute on function public.rls_auto_enable() from public;
+  end if;
+end $$;
 
 drop policy if exists "own runs are readable" on public.onboarding_runs;
 create policy "own runs are readable" on public.onboarding_runs

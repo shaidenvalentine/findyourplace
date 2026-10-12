@@ -45,7 +45,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unable to save your results. Please try again." }, { status: 503 });
   }
 
-  const origin = req.headers.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  // Never let a caller's Origin header send the buyer's private results to another site.
+  const origin = process.env.NEXT_PUBLIC_SITE_URL || req.nextUrl.origin;
 
   if (provider === "dev") {
     return NextResponse.json({ mode: "dev" });

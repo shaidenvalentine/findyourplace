@@ -23,7 +23,11 @@ type LemonEvent = {
   meta?: { event_name?: string; custom_data?: { run_id?: string } };
   data?: {
     id?: string;
-    attributes?: { status?: string; total?: number; user_email?: string | null };
+    attributes?: {
+      status?: string; total?: number; user_email?: string | null;
+      store_id?: number; test_mode?: boolean;
+      first_order_item?: { variant_id?: number };
+    };
   };
 };
 
@@ -49,8 +53,16 @@ export async function POST(req: NextRequest) {
   // lemonOrderUnlocks for the full decision + its tests.
   const attrs = event.data?.attributes;
   if (event.meta?.event_name === "order_created" && attrs && lemonOrderUnlocks(attrs)) {
+    if (attrs.test_mode ||
+        String(attrs.store_id) !== process.env.LEMONSQUEEZY_STORE_ID ||
+        String(attrs.first_order_item?.variant_id) !== process.env.LEMONSQUEEZY_VARIANT_ID) {
+      return NextResponse.json({ received: true });
+    }
     const runId = event.meta?.custom_data?.run_id;
-    if (runId) {
+    if (runId && event.data?.id && Number.isInteger(attrs.total) && attrs.total! >= 0) {
+      if (!(await getRun(runId))) {
+        return NextResponse.json({ error: "Results not available; retry delivery." }, { status: 503 });
+      }
       await markUnlocked(runId, {
         providerRef: event.data?.id ? `ls_${event.data.id}` : null,
         amountCents: attrs.total ?? PRICE_CENTS,

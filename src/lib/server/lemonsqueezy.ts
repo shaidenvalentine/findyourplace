@@ -36,7 +36,15 @@ export async function createLemonCheckout(opts: {
             email: opts.email || undefined,
             custom: { run_id: opts.runId },
           },
-          product_options: { redirect_url: opts.redirectUrl },
+          product_options: {
+            name: "Find Your Place — full results",
+            description: "Your #1 match, full place ranking, and relocation planning tools. One-time purchase.",
+            redirect_url: opts.redirectUrl,
+            receipt_button_text: "Open my results",
+            receipt_link_url: opts.redirectUrl,
+            receipt_thank_you_note: "Your results link is personal. Save this receipt so you can return on any device.",
+            enabled_variants: [Number(variantId)],
+          },
         },
         relationships: {
           store: { data: { type: "stores", id: String(storeId) } },
@@ -47,8 +55,7 @@ export async function createLemonCheckout(opts: {
   });
 
   if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    throw new Error(`Lemon Squeezy checkout failed (${res.status}): ${detail.slice(0, 300)}`);
+    throw new Error(`Lemon Squeezy checkout failed (${res.status})`);
   }
 
   const json = (await res.json()) as { data?: { attributes?: { url?: string } } };

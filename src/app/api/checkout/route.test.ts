@@ -33,3 +33,12 @@ it("disables production dev checkout", async () => {
   m.provider.mockReturnValue("dev"); vi.stubEnv("NODE_ENV", "production");
   expect((await POST(request())).status).toBe(503);
 });
+it("ignores a forged Origin when creating the private return link", async () => {
+  await POST(new NextRequest("https://findyourplace.app/api/checkout", {
+    method: "POST", headers: { origin: "https://attacker.example" },
+    body: JSON.stringify({ runId: "test-run" }),
+  }));
+  expect(m.checkout).toHaveBeenCalledWith(expect.objectContaining({
+    redirectUrl: "https://findyourplace.app/results/test-run?unlocked=1",
+  }));
+});

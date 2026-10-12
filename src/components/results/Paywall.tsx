@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ANCHOR_LABEL, PRICE_LABEL } from "@/lib/pricing";
+import { PRICE_LABEL } from "@/lib/pricing";
 import { loadRunLocal } from "@/lib/run";
 import { LOCATION_COUNT } from "@/data/locations";
 import { track } from "@/lib/analytics";
@@ -98,7 +98,6 @@ export function Paywall({
       </div>
       <div className="mb-4 flex items-baseline gap-2.5">
         <span className="text-5xl font-light tabular-nums tracking-tight">{PRICE_LABEL}</span>
-        <span className="text-lg font-light text-muted-foreground line-through">{ANCHOR_LABEL}</span>
         <span className="rounded-full bg-success/15 px-2 py-0.5 text-xs font-semibold text-success">
           launch price
         </span>
@@ -116,7 +115,7 @@ export function Paywall({
       <Input
         type="email"
         inputMode="email"
-        placeholder="you@email.com — where we send your results"
+        placeholder="you@email.com — for your purchase receipt"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         onBlur={() => setTouched(true)}
@@ -126,8 +125,8 @@ export function Paywall({
       />
       <p className="mb-3 min-h-4 text-xs text-muted-foreground">
         {touched && email.length > 0 && !emailValid
-          ? "Enter a valid email so we can send your results."
-          : "We email your results here so you can always get back to them."}
+          ? "Enter a valid email for your purchase receipt."
+          : "Your purchase receipt includes a link back to your results."}
       </p>
 
       <Button
@@ -149,7 +148,7 @@ export function Paywall({
       </Button>
       {err && <p className="mt-2 text-center text-sm text-destructive">{err}</p>}
       <div className="mt-3 flex items-center justify-center gap-1.5 text-center text-xs font-medium text-success">
-        <ShieldCheck className="size-3.5" /> Not blown away? Email us within 7 days for a full refund.
+        <ShieldCheck className="size-3.5" /> 7-day refund promise. Contact details in our Terms.
       </div>
       <p className="mt-2 text-center text-xs text-muted-foreground">
         Apple Pay &amp; cards · one-time · instant access · no subscription

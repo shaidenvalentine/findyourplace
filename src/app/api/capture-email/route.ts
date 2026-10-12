@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
   // Best-effort results link (no await on the response path beyond this call's timeout).
   if (runId) {
     const origin = process.env.NEXT_PUBLIC_SITE_URL || "https://findyourplace.app";
-    void sendEmail({
+    await sendEmail({
       to: email,
       subject: "Your results are saved — Find Your Place",
       html: resultsLinkHtml(`${origin}/results/${runId}`),
