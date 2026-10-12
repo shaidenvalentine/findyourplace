@@ -8,6 +8,9 @@ import { setCreatorSession } from "@/lib/creators/session";
  * Privacy: no passwords. The code+email pair is the access token; both must match.
  */
 export async function POST(req: NextRequest) {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Creator access is closed while we upgrade account security." }, { status: 503 });
+  }
   let body: { code?: string; email?: string };
   try {
     body = await req.json();

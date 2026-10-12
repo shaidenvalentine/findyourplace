@@ -1,5 +1,6 @@
 import "server-only";
 import type { ScoredRun } from "@/lib/run";
+import { isPaymentConfigured } from "@/lib/pricing";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 
 /**
@@ -19,7 +20,8 @@ import { getSupabaseAdmin } from "@/lib/supabase/server";
  *
  * FALLBACK: with no Supabase env (local dev / preview without a DB) every function
  * degrades to an in-memory globalThis store, so the funnel still works end-to-end.
- * The in-memory maps also act as a same-instance read cache in production.
+ * With a configured DB, reads always use Postgres and failures propagate.
+ * Paid unlocks never fall back to memory; failed writes must trigger webhook retries.
  *
  * The service-role client is used deliberately: these are trusted server-only paths
  * (route handlers), and the API layer — not RLS — enforces the free/locked gate.
@@ -44,10 +46,11 @@ function joinRun(
 }
 
 export async function putRun(run: ScoredRun): Promise<void> {
-  mem.runs.set(run.runId, run); // same-instance cache + local-dev store
-
   const db = getSupabaseAdmin();
-  if (!db) return;
+  if (!db) {
+    mem.runs.set(run.runId, run);
+    return;
+  }
 
   const { ranking, circuit, ...free } = run;
   const { error } = await db.from("onboarding_runs").upsert(
@@ -62,7 +65,8 @@ export async function putRun(run: ScoredRun): Promise<void> {
     },
     { onConflict: "id" },
   );
-  if (error) console.error("[runStore] putRun persist failed:", error.message);
+  if (error) throw new Error("Unable to persist results");
+  mem.runs.set(run.runId, run);
 }
 
 export async function getRun(runId: string): Promise<ScoredRun | undefined> {
@@ -75,7 +79,7 @@ export async function getRun(runId: string): Promise<ScoredRun | undefined> {
       .select("free_json, ranking_json, circuit_json")
       .eq("id", runId)
       .maybeSingle();
-    if (error) console.error("[runStore] getRun read failed:", error.message);
+    if (error) throw new Error("Unable to read persisted results");
     if (data?.free_json) {
       const run = joinRun(
         data.free_json as Record<string, unknown>,
@@ -85,6 +89,7 @@ export async function getRun(runId: string): Promise<ScoredRun | undefined> {
       mem.runs.set(runId, run);
       return run;
     }
+    return undefined;
   }
 
   return mem.runs.get(runId);
@@ -92,7 +97,6 @@ export async function getRun(runId: string): Promise<ScoredRun | undefined> {
 
 export async function isUnlocked(runId: string): Promise<boolean> {
   if (!runId) return false;
-  if (mem.unlocked.has(runId)) return true;
 
   const db = getSupabaseAdmin();
   if (db) {
@@ -101,14 +105,15 @@ export async function isUnlocked(runId: string): Promise<boolean> {
       .select("run_id")
       .eq("run_id", runId)
       .maybeSingle();
-    if (error) console.error("[runStore] isUnlocked read failed:", error.message);
+    if (error) throw new Error("Unable to verify persisted unlock");
     if (data) {
       mem.unlocked.add(runId);
       return true;
     }
+    return false;
   }
 
-  return false;
+  return mem.unlocked.has(runId);
 }
 
 /**
@@ -120,10 +125,14 @@ export async function markUnlocked(
   runId: string,
   meta?: { providerRef?: string | null; amountCents?: number | null },
 ): Promise<void> {
-  mem.unlocked.add(runId);
-
   const db = getSupabaseAdmin();
-  if (!db) return;
+  if (!db) {
+    if (isPaymentConfigured() || process.env.NODE_ENV === "production") {
+      throw new Error("Durable unlock storage is not configured");
+    }
+    mem.unlocked.add(runId);
+    return;
+  }
 
   const { error } = await db.from("unlocked_results").upsert(
     {
@@ -133,5 +142,6 @@ export async function markUnlocked(
     },
     { onConflict: "run_id" },
   );
-  if (error) console.error("[runStore] markUnlocked persist failed:", error.message);
+  if (error) throw new Error("Unable to persist unlock");
+  mem.unlocked.add(runId);
 }

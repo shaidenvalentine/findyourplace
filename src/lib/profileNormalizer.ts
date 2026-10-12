@@ -56,7 +56,17 @@ export function normalizeProfileHeuristic(text: string, currentCity: string): No
   if (has("tight budget", "affordable", "cheap", "frugal", "stretch")) inputs.budgetRange = "budget";
   else if (has("luxury", "high budget", "no budget", "premium", "expensive taste")) inputs.budgetRange = "luxury";
   else inputs.budgetRange = "mid-range";
-  if (has("tax", "tax-free", "low tax", "tax optimization", "tax sensitive")) inputs.taxSensitivity = "very-sensitive";
+  // Recognize explicit indifference before the positive tax keyword. Keep the
+  // negation tied to taxes so unrelated preferences cannot reverse this signal.
+  const taxText = t.replace(/[’‘]/g, "'");
+  const taxIsNotPriority = [
+    /\b(?:low[- ]+)?tax(?:es|ation)?\s+(?:(?:is|are)\s+not|isn't|aren't)\s+(?:(?:a|an|the|my|top|major|big|high)\s+)*(?:priority|concern|factor|important)\b/,
+    /\b(?:low[- ]+)?tax(?:es|ation)?\s+(?:do(?:es)?\s+not|don't|doesn't)\s+matter\b/,
+    /\b(?:do\s+not|don't)\s+care\s+about\s+(?:low\s+)?tax(?:es|ation)?\b/,
+    /\bnot\s+(?:particularly\s+|very\s+)?tax[- ]sensitive\b/,
+  ].some((pattern) => pattern.test(taxText));
+  if (taxIsNotPriority) inputs.taxSensitivity = "not-sensitive";
+  else if (/\btax(?:es|ation)?\b/.test(taxText)) inputs.taxSensitivity = "very-sensitive";
 
   // 7 — temperament
   if (has("risk-averse", "stability", "secure", "cautious")) inputs.riskTolerance = "low";

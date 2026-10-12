@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRun, markUnlocked } from "@/lib/server/runStore";
 import { getCreatorStore } from "@/lib/creators/store";
 import { verifyLemonSignature } from "@/lib/server/lemonsqueezy";
+import { lemonOrderUnlocks } from "@/lib/unlockDecision";
 import { PRICE_CENTS, CURRENCY } from "@/lib/pricing";
 import { sendCapiEvent } from "@/lib/server/metaCapi";
 
 /**
  * Lemon Squeezy webhook — the SERVER-VERIFIED source of truth for unlocks on the LS rail.
  *
- * On a signature-verified, PAID `order_created`:
+ * On a signature-verified `order_created` that is paid OR $0 (100%-off discount code):
  *   1. Mark the run unlocked (runId arrives in `meta.custom_data.run_id`).
  *   2. If attributed to a creator, record the conversion using the LS order id as the
  *      idempotency key so webhook retries don't double-credit.
@@ -22,7 +23,11 @@ type LemonEvent = {
   meta?: { event_name?: string; custom_data?: { run_id?: string } };
   data?: {
     id?: string;
-    attributes?: { status?: string; total?: number; user_email?: string | null };
+    attributes?: {
+      status?: string; total?: number; user_email?: string | null;
+      store_id?: number; test_mode?: boolean;
+      first_order_item?: { variant_id?: number };
+    };
   };
 };
 
@@ -43,10 +48,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
+  // Unlock on paid orders AND $0 orders (100%-off discount codes skip payment
+  // processing, so LS may report them as `pending` instead of `paid`) — see
+  // lemonOrderUnlocks for the full decision + its tests.
   const attrs = event.data?.attributes;
-  if (event.meta?.event_name === "order_created" && attrs?.status === "paid") {
+  if (event.meta?.event_name === "order_created" && attrs && lemonOrderUnlocks(attrs)) {
+    if (attrs.test_mode ||
+        String(attrs.store_id) !== process.env.LEMONSQUEEZY_STORE_ID ||
+        String(attrs.first_order_item?.variant_id) !== process.env.LEMONSQUEEZY_VARIANT_ID) {
+      return NextResponse.json({ received: true });
+    }
     const runId = event.meta?.custom_data?.run_id;
-    if (runId) {
+    if (runId && event.data?.id && Number.isInteger(attrs.total) && attrs.total! >= 0) {
+      if (!(await getRun(runId))) {
+        return NextResponse.json({ error: "Results not available; retry delivery." }, { status: 503 });
+      }
       await markUnlocked(runId, {
         providerRef: event.data?.id ? `ls_${event.data.id}` : null,
         amountCents: attrs.total ?? PRICE_CENTS,

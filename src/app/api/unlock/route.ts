@@ -12,7 +12,7 @@ import type { OnboardingData } from "@/types/onboarding";
  * server-verified webhook for that rail. This preserves the "gate holds" guardrail.
  */
 export async function POST(req: NextRequest) {
-  if (isPaymentConfigured()) {
+  if (isPaymentConfigured() || process.env.NODE_ENV === "production") {
     return NextResponse.json(
       { error: "Dev unlock disabled — unlock only via verified payment." },
       { status: 403 }

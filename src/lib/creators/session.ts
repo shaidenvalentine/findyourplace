@@ -60,6 +60,7 @@ export async function clearCreatorSession() {
 }
 
 export async function getCurrentCreator(): Promise<Creator | null> {
+  if (process.env.NODE_ENV === "production") return null;
   const jar = await cookies();
   const raw = jar.get(SESSION_COOKIE)?.value;
   if (!raw) return null;

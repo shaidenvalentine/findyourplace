@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRun, markUnlocked } from "@/lib/server/runStore";
 import { getCreatorStore } from "@/lib/creators/store";
+import { stripeSessionUnlocks } from "@/lib/unlockDecision";
 import { PRICE_CENTS, CURRENCY } from "@/lib/pricing";
 import { sendCapiEvent } from "@/lib/server/metaCapi";
 
@@ -42,7 +43,9 @@ export async function POST(req: NextRequest) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as import("stripe").Stripe.Checkout.Session;
     const runId = session.metadata?.runId;
-    if (runId && session.payment_status === "paid") {
+    // `no_payment_required` = a $0 session (100% promotion code) — no PaymentIntent
+    // exists, but the checkout genuinely completed. See stripeSessionUnlocks + tests.
+    if (runId && stripeSessionUnlocks(session.payment_status)) {
       await markUnlocked(runId, {
         providerRef: session.id,
         amountCents: session.amount_total ?? PRICE_CENTS,

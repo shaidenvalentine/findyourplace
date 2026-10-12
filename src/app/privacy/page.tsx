@@ -41,8 +41,8 @@ export default function PrivacyPage() {
           </p>
           <p className="mt-2">
             <span className="font-medium text-foreground">Email address.</span> Collected before checkout
-            so we can send you your results link and occasional emails about your match. You can opt out
-            anytime via the link in any email or by contacting us.
+            for your purchase receipt, results recovery, and purchase support.
+            We do not add you to promotional email campaigns through checkout.
           </p>
           <p className="mt-2">
             <span className="font-medium text-foreground">Payments.</span> Handled entirely by our payment
@@ -75,7 +75,7 @@ export default function PrivacyPage() {
         <section>
           <h2>Your choices</h2>
           <p className="mt-2">
-            Want your data deleted? Email us and we&apos;ll remove your runs and email address. Results
+            Want your data deleted? Contact us and we&apos;ll remove your runs and email address. Results
             links are private to whoever holds the URL — share them intentionally.
           </p>
         </section>
@@ -84,8 +84,8 @@ export default function PrivacyPage() {
           <h2>Contact</h2>
           <p className="mt-2">
             Questions or requests:{" "}
-            <a className="text-foreground underline underline-offset-4" href="mailto:hello@findyourplace.app">
-              hello@findyourplace.app
+            <a className="text-foreground underline underline-offset-4" href="https://www.instagram.com/shaiden/">
+              message @shaiden on Instagram
             </a>
             . We may update this policy as the product evolves; the effective date above always reflects
             the current version.

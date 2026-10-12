@@ -51,7 +51,7 @@ export default function TermsPage() {
           <p className="mt-2">
             The unlock is a one-time digital purchase, delivered instantly, processed by Lemon Squeezy
             or Stripe. <span className="font-medium text-foreground">7-day refund promise:</span> if
-            you&apos;re not blown away, email us within 7 days of purchase and we&apos;ll refund you in
+            you&apos;re not blown away, message @shaiden on Instagram within 7 days of purchase with your receipt and we&apos;ll refund you in
             full — no forms, no hoops.
           </p>
         </section>
@@ -90,8 +90,8 @@ export default function TermsPage() {
         <section>
           <h2>Contact</h2>
           <p className="mt-2">
-            <a className="text-foreground underline underline-offset-4" href="mailto:hello@findyourplace.app">
-              hello@findyourplace.app
+            <a className="text-foreground underline underline-offset-4" href="https://www.instagram.com/shaiden/">
+              message @shaiden on Instagram
             </a>
           </p>
         </section>
